@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-220 -30 1450 870" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <style>
+    .brass     { fill: #d4b75a; stroke: #6b5520; stroke-width: 1.5; }
+    .brass2    { fill: #b39942; stroke: #6b5520; stroke-width: 1.2; }
+    .steel     { fill: #b8bcc1; stroke: #2b2f33; stroke-width: 1.0; }
+    .blade     { fill: #d8dde0; stroke: #1f2326; stroke-width: 1.0; }
+    .spacer    { fill: #a88f50; stroke: #6b5520; stroke-width: 0.7; }
+    .thread    { stroke: #2b2f33; stroke-width: 0.55; fill: none; }
+    .hidden    { fill: none; stroke: #555; stroke-width: 0.9; stroke-dasharray: 5 3; }
+    .label     { fill: #111; font-size: 13px; }
+    .sublabel  { fill: #555; font-size: 11px; font-style: italic; }
+    .lead      { stroke: #444; stroke-width: 0.7; fill: none; }
+    .work      { fill: #e8d8b8; stroke: #8a6e3d; stroke-width: 1; }
+    .title     { font-size: 18px; font-weight: bold; }
+    .subtitle  { font-size: 11px; fill: #555; font-style: italic; }
+  </style>
+
+  <text x="900" y="0" text-anchor="middle" class="title">Purfling cutter — mechanism and naming scheme</text>
+  <text x="900" y="20" text-anchor="middle" class="subtitle">Front view; shank vertical, work to the right. Hidden internal features dashed. Schematic only — not to scale.</text>
+
+  <!-- WORKPIECE -->
+  <rect x="820" y="280" width="180" height="240" class="work"/>
+  <text x="910" y="275" text-anchor="middle" fill="#8a6e3d" font-style="italic">workpiece (violin plate edge)</text>
+
+  <!-- ============== SHANK ============== -->
+  <rect x="460" y="60" width="80" height="600" class="brass"/>
+  <!-- Working face stripe representing the relief slot down the right edge -->
+  <rect x="534" y="60" width="10" height="600" class="brass2"/>
+
+  <!-- Hidden: shaft cross-bore -->
+  <line x1="460" y1="135" x2="540" y2="135" class="hidden"/>
+  <line x1="460" y1="155" x2="540" y2="155" class="hidden"/>
+
+  <!-- Hidden: tapped bore for drive screw (above shaft cross-bore) -->
+  <line x1="460" y1="92"  x2="540" y2="92"  class="hidden"/>
+  <line x1="460" y1="108" x2="540" y2="108" class="hidden"/>
+  <g class="thread">
+    <line x1="464" y1="96"  x2="536" y2="96"/>
+    <line x1="464" y1="100" x2="536" y2="100"/>
+    <line x1="464" y1="104" x2="536" y2="104"/>
+  </g>
+
+  <!-- Hidden: depth-lock blind bore (long vertical, up from bottom) -->
+  <line x1="492" y1="660" x2="492" y2="170" class="hidden"/>
+  <line x1="508" y1="660" x2="508" y2="170" class="hidden"/>
+  <g class="thread">
+    <line x1="492" y1="640" x2="508" y2="640"/>
+    <line x1="492" y1="620" x2="508" y2="620"/>
+    <line x1="492" y1="600" x2="508" y2="600"/>
+    <line x1="492" y1="580" x2="508" y2="580"/>
+    <line x1="492" y1="560" x2="508" y2="560"/>
+    <line x1="492" y1="540" x2="508" y2="540"/>
+    <line x1="492" y1="520" x2="508" y2="520"/>
+    <line x1="492" y1="500" x2="508" y2="500"/>
+    <line x1="492" y1="480" x2="508" y2="480"/>
+    <line x1="492" y1="460" x2="508" y2="460"/>
+    <line x1="492" y1="440" x2="508" y2="440"/>
+    <line x1="492" y1="420" x2="508" y2="420"/>
+    <line x1="492" y1="400" x2="508" y2="400"/>
+    <line x1="492" y1="380" x2="508" y2="380"/>
+    <line x1="492" y1="360" x2="508" y2="360"/>
+    <line x1="492" y1="340" x2="508" y2="340"/>
+    <line x1="492" y1="320" x2="508" y2="320"/>
+    <line x1="492" y1="300" x2="508" y2="300"/>
+    <line x1="492" y1="280" x2="508" y2="280"/>
+    <line x1="492" y1="260" x2="508" y2="260"/>
+  </g>
+
+  <!-- ============== SHAFT ============== -->
+  <rect x="270" y="135" width="190" height="20" class="brass"/>
+  <rect x="540" y="135" width="200" height="20" class="brass"/>
+  <rect x="460" y="135" width="80"  height="20" class="brass" opacity="0.45"/>
+
+  <!-- Vertical through-slot in shaft (open top & bottom) -->
+  <rect x="680" y="118" width="14" height="54" class="brass2"/>
+
+  <!-- Blade stack inside slot: blade | spacer | blade, pinched leftward against slot's left wall (X=680) -->
+  <rect x="680.5" y="110" width="2.5" height="70" class="blade"/>
+  <rect x="683"   y="125" width="3"   height="40" class="spacer"/>
+  <rect x="686"   y="110" width="2.5" height="70" class="blade"/>
+
+  <!-- Hidden: tapped hole in right end of shaft for grub screw -->
+  <line x1="694" y1="140" x2="740" y2="140" class="hidden"/>
+  <line x1="694" y1="150" x2="740" y2="150" class="hidden"/>
+
+  <!-- Grub screw (steel) protruding from right end face of shaft -->
+  <rect x="740" y="138" width="40" height="14" class="steel"/>
+  <g class="thread">
+    <line x1="742" y1="140" x2="778" y2="140"/>
+    <line x1="742" y1="143" x2="778" y2="143"/>
+    <line x1="742" y1="146" x2="778" y2="146"/>
+    <line x1="742" y1="149" x2="778" y2="149"/>
+  </g>
+
+  <!-- ============== DRIVE PLATE ============== -->
+  <!-- Vertical fin standing up from the OUTBOARD (left) end of the shaft.
+       Order along X (left → right): drive plate, axial-play gap, thumbwheel, drive screw, shank. -->
+  <rect x="280" y="80" width="10" height="55" class="brass"/>
+  <!-- Clearance hole for the silver screw at Y=100 -->
+  <circle cx="285" cy="100" r="5.5" fill="#ffffff" stroke="#6b5520" stroke-width="1"/>
+  <!-- Mounting screws into top of shaft (replaces original soldered joint) -->
+  <circle cx="283" cy="138" r="1.4" fill="#2b2f33"/>
+  <circle cx="287" cy="138" r="1.4" fill="#2b2f33"/>
+
+  <!-- ============== THUMBWHEEL + DRIVE SCREW (integral) ============== -->
+  <!-- Thumbwheel: knurled disc, edge-on. Sits BETWEEN the drive plate (outboard) and the shank (inboard).
+       Left face of thumbwheel has the tapped hole for the silver screw. -->
+  <rect x="292" y="65" width="38" height="70" class="brass"/>
+  <g stroke="#6b5520" stroke-width="0.6">
+    <line x1="296" y1="68" x2="296" y2="132"/>
+    <line x1="300" y1="68" x2="300" y2="132"/>
+    <line x1="304" y1="68" x2="304" y2="132"/>
+    <line x1="308" y1="68" x2="308" y2="132"/>
+    <line x1="312" y1="68" x2="312" y2="132"/>
+    <line x1="316" y1="68" x2="316" y2="132"/>
+    <line x1="320" y1="68" x2="320" y2="132"/>
+    <line x1="324" y1="68" x2="324" y2="132"/>
+    <line x1="328" y1="68" x2="328" y2="132"/>
+  </g>
+  <!-- Hidden tapped hole in LEFT face of thumbwheel for silver screw -->
+  <line x1="292" y1="97"  x2="316" y2="97"  class="hidden"/>
+  <line x1="292" y1="103" x2="316" y2="103" class="hidden"/>
+
+  <!-- Drive screw — integral with thumbwheel, extends right from thumbwheel's right face into shank tapped bore -->
+  <rect x="330" y="94" width="130" height="12" class="brass"/>
+  <g class="thread">
+    <line x1="332" y1="96"  x2="458" y2="96"/>
+    <line x1="332" y1="99"  x2="458" y2="99"/>
+    <line x1="332" y1="102" x2="458" y2="102"/>
+    <line x1="332" y1="105" x2="458" y2="105"/>
+  </g>
+
+  <!-- ============== SILVER SCREW (bearing retainer) ============== -->
+  <!-- Threads RIGHTWARD into the LEFT face of the thumbwheel.
+       Order: head (left) → drive plate clearance hole → small axial-play gap → tap in thumbwheel left face.
+       Bottoms out on the tap, leaving small axial play so plate spins free. -->
+  <!-- Head (sits on the LEFT/outboard face of the drive plate) -->
+  <rect x="272" y="91" width="6" height="18" class="steel"/>
+  <!-- Shank passing rightward through plate clearance hole and into thumbwheel tap -->
+  <rect x="278" y="97" width="38" height="6" fill="#d3d6da" stroke="#2b2f33" stroke-width="0.8"/>
+  <!-- Hidden thread engagement inside the thumbwheel (right portion of the silver screw shank) -->
+  <g class="thread">
+    <line x1="294" y1="99" x2="314" y2="99"/>
+    <line x1="294" y1="101" x2="314" y2="101"/>
+  </g>
+
+  <!-- Small annotation showing the "axial play" gap between drive plate's right face and thumbwheel's left face -->
+  <!-- The plate is at X=280..290, the thumbwheel left face at X=292, leaving a ~2px (representative) gap. -->
+  <line x1="291" y1="135" x2="291" y2="170" stroke="#c33" stroke-width="0.7" stroke-dasharray="2 2"/>
+  <text x="200" y="190" fill="#c33" font-size="10">tiny axial play between plate and thumbwheel —</text>
+  <text x="200" y="203" fill="#c33" font-size="10">silver screw bottoms on its tap before head clamps plate</text>
+  <line x1="291" y1="172" x2="200" y2="186" stroke="#c33" stroke-width="0.5" stroke-dasharray="1 2"/>
+
+  <!-- ============== DEPTH LOCK ============== -->
+  <rect x="478" y="660" width="44" height="50" class="brass"/>
+  <g stroke="#6b5520" stroke-width="0.6">
+    <line x1="482" y1="664" x2="482" y2="706"/>
+    <line x1="486" y1="664" x2="486" y2="706"/>
+    <line x1="490" y1="664" x2="490" y2="706"/>
+    <line x1="494" y1="664" x2="494" y2="706"/>
+    <line x1="498" y1="664" x2="498" y2="706"/>
+    <line x1="502" y1="664" x2="502" y2="706"/>
+    <line x1="506" y1="664" x2="506" y2="706"/>
+    <line x1="510" y1="664" x2="510" y2="706"/>
+    <line x1="514" y1="664" x2="514" y2="706"/>
+    <line x1="518" y1="664" x2="518" y2="706"/>
+  </g>
+  <!-- Red arrow showing bolt tip bearing up against underside of shaft -->
+  <line x1="500" y1="172" x2="500" y2="158" stroke="#c33" stroke-width="1.6" marker-end="url(#arrowred)"/>
+
+  <!-- ============== LABELS ============== -->
+
+  <line x1="380" y1="400" x2="460" y2="400" class="lead"/>
+  <text x="378" y="396" text-anchor="end" class="label">SHANK</text>
+  <text x="378" y="412" text-anchor="end" class="sublabel">square brass body; doubles as fence</text>
+
+  <line x1="700" y1="600" x2="540" y2="500" class="lead"/>
+  <text x="702" y="604" class="label">WORKING FACE</text>
+  <text x="702" y="620" class="sublabel">convex; vertical RELIEF SLOT down full length;</text>
+  <text x="702" y="636" class="sublabel">two CONTACT CORNERS bear on plate edge</text>
+
+  <line x1="440" y1="230" x2="500" y2="155" class="lead"/>
+  <text x="438" y="234" text-anchor="end" class="label">SHAFT CROSS-BORE</text>
+  <text x="438" y="250" text-anchor="end" class="sublabel">plain; sliding fit on shaft (precision fit)</text>
+
+  <line x1="440" y1="280" x2="500" y2="100" class="lead"/>
+  <text x="438" y="284" text-anchor="end" class="label">SHANK TAPPED BORE</text>
+  <text x="438" y="300" text-anchor="end" class="sublabel">directly above shaft cross-bore; carries drive screw</text>
+
+  <line x1="600" y1="460" x2="508" y2="460" class="lead"/>
+  <text x="602" y="464" class="label">DEPTH-LOCK BLIND BORE</text>
+  <text x="602" y="480" class="sublabel">tapped; runs up inside shank from bottom</text>
+
+  <line x1="610" y1="180" x2="610" y2="155" class="lead"/>
+  <text x="610" y="196" text-anchor="middle" class="label">SHAFT</text>
+  <text x="610" y="212" text-anchor="middle" class="sublabel">translates in Y to set edge margin</text>
+
+  <line x1="285" y1="20" x2="285" y2="80" class="lead"/>
+  <text x="285" y="14" text-anchor="middle" class="label">DRIVE PLATE</text>
+  <text x="285" y="30" text-anchor="middle" class="sublabel">vertical fin screwed to outboard end of shaft;</text>
+  <text x="285" y="44" text-anchor="middle" class="sublabel">clearance hole near top for silver screw</text>
+
+  <line x1="430" y1="20" x2="311" y2="65" class="lead"/>
+  <text x="432" y="14" class="label">THUMBWHEEL + DRIVE SCREW</text>
+  <text x="432" y="30" class="sublabel">integral; sits between drive plate and shank;</text>
+  <text x="432" y="44" class="sublabel">turning thumbwheel rotates drive screw,</text>
+  <text x="432" y="58" class="sublabel">which threads through shank tapped bore</text>
+
+  <line x1="170" y1="180" x2="275" y2="100" class="lead"/>
+  <text x="168" y="184" text-anchor="end" class="label">SILVER SCREW (bearing retainer)</text>
+  <text x="168" y="200" text-anchor="end" class="sublabel">head on outboard face of drive plate;</text>
+  <text x="168" y="216" text-anchor="end" class="sublabel">shank passes through plate clearance hole,</text>
+  <text x="168" y="232" text-anchor="end" class="sublabel">threads into left face of thumbwheel;</text>
+  <text x="168" y="248" text-anchor="end" class="sublabel">bottoms on tap so plate floats with axial play</text>
+
+  <line x1="900" y1="80" x2="760" y2="138" class="lead"/>
+  <text x="902" y="84" class="label">BLADE-CLAMP GRUB SCREW</text>
+  <text x="902" y="100" class="sublabel">threads into right end face of shaft;</text>
+  <text x="902" y="116" class="sublabel">pushes blade stack leftward against slot wall</text>
+
+  <line x1="900" y1="180" x2="694" y2="150" class="lead"/>
+  <text x="902" y="184" class="label">BLADE SLOT (vertical, through-shaft)</text>
+  <text x="902" y="200" class="sublabel">blades drop in from above (or fall through);</text>
+  <text x="902" y="216" class="sublabel">stack: BLADE — SPACER — BLADE,</text>
+  <text x="902" y="232" class="sublabel">pinched horizontally by grub screw</text>
+
+  <line x1="620" y1="685" x2="522" y2="685" class="lead"/>
+  <text x="622" y="689" class="label">DEPTH LOCK KNOB</text>
+  <text x="622" y="705" class="sublabel">long bolt up inside shank;</text>
+  <text x="622" y="721" class="sublabel">tip clamps shaft from below</text>
+
+  <line x1="890" y1="540" x2="890" y2="590" stroke="#2a7" stroke-width="2" marker-end="url(#arrowgreen)"/>
+  <text x="898" y="568" fill="#2a7">tool travel</text>
+
+  <defs>
+    <marker id="arrowgreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2a7"/>
+    </marker>
+    <marker id="arrowred" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c33"/>
+    </marker>
+  </defs>
+
+  <g transform="translate(-200,740)">
+    <text x="0" y="0" font-weight="bold">Axes used in spec:</text>
+    <text x="0" y="18">• <tspan font-weight="bold">X</tspan> — along shank (vertical here); tool-travel direction in use</text>
+    <text x="0" y="34">• <tspan font-weight="bold">Y</tspan> — along shaft (horizontal here); edge-margin adjustment direction</text>
+    <text x="0" y="50">• <tspan font-weight="bold">Z</tspan> — out of page; blade-projection direction (depth of cut)</text>
+  </g>
+</svg>
