@@ -217,9 +217,15 @@ class GrubScrewParams(BaseModel):
     """§4.2 items 15–16 — blade-clamp grub screw."""
 
     thread: str = Field(
-        default="M3",
-        description="Grub-screw thread designation.",
-        json_schema_extra=_spec("§4.2.15", units=""),
+        default="M4",
+        description="Grub-screw thread. Original tool has a non-standard 4.4 mm diameter — we substitute M4 (4 mm) as the closest convenient standard size.",
+        json_schema_extra=_spec("§4.2.15", status="MEASURED", units=""),
+    )
+    length: float = Field(
+        default=10.0,
+        gt=0,
+        description="Total threaded length of the grub screw. M4 × 10 mm.",
+        json_schema_extra=_spec("§4.2 (grub screw length — not numbered)", status="MEASURED"),
     )
     max_nose_advance: float = Field(
         default=3.0,
@@ -484,30 +490,42 @@ class ThumbwheelParams(BaseModel):
 
 
 class DrivePlateParams(BaseModel):
-    """§4.5 items 45–49 — drive plate that lets the drive screw pull the shaft."""
+    """
+    §4.5 items 45–49 — drive plate that lets the drive screw pull the shaft.
 
-    height: float = Field(
-        default=12.0,
+    The real plate is **egg-shaped** (NOT the rectangle the spec drafted):
+    two circular bosses, the larger one at the shaft end (10 mm radius)
+    and the smaller one at the thumbwheel end (5 mm radius), connected
+    by a smooth tangent boundary. The plate's plane is YZ (normal = X),
+    standing vertically up from the shaft's outboard −X end face.
+
+    The vertical distance between the two bosses' centres equals the
+    shank's `crossbore_to_tapped_bore_gap` so the plate spans from the
+    shaft axis up to the drive-screw axis.
+    """
+
+    shaft_end_radius: float = Field(
+        default=10.0,
         gt=0,
-        description="Plate height above shaft. Must reach drive-screw axis.",
-        json_schema_extra=_spec("§4.5.45"),
+        description="Radius of the larger boss at the shaft end of the plate.",
+        json_schema_extra=_spec("§4.5.45 (egg shape — not in spec)", status="MEASURED"),
     )
-    width: float = Field(
-        default=8.0,
+    thumb_end_radius: float = Field(
+        default=5.0,
         gt=0,
-        description="Plate Z dimension.",
-        json_schema_extra=_spec("§4.5.46"),
+        description="Radius of the smaller boss at the thumbwheel end (around the silver-screw clearance hole).",
+        json_schema_extra=_spec("§4.5.45 (egg shape — not in spec)", status="MEASURED"),
     )
     thickness: float = Field(
         default=2.0,
         gt=0,
-        description="Plate X dimension (1.5–2.5 mm typical).",
-        json_schema_extra=_spec("§4.5.47"),
+        description="Plate thickness (X dimension — the plate's normal direction).",
+        json_schema_extra=_spec("§4.5.47", status="MEASURED"),
     )
     clearance_hole_diameter: float = Field(
         default=2.4,
         gt=0,
-        description="Clearance hole the silver screw passes through (loose fit).",
+        description="Clearance hole the silver screw passes through (loose fit). M2 silver-screw major 2.0 + ~0.4 mm clearance.",
         json_schema_extra=_spec("§4.5.48"),
     )
 
@@ -523,8 +541,8 @@ class SilverScrewParams(BaseModel):
     head_diameter: float = Field(
         default=4.0,
         gt=0,
-        description="Head diameter. Must exceed drive_plate.clearance_hole_diameter.",
-        json_schema_extra=_spec("§4.5.52"),
+        description="Head diameter (measured). Must exceed drive_plate.clearance_hole_diameter.",
+        json_schema_extra=_spec("§4.5.52", status="MEASURED"),
     )
     head_thickness: float = Field(
         default=1.5,
