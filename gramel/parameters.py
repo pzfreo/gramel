@@ -120,7 +120,7 @@ class BladeParams(BaseModel):
     width: float = Field(
         default=4.0,
         gt=0,
-        description="Z dimension of the blade — sits in the slot.",
+        description="Y dimension of the blade — sits in the slot.",
         json_schema_extra=_spec("§4.1.2", status="MEASURED"),
     )
     length: float = Field(
@@ -158,7 +158,7 @@ class SpacerParams(BaseModel):
     thickness: float = Field(
         default=1.5,
         gt=0,
-        description="Y dimension of the user-supplied shim between blades. Sets the purfling channel width. ESTIMATE — user choice.",
+        description="X dimension of the user-supplied shim between blades. Sets the purfling channel width. ESTIMATE — user choice.",
         json_schema_extra=_spec("§4.1.5"),
     )
 
@@ -168,42 +168,42 @@ class BladeRetainerParams(BaseModel):
     Bone-shaped copper retainer.
 
     *Missing from the original spec.* Four of these per tool, all identical.
-    Layout: **two retainers per blade**, one on each side of the blade in
-    the slot's **X direction** (the 6 mm slot dimension). Two blades stacked
-    in Y direction (each with its own pair of X-side retainers) gives 4
-    retainers total. Total in-slot X stack: retainer | blade | retainer =
-    0.75 + 4 + 0.75 = 5.5 mm, fitting the 6 mm slot X with 0.5 mm clearance.
 
-    The bone shape locks each retainer in place — the narrow middle fits the
-    slot's 5 mm Y opening, the wider ends sit above the +Z and below the
-    −Z faces of the shaft so the retainer can't fall through.
+    Layout in the slot's X direction (along the shaft, 6 mm slot dim): two
+    retainers on each side of the blade-spacer-blade stack —
+        retainer | retainer | blade | spacer | blade | retainer | retainer
+        | grub-screw slack
+    Total X stack ≈ 4 × 0.75 + 2 × 0.7 + spacer = 4.4 mm + spacer, leaving
+    the remainder of the 6 mm slot for grub-screw advance.
 
-    Open question: do all four sit in the slot simultaneously, or only two
-    at a time (one per blade)?
+    The bone shape locks each retainer in place against the slot's open
+    Z direction: the narrow Y middle (4.5 mm) fits inside the slot's 5 mm
+    Y opening, the wider Y ends (5.5 mm) sit above and below the slot's
+    +Z and −Z openings so the retainer can't slide through.
     """
 
     length: float = Field(
         default=10.0,
         gt=0,
-        description="Total Z length of the retainer (long axis = slot's open Z direction). Wider ends stick out at the top and bottom of the slot.",
+        description="Z length of the retainer (long axis = slot's open Z direction). Wider Y ends stick out at the top and bottom of the slot.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     end_width: float = Field(
         default=5.5,
         gt=0,
-        description="Y width at the bone-shaped ends. > slot's 5 mm Y so the ends lock against the +Z and −Z faces of the shaft.",
+        description="Y width at the bone-shaped ends (at +Z and −Z extremes of the retainer). > slot's 5 mm Y so the ends lock against the shaft's +Z and −Z faces.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     middle_width: float = Field(
         default=4.5,
         gt=0,
-        description="Y width through the retainer's middle section. < slot's 5 mm Y so this section fits inside the slot.",
+        description="Y width through the retainer's middle. < slot's 5 mm Y so this section fits inside the slot.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     thickness: float = Field(
         default=0.75,
         gt=0,
-        description="X dimension of the flat copper shim — the dimension perpendicular to the bone profile.",
+        description="X dimension of the flat copper shim — stacks alongside the blades along the shaft.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
 
@@ -246,13 +246,13 @@ class ShaftParams(BaseModel):
     blade_slot_width: float = Field(
         default=6.0,
         gt=0,
-        description="Y dimension of blade slot (along the shaft). Fits 4 retainers + 2 blades + channel spacer + ~1.6 mm grub-screw advance.",
+        description="X dimension of blade slot (along the shaft). Fits 4 retainers + 2 blades + channel spacer + ~1.6 mm grub-screw advance.",
         json_schema_extra=_spec("§4.2.8", status="MEASURED"),
     )
     blade_slot_length: float = Field(
         default=5.0,
         gt=0,
-        description="X dimension of blade slot (across the shaft). The 5 mm direction; fits blade.width (4 mm) plus clearance. Spec labels this 'Z' but it's actually the cross-section X dim — Z is the open through direction.",
+        description="Y dimension of blade slot (across the shaft). The 5 mm direction; fits blade.width (4 mm) plus clearance. Z is the open through direction (blades drop through).",
         json_schema_extra=_spec("§4.2.9", status="MEASURED"),
     )
     end_to_slot_distance: float = Field(
@@ -324,7 +324,7 @@ class DepthLockParams(BaseModel):
     knob_thickness: float = Field(
         default=14.0,
         gt=0,
-        description="Thumbwheel length along the bolt axis (X).",
+        description="Thumbwheel length along the bolt axis (Z).",
         json_schema_extra=_spec("§4.3 (knob — not numbered)", status="MEASURED"),
     )
     push_rod_diameter: float = Field(
@@ -347,19 +347,19 @@ class ShankParams(BaseModel):
     width: float = Field(
         default=13.55,
         gt=0,
-        description="Shank cross-section Y dimension (from back of shank to peak of convex working face, includes sagitta).",
+        description="Shank cross-section X dimension (from back of shank to peak of convex working face, includes sagitta).",
         json_schema_extra=_spec("§4.3.26", status="MEASURED"),
     )
     depth: float = Field(
         default=11.0,
         gt=0,
-        description="Shank cross-section Z dimension (across the working face).",
+        description="Shank cross-section Y dimension (across the working face).",
         json_schema_extra=_spec("§4.3.26", status="MEASURED"),
     )
     length: float = Field(
         default=80.0,
         gt=0,
-        description="Shank length along X. Affects balance, reach, depth-lock bore length.",
+        description="Shank length along Z. Affects balance, reach, depth-lock bore length.",
         json_schema_extra=_spec("§4.3.27", status="MEASURED"),
     )
     crossbore_position_from_top: float = Field(
@@ -389,13 +389,13 @@ class ShankParams(BaseModel):
     relief_slot_width: float = Field(
         default=2.0,
         gt=0,
-        description="Relief slot Z width — central groove down the working face.",
+        description="Relief slot Y width — central groove down the working face.",
         json_schema_extra=_spec("§4.3.33", status="MEASURED"),
     )
     relief_slot_depth: float = Field(
         default=1.0,
         gt=0,
-        description="Relief slot Y depth — into body from working face. 1 mm at deepest (centre); slightly less at slot edges where the convex face is lower.",
+        description="Relief slot X depth — into body from working face. 1 mm at deepest (centre); slightly less at slot edges where the convex face is lower.",
         json_schema_extra=_spec("§4.3.34", status="MEASURED"),
     )
     working_face_radius: float = Field(
@@ -407,7 +407,7 @@ class ShankParams(BaseModel):
     top_dome_radius: float = Field(
         default=8.11,
         gt=0,
-        description="Radius of the spherical dome at the +X end of the shank (next to the drive screw). Rounded in *both* Y and Z directions — i.e. a sphere, not a single-axis cylinder like the working face. Similar radius to working_face_radius per the original. Bottom (−X) face is flat.",
+        description="Radius of the spherical dome at the +Z end of the shank (next to the drive screw). Rounded in *both* X and Y directions — i.e. a sphere, not a single-axis cylinder like the working face. Similar radius to working_face_radius per the original. Bottom (−Z) face is flat.",
         json_schema_extra=_spec("§4.3 (top dome — not in spec)", status="MEASURED"),
     )
     edge_fillet_radius: float = Field(
@@ -428,7 +428,7 @@ class DriveScrewParams(BaseModel):
 
     thread: str = Field(
         default="M3",
-        description="Drive-screw thread (measured OD = 3 mm → M3). Matches shank tapped bore (§4.3.21), which is fully threaded along its full Y length (= shank.width).",
+        description="Drive-screw thread (measured OD = 3 mm → M3). Matches shank tapped bore (§4.3.21), which is fully threaded along its full X length (= shank.width).",
         json_schema_extra=_spec("§4.4.37", status="MEASURED", units=""),
     )
     thread_pitch: float = Field(
@@ -440,7 +440,7 @@ class DriveScrewParams(BaseModel):
     length: float = Field(
         default=25.0,
         gt=0,
-        description="Threaded length. Must support full Y travel + engagement.",
+        description="Threaded length. Must support full X travel + engagement.",
         json_schema_extra=_spec("§4.4.39"),
     )
     left_face_tap: str = Field(
@@ -468,7 +468,7 @@ class ThumbwheelParams(BaseModel):
     thickness: float = Field(
         default=5.0,
         gt=0,
-        description="Thumbwheel thickness (Y dimension).",
+        description="Thumbwheel thickness (X dimension).",
         json_schema_extra=_spec("§4.4.42"),
     )
     knurl: Literal["straight", "diamond"] = Field(
@@ -495,13 +495,13 @@ class DrivePlateParams(BaseModel):
     width: float = Field(
         default=8.0,
         gt=0,
-        description="Plate X dimension.",
+        description="Plate Z dimension.",
         json_schema_extra=_spec("§4.5.46"),
     )
     thickness: float = Field(
         default=2.0,
         gt=0,
-        description="Plate Y dimension (1.5–2.5 mm typical).",
+        description="Plate X dimension (1.5–2.5 mm typical).",
         json_schema_extra=_spec("§4.5.47"),
     )
     clearance_hole_diameter: float = Field(
@@ -590,9 +590,9 @@ class PurflingCutterParams(BaseModel):
     @property
     def stack_thickness(self) -> float:
         """
-        §4.1.7 — total clamped stack thickness in Y direction (along shaft).
+        §4.1.7 — total clamped stack thickness in X direction (along shaft).
 
-        Layout in the slot's Y direction: retainer | retainer | blade |
+        Layout in the slot's X direction: retainer | retainer | blade |
         channel-spacer | blade | retainer | retainer | grub-screw slack.
         4 × retainer.thickness + 2 × blade.thickness + spacer.thickness.
 
@@ -643,7 +643,7 @@ class PurflingCutterParams(BaseModel):
     @property
     def relief_slot_length(self) -> float:
         """
-        Slot runs along X from the bottom of the shank up to (but not past)
+        Slot runs along Z from the bottom of the shank up to (but not past)
         the shaft cross-bore. Measured against the original tool: slot stops
         at the shaft level, doesn't extend above. So length = length − crossbore_position_from_top.
         """
@@ -652,10 +652,10 @@ class PurflingCutterParams(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def contact_corner_width(self) -> float:
-        """§4.3.36 — contact corner is in Z direction (across the working face).
+        """§4.3.36 — contact corner is in Y direction (across the working face).
 
-        Slot length is along X (shank long axis); slot width is across the working
-        face in Z; contact corners sit either side of the slot, also in Z. The
+        Slot length is along Z (shank long axis); slot width is across the working
+        face in Z; contact corners sit either side of the slot, also in Y. The
         symmetric corner width is (shank.depth − relief_slot_width) / 2.
         """
         return (self.shank.depth - self.shank.relief_slot_width) / 2
@@ -666,15 +666,15 @@ class PurflingCutterParams(BaseModel):
     @property
     def shaft_wall_around_slot(self) -> float:
         """
-        §4.2.13 — wall thickness between the slot's X edge and the shaft's
+        §4.2.13 — wall thickness between the slot's Y edge and the shaft's
         outer surface, measured at the slot's mid-Z plane.
 
-        The slot is open in Z (top and bottom of the shaft) — there's no
-        Z wall. The slot extends along Y inside the shaft body, with end
-        walls handled separately by §4.2.14 (`shaft_wall_around_end_tap`).
-        The remaining relevant wall is in the X direction, taking
+        The slot is open in Z (top and bottom of the shaft — blades drop
+        through). The slot extends along X inside the shaft body, with
+        end walls handled separately by §4.2.14 (`shaft_wall_around_end_tap`).
+        The remaining relevant wall is in the Y direction, taking
         (shaft.outer_diameter − blade_slot_length) / 2 (where
-        blade_slot_length is the slot's X cross-section dim).
+        blade_slot_length is the slot's Y cross-section dim).
         """
         return (self.shaft.outer_diameter - self.shaft.blade_slot_length) / 2
 
@@ -698,16 +698,16 @@ class PurflingCutterParams(BaseModel):
         """
         §4.3.24 — min wall around the crossbore in directions perpendicular to bore axis.
 
-        Bore axis is Y (along the shaft, normal to working face). Excludes the wall
-        toward the tapped bore (+X direction — that's §4.3.23). Considers:
-          - X down (toward bottom of shank): crossbore_x − crossbore_radius
-          - Z either side (assumes bore centred in Z): depth/2 − crossbore_radius
+        Bore axis is X (along the shaft, normal to working face). Excludes the wall
+        toward the tapped bore (+Z direction — that's §4.3.23). Considers:
+          - Z down (toward bottom of shank): crossbore_z − crossbore_radius
+          - Y either side (assumes bore centred in Y): depth/2 − crossbore_radius
         """
         crossbore_radius = self.crossbore_diameter / 2
-        crossbore_x = self.shank.length - self.shank.crossbore_position_from_top
-        wall_x_down = crossbore_x - crossbore_radius
-        wall_z = self.shank.depth / 2 - crossbore_radius
-        return min(wall_x_down, wall_z)
+        crossbore_z = self.shank.length - self.shank.crossbore_position_from_top
+        wall_z_down = crossbore_z - crossbore_radius
+        wall_y = self.shank.depth / 2 - crossbore_radius
+        return min(wall_z_down, wall_y)
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -715,14 +715,14 @@ class PurflingCutterParams(BaseModel):
         """
         §4.3.25 — min wall around the tapped bore in directions perpendicular to bore axis.
 
-        Excludes the wall toward the crossbore (−X — that's §4.3.23). Considers:
-          - X up (toward top of shank): tapped_bore_position_from_top − tapped_radius
-          - Z either side (assumes bore centred in Z): depth/2 − tapped_radius
+        Excludes the wall toward the crossbore (−Z — that's §4.3.23). Considers:
+          - Z up (toward top of shank): tapped_bore_position_from_top − tapped_radius
+          - Y either side (assumes bore centred in Y): depth/2 − tapped_radius
         """
         tapped_radius = self.tapped_bore_drill_diameter / 2
-        wall_x_up = self.tapped_bore_position_from_top - tapped_radius
-        wall_z = self.shank.depth / 2 - tapped_radius
-        return min(wall_x_up, wall_z)
+        wall_z_up = self.tapped_bore_position_from_top - tapped_radius
+        wall_y = self.shank.depth / 2 - tapped_radius
+        return min(wall_z_up, wall_y)
 
     # --- Wall-thickness validators ------------------------------------------
 

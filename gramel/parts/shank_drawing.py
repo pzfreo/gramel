@@ -1,13 +1,13 @@
 """
 A4 landscape technical drawing of the shank.
 
-Layout: shank long axis (X) is horizontal on every view, which fits A4
+Layout: shank long axis (Z) is horizontal on every view, which fits A4
 landscape cleanly. Four views composed onto one sheet:
 
-  - Working-face view (camera at +Y, looking at the +Y face)
-  - Side view         (camera at +Z, looking at the -Z face)
-  - Bottom view       (camera at -X, looking at the bottom face)
-  - Isometric view    (camera in +X +Y +Z octant), scaled 1:2 to fit
+  - Working-face view (camera at +X, looking at the +X face)
+  - Side view         (camera at +Y, looking at the -Y face)
+  - Bottom view       (camera at -Z, looking at the bottom face)
+  - Isometric view    (camera in +Z +X +Y octant), scaled 1:2 to fit
 
 Each orthogonal view shows both visible and hidden edges; centre lines
 mark the bore axes. Dimension lines are drawn as thin dotted blue
@@ -44,12 +44,17 @@ from gramel.parts.shank import build_shank
 
 @dataclass
 class ViewPlacement:
-    """View centroids on the sheet. A4 drawable area is roughly ±143×±100 mm."""
+    """
+    View centroids on the sheet. A4 drawable area is roughly ±143×±100 mm.
 
-    face: tuple[float, float] = (-65.0, 55.0)
-    side: tuple[float, float] = (-65.0, -10.0)
-    bottom: tuple[float, float] = (45.0, -10.0)
-    iso: tuple[float, float] = (90.0, 55.0)
+    Views are arranged for a vertically-oriented shank (long axis along
+    page Y). Each orthogonal view shows the shank standing up.
+    """
+
+    face: tuple[float, float] = (-110.0, 10.0)
+    side: tuple[float, float] = (-65.0, 10.0)
+    bottom: tuple[float, float] = (-10.0, 50.0)
+    iso: tuple[float, float] = (70.0, 10.0)
 
     iso_scale: float = 0.5  # iso view rendered at half scale
 
@@ -112,20 +117,20 @@ def build_shank_drawing(
     dl_d = sp.depth_lock_bore_diameter
     slot_w = sp.relief_slot_width
 
-    centroid = (length / 2, 0, depth / 2)
+    centroid = (0, 0, length / 2)
     far = 1000.0
 
     # --- Project the four views ------------------------------------------
-    # Each view places the shank's long axis (X) along the page's X axis.
+    # Each view places the shank's long axis (Z) vertical on the page.
 
-    # Working-face view: camera at +Y. up = +Z so world Z is page Y; world X is page X.
-    face_v, face_h = _project(shank, (length / 2, far, depth / 2), (0, 0, 1), centroid)
+    # Working-face view: camera at +X, looking at the +X face. up = +Z so shank stands vertical.
+    face_v, face_h = _project(shank, (far, 0, length / 2), (0, 0, 1), centroid)
 
-    # Side view: camera at +Z, looking -Z. up = +Y → world Y is page Y; world X is page X.
-    side_v, side_h = _project(shank, (length / 2, 0, far), (0, 1, 0), centroid)
+    # Side view: camera at +Y, perpendicular to the working face. up = +Z.
+    side_v, side_h = _project(shank, (0, far, length / 2), (0, 0, 1), centroid)
 
-    # Bottom view: camera at -X, looking +X. up = +Z → world Z is page Y; world Y is page X.
-    bottom_v, bottom_h = _project(shank, (-far, 0, depth / 2), (0, 0, 1), (0, 0, depth / 2))
+    # Bottom view: camera at -Z, looking up at the bottom face. up = +Y.
+    bottom_v, bottom_h = _project(shank, (0, 0, -far), (0, 1, 0), (0, 0, 0))
 
     # Iso view: camera in +X+Y+Z octant.
     iso_v, _iso_h = _project(shank, (far, far, far), (0, 0, 1), centroid)
@@ -152,7 +157,10 @@ def build_shank_drawing(
     )
 
     # --- Dimensions per view ---------------------------------------------
-    # In each view: page X = world X (shank long axis); page Y depends on view.
+    # All views show the shank vertically (long axis = page Y).
+    # Working-face view: page X = world Y (depth across face), page Y = world Z (length up).
+    # Side view: page X = world X (width through shank), page Y = world Z (length up).
+    # Bottom view: page X = world Y (depth), page Y = world X (width).
 
     draft = Draft(
         font_size=1.8,
@@ -162,63 +170,55 @@ def build_shank_drawing(
     )
     dims: list[ExtensionLine | DimensionLine] = []
 
-    # Working-face view: page Y = world Z. Slot is along the centreline (page Y=fy).
+    # Working-face view: depth × length on the page.
     fx, fy = layout.face
-    f_left = fx - length / 2  # world X=0
-    f_right = fx + length / 2  # world X=length
-    f_bot = fy - depth / 2  # world Z=0
-    f_top = fy + depth / 2  # world Z=depth
-
-    # Overall length below the view
-    dims.append(_ext((f_left, f_bot), (f_right, f_bot), offset=-7, draft=draft, label=f"{length:.1f}"))
-    # Overall depth (Z) on the left
-    dims.append(_ext((f_left, f_bot), (f_left, f_top), offset=-6, draft=draft, label=f"{depth:.1f}"))
-    # Crossbore x-position-from-top (RHS) → world X position from top
-    cb_face_x = fx + (length / 2 - cb_x_from_top)
-    dims.append(_ext((f_right, f_top), (cb_face_x, f_top), offset=8, draft=draft, label=f"{cb_x_from_top:.1f}"))
-    tap_face_x = fx + (length / 2 - tap_x_from_top)
-    # Inter-bore gap dim deferred — short dims trip the build123d drafting path.
-    # Crossbore diameter (across the visible circle)
+    f_left = fx - depth / 2
+    f_right = fx + depth / 2
+    f_bot = fy - length / 2
+    f_top = fy + length / 2
+    # Overall length (vertical dim on the LHS).
+    dims.append(_ext((f_left, f_bot), (f_left, f_top), offset=-9, draft=draft, label=f"{length:.1f}"))
+    # Overall depth across the working face (horizontal dim at the bottom).
+    dims.append(_ext((f_left, f_bot), (f_right, f_bot), offset=-5, draft=draft, label=f"{depth:.1f}"))
+    # Crossbore position from top (vertical dim on the RHS).
+    cb_face_y = f_top - cb_x_from_top
+    dims.append(_ext((f_right, f_top), (f_right, cb_face_y), offset=7, draft=draft, label=f"{cb_x_from_top:.1f}"))
+    # Crossbore diameter (horizontal dim through the visible circle).
     dims.append(
-        _dim((cb_face_x - cb_d / 2, fy), (cb_face_x + cb_d / 2, fy), draft=draft, label=f"⌀{cb_d:.1f}")
+        _dim((fx - cb_d / 2, cb_face_y), (fx + cb_d / 2, cb_face_y), draft=draft, label=f"⌀{cb_d:.1f}")
     )
-    # Tapped bore drill diameter — placed below the bore
+    # Tapped bore drill diameter — small horizontal dim above the crossbore.
+    tap_face_y = f_top - tap_x_from_top
     dims.append(
-        _ext(
-            (tap_face_x - tap_d / 2, fy),
-            (tap_face_x + tap_d / 2, fy),
-            offset=-5,
-            draft=draft,
-            label=f"⌀{tap_d:.1f} tap",
-        )
+        _dim((fx - tap_d / 2, tap_face_y), (fx + tap_d / 2, tap_face_y), draft=draft, label=f"⌀{tap_d:.1f} tap")
     )
-    # Slot width (Z) — measured on the left of the view
-    dims.append(_ext((f_left, fy - slot_w / 2), (f_left, fy + slot_w / 2), offset=-13, draft=draft, label=f"{slot_w:.0f}"))
+    # Slot width (horizontal dim at the top of the view, above the bores).
+    dims.append(_ext((fx - slot_w / 2, f_top), (fx + slot_w / 2, f_top), offset=14, draft=draft, label=f"{slot_w:.0f}"))
 
-    # Side view: page Y = world Y (depth from working face). Width direction.
+    # Side view: width × length on the page.
     sx, sy = layout.side
-    s_left = sx - length / 2
-    sx + length / 2
-    s_bot = sy - width / 2
-    s_top = sy + width / 2
-    # Width Y dimension on the left
-    dims.append(_ext((s_left, s_bot), (s_left, s_top), offset=-6, draft=draft, label=f"{width:.1f}"))
-    # Inter-bore gap on top
-    cb_side_x = sx + (length / 2 - cb_x_from_top)
-    tap_side_x = sx + (length / 2 - tap_x_from_top)
-    dims.append(_ext((tap_side_x, s_top), (cb_side_x, s_top), offset=8, draft=draft, label=f"{inter_gap:.1f}"))
+    s_left = sx - width / 2
+    s_right = sx + width / 2
+    s_bot = sy - length / 2
+    s_top = sy + length / 2
+    # Width (horizontal dim at the bottom).
+    dims.append(_ext((s_left, s_bot), (s_right, s_bot), offset=-5, draft=draft, label=f"{width:.1f}"))
+    # Inter-bore gap (vertical dim on the RHS between bore centres).
+    cb_side_y = s_top - cb_x_from_top
+    tap_side_y = s_top - tap_x_from_top
+    dims.append(_ext((s_right, cb_side_y), (s_right, tap_side_y), offset=7, draft=draft, label=f"{inter_gap:.1f}"))
 
-    # Bottom view: page Y = world Z. Page X = -world Y, so bbox is 24 wide × 28 tall.
+    # Bottom view: depth (page X) × width (page Y).
     bx, by = layout.bottom
-    b_left = bx - width / 2
-    b_right = bx + width / 2
-    b_bot = by - depth / 2
-    b_top = by + depth / 2
-    # Y width
-    dims.append(_ext((b_left, b_bot), (b_right, b_bot), offset=-5, draft=draft, label=f"{width:.1f}"))
-    # Z depth
-    dims.append(_ext((b_right, b_bot), (b_right, b_top), offset=5, draft=draft, label=f"{depth:.1f}"))
-    # Depth-lock bore diameter (visible as a circle in centre of bottom view)
+    b_left = bx - depth / 2
+    b_right = bx + depth / 2
+    b_bot = by - width / 2
+    b_top = by + width / 2
+    # Depth (horizontal dim at the bottom).
+    dims.append(_ext((b_left, b_bot), (b_right, b_bot), offset=-5, draft=draft, label=f"{depth:.1f}"))
+    # Width (vertical dim on the RHS).
+    dims.append(_ext((b_right, b_bot), (b_right, b_top), offset=5, draft=draft, label=f"{width:.1f}"))
+    # Depth-lock bore diameter (centred).
     dims.append(_dim((bx - dl_d / 2, by), (bx + dl_d / 2, by), draft=draft, label=f"⌀{dl_d:.1f}"))
 
     # --- Title block ------------------------------------------------------
