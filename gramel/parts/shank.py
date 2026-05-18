@@ -26,6 +26,7 @@ from build123d import (
 )
 
 from gramel.parameters import PurflingCutterParams
+from gramel.parts._threads import internal_thread_cutout
 
 
 def build_shank(params: PurflingCutterParams) -> Part:
@@ -87,22 +88,50 @@ def build_shank(params: PurflingCutterParams) -> Part:
     )
     body = body - crossbore
 
-    # --- Shank tapped bore (along X) — smooth bore at tap-drill diameter --
+    # --- Shank tapped bore (along X) --------------------------------------
+    # FDM prototype path: subtract a void shape = (clearance bore at thread
+    # major) minus (helical thread ribs), giving a real tapped bore in one
+    # boolean. CNC path: plain bore at tap-drill diameter — the shop reads
+    # the thread spec off the drawing.
     tapped_z = length - params.tapped_bore_position_from_top
-    tapped = (
-        Pos(0, 0, tapped_z)
-        * Rot(0, 90, 0)
-        * Cylinder(radius=params.tapped_bore_drill_diameter / 2, height=width + 20)
-    )
-    body = body - tapped
+    if params.process.prototype:
+        tapped_cutout = (
+            Pos(-width / 2, 0, tapped_z)
+            * Rot(0, 90, 0)
+            * internal_thread_cutout(params.drive_screw.thread, width)
+        )
+        body = body - tapped_cutout
+    else:
+        tapped = (
+            Pos(0, 0, tapped_z)
+            * Rot(0, 90, 0)
+            * Cylinder(radius=params.tapped_bore_drill_diameter / 2, height=width + 20)
+        )
+        body = body - tapped
 
     # --- Depth-lock blind bore (along Z, from Z = 0 up) -------------------
-    # Bore extends from the bottom face up to the crossbore (no clearance —
-    # push rod must reach the crossbore to bear on the shaft).
+    # Bore extends from the bottom face up to the crossbore. The bottom
+    # `depth_lock_threaded_length` is tapped for the M6 bolt; the rest is
+    # a smooth sliding fit for the 5 mm push rod.
     dl_depth = params.depth_lock_bore_depth
     dl_radius = shank.depth_lock_bore_diameter / 2
-    depth_lock_bore = Pos(0, 0, dl_depth / 2) * Cylinder(radius=dl_radius, height=dl_depth)
-    body = body - depth_lock_bore
+    dl_thread_len = shank.depth_lock_threaded_length
+    dl_upper_len = dl_depth - dl_thread_len
+
+    if params.process.prototype:
+        # Upper smooth section (push-rod sliding fit).
+        upper_bore = Pos(0, 0, dl_thread_len + dl_upper_len / 2) * Cylinder(
+            radius=dl_radius, height=dl_upper_len
+        )
+        body = body - upper_bore
+        # Lower threaded section: void = bore-at-major minus thread ribs.
+        thread_cutout = internal_thread_cutout(params.depth_lock.thread, dl_thread_len)
+        body = body - thread_cutout
+    else:
+        depth_lock_bore = Pos(0, 0, dl_depth / 2) * Cylinder(
+            radius=dl_radius, height=dl_depth
+        )
+        body = body - depth_lock_bore
 
     # --- Edge fillets (ergonomic finishing) -------------------------------
     fillet_r = shank.edge_fillet_radius

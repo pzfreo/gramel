@@ -17,6 +17,7 @@ Knurl decoration not modelled.
 from build123d import Cylinder, Part, Pos
 
 from gramel.parameters import _THREAD_MAJOR_RADIUS, PurflingCutterParams
+from gramel.parts._threads import external_thread_section
 
 
 def build_depth_lock_bolt(params: PurflingCutterParams) -> Part:
@@ -29,8 +30,12 @@ def build_depth_lock_bolt(params: PurflingCutterParams) -> Part:
 
     # Knob from Z = 0 to Z = knob_t
     knob = Pos(0, 0, knob_t / 2) * Cylinder(radius=knob_r, height=knob_t)
-    # Bolt from Z = knob_t to Z = knob_t + bolt_len
-    bolt = Pos(0, 0, knob_t + bolt_len / 2) * Cylinder(radius=bolt_r, height=bolt_len)
+    # Bolt from Z = knob_t to Z = knob_t + bolt_len. Real helix on the FDM
+    # prototype path; plain major-diameter cylinder on the CNC path.
+    if params.process.prototype:
+        bolt = Pos(0, 0, knob_t) * external_thread_section(dl.thread, bolt_len)
+    else:
+        bolt = Pos(0, 0, knob_t + bolt_len / 2) * Cylinder(radius=bolt_r, height=bolt_len)
     body = knob + bolt
     return body  # type: ignore[return-value]
 
