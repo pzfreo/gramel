@@ -453,24 +453,24 @@ class DriveScrewParams(BaseModel):
         default=0.5,
         gt=0,
         description="Drive-screw thread pitch. Fine pitch for adjustment resolution.",
-        json_schema_extra=_spec("§4.4.38"),
+        json_schema_extra=_spec("§4.4.38", status="MEASURED"),
     )
     length: float = Field(
-        default=25.0,
+        default=18.0,
         gt=0,
-        description="Threaded length. Must support full X travel + engagement.",
-        json_schema_extra=_spec("§4.4.39"),
+        description="Threaded length of the drive screw — supports full X travel + engagement.",
+        json_schema_extra=_spec("§4.4.39", status="MEASURED"),
     )
     left_face_tap: str = Field(
         default="M2",
         description="Thread of the tap on the thumbwheel's left end face (for silver screw).",
-        json_schema_extra=_spec("§4.4.40", units=""),
+        json_schema_extra=_spec("§4.4.40", status="MEASURED", units=""),
     )
     left_face_tap_depth: float = Field(
         default=4.0,
         gt=0,
         description="Depth of the tap. Silver screw bottoms on this — sets bearing geometry.",
-        json_schema_extra=_spec("§4.4.40"),
+        json_schema_extra=_spec("§4.4.40", status="MEASURED"),
     )
 
 
@@ -478,16 +478,16 @@ class ThumbwheelParams(BaseModel):
     """§4.4 items 41–43 — thumbwheel (integral with drive screw)."""
 
     diameter: float = Field(
-        default=18.0,
+        default=10.0,
         gt=0,
-        description="Thumbwheel knurled disc OD.",
-        json_schema_extra=_spec("§4.4.41"),
+        description="Thumbwheel knurled disc OD. Original measured at 9.5 mm; rounded to 10 mm for the prototype (interchangeable with 9 mm by user choice).",
+        json_schema_extra=_spec("§4.4.41", status="MEASURED"),
     )
     thickness: float = Field(
-        default=5.0,
+        default=2.0,
         gt=0,
-        description="Thumbwheel thickness (X dimension).",
-        json_schema_extra=_spec("§4.4.42"),
+        description="Thumbwheel thickness (X dimension — along the drive-screw axis).",
+        json_schema_extra=_spec("§4.4.42", status="MEASURED"),
     )
     knurl: Literal["straight", "diamond"] = Field(
         default="straight",
@@ -554,7 +554,7 @@ class SilverScrewParams(BaseModel):
     thread: str = Field(
         default="M2",
         description="Silver-screw thread. Matches drive_screw.left_face_tap (§4.4.40).",
-        json_schema_extra=_spec("§4.5.50", units=""),
+        json_schema_extra=_spec("§4.5.50", status="MEASURED", units=""),
     )
     head_diameter: float = Field(
         default=4.0,
@@ -586,8 +586,8 @@ class CaptiveBearingParams(BaseModel):
         default=0.2,
         gt=0,
         le=0.5,
-        description="Designed axial bearing clearance (0.1–0.3 mm). The non-binding gap.",
-        json_schema_extra=_spec("§4.5.53"),
+        description="Designed axial bearing clearance. Measured 0.2 mm — the non-binding gap that lets the drive plate float between the silver-screw head and the thumbwheel's left face while the drive screw rotates freely.",
+        json_schema_extra=_spec("§4.5.53", status="MEASURED"),
     )
 
 
