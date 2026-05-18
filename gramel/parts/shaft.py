@@ -74,28 +74,32 @@ def build_shaft(params: PurflingCutterParams) -> Part:
     body = body - slot
 
     # --- Grub-screw end tap (smooth bore) in the +X end face --------------
+    # Tap goes ALL THE WAY to the slot — no wall in between. So the tap
+    # depth equals end_to_slot_distance; the grub screw's tip emerges into
+    # the slot and directly contacts the blade stack.
     grub_thread = params.grub_screw.thread
     grub_drill_radius = _TAP_DRILL_DIAMETER[grub_thread] / 2
+    end_tap_depth = shaft.end_to_slot_distance
     end_tap = (
-        Pos(length - shaft.end_tap_depth / 2, 0, 0)
+        Pos(length - end_tap_depth / 2, 0, 0)
         * Rot(0, 90, 0)
-        * Cylinder(radius=grub_drill_radius, height=shaft.end_tap_depth)
+        * Cylinder(radius=grub_drill_radius, height=end_tap_depth)
     )
     body = body - end_tap
 
-    # --- Drive-plate mount holes in the −X end face -----------------------
-    # Two holes, spaced in Z (vertically), centred on Y = 0. The drive plate
-    # mounts to this face with screws through these holes.
+    # --- Drive-plate mount hole in the −X end face ------------------------
+    # Single central tapped hole. Two M2 screws don't fit on a 7.9 mm shaft,
+    # so we use one + rely on the shaft's −Z flat (mating with a D-shaped
+    # hole in the drive plate) as the anti-rotation feature.
     mount_thread = shaft.drive_plate_mount_thread
     mount_drill_radius = _TAP_DRILL_DIAMETER[mount_thread] / 2
     mount_depth = shaft.drive_plate_mount_depth
-    for z_offset in (-shaft.drive_plate_mount_spacing / 2, +shaft.drive_plate_mount_spacing / 2):
-        mount_hole = (
-            Pos(mount_depth / 2, 0, z_offset)
-            * Rot(0, 90, 0)
-            * Cylinder(radius=mount_drill_radius, height=mount_depth)
-        )
-        body = body - mount_hole
+    mount_hole = (
+        Pos(mount_depth / 2, 0, 0)
+        * Rot(0, 90, 0)
+        * Cylinder(radius=mount_drill_radius, height=mount_depth)
+    )
+    body = body - mount_hole
 
     return body
 

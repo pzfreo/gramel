@@ -238,12 +238,11 @@ class ShaftParams(BaseModel):
         json_schema_extra=_spec("§4.2.11", status="MEASURED", units=""),
     )
     flat_depth: float = Field(
-        default=0.7,
+        default=0.6,
         gt=0,
-        description="Depth of the flat machined on the −Z underside of the shaft (how far below the original cylinder surface the flat sits). ESTIMATE — to be measured.",
-        json_schema_extra=_spec("§4.2.11 (flat — not in spec items)"),
+        description="Depth of the flat machined on the −Z underside of the shaft — the sagitta of the cylinder segment removed from the bottom. Flat extends the full shaft.length.",
+        json_schema_extra=_spec("§4.2.11 (flat — not in spec items)", status="MEASURED"),
     )
-    # Flat extends the full shaft.length — no separate flat_length parameter.
     drive_plate_mount_depth: float = Field(
         default=5.0,
         gt=0,
@@ -269,16 +268,10 @@ class ShaftParams(BaseModel):
         json_schema_extra=_spec("§4.2.9", status="MEASURED"),
     )
     end_to_slot_distance: float = Field(
-        default=8.0,
+        default=4.0,
         gt=0,
-        description="Distance from shaft right end face to right wall of blade slot.",
-        json_schema_extra=_spec("§4.2.17"),
-    )
-    end_tap_depth: float = Field(
-        default=5.0,
-        gt=0,
-        description="Depth of grub-screw tap from the right end face. Sets §4.2.14 wall.",
-        json_schema_extra=_spec("§4.2.14 (related)"),
+        description="Distance from shaft right end face to right wall of blade slot. The grub-screw end tap fills this entire distance — there is *no* wall between the tap and the slot, so the grub screw's tip directly contacts the blade stack. (Spec §4.2.14 wall rule does not apply to this tool's design.)",
+        json_schema_extra=_spec("§4.2.17", status="MEASURED"),
     )
     length: float = Field(
         default=45.0,
@@ -288,14 +281,8 @@ class ShaftParams(BaseModel):
     )
     drive_plate_mount_thread: str = Field(
         default="M2",
-        description="Thread for the two screws mounting the drive plate to the shaft's outboard end face.",
+        description="Thread for the single central screw mounting the drive plate to the shaft's outboard end face. Spec called for two screws; this scale (~7.9 mm shaft) doesn't fit two M2 screws, so we go with one + use the shaft's existing −Z flat as the anti-rotation feature (the drive plate has a matching D-shaped hole that mates with the shaft cross-section).",
         json_schema_extra=_spec("§4.2.19", units=""),
-    )
-    drive_plate_mount_spacing: float = Field(
-        default=4.0,
-        gt=0,
-        description="Centre-to-centre spacing between the two drive-plate mount screws.",
-        json_schema_extra=_spec("§4.2.19"),
     )
 
 
@@ -693,12 +680,6 @@ class PurflingCutterParams(BaseModel):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def shaft_wall_around_end_tap(self) -> float:
-        """§4.2.14 — wall between bottom of grub-screw tap and far wall of slot."""
-        return self.shaft.end_to_slot_distance - self.shaft.end_tap_depth
-
-    @computed_field  # type: ignore[prop-decorator]
-    @property
     def shank_wall_between_bores(self) -> float:
         """§4.3.23 — wall between crossbore and tapped bore in shank."""
         crossbore_radius = self.crossbore_diameter / 2
@@ -758,13 +739,9 @@ class PurflingCutterParams(BaseModel):
                 f"< min {min_slot_wall:.3f} (§4.2.13)."
             )
 
-        # §4.2.14 — wall around shaft end tap
-        min_end_tap_wall = 1.0 * _thread_major_radius(self.grub_screw.thread)
-        if self.shaft_wall_around_end_tap < min_end_tap_wall:
-            raise ValueError(
-                f"shaft_wall_around_end_tap ({self.shaft_wall_around_end_tap:.3f}) "
-                f"< min {min_end_tap_wall:.3f} (§4.2.14)."
-            )
+        # §4.2.14 wall rule removed: in this tool, the grub-screw end tap
+        # opens directly into the slot (no wall). Spec was wrong for this
+        # design.
 
         # §4.3.23 — wall between bores
         min_wall_bb = max(1.2, 1.0 * _thread_major_radius(self.drive_screw.thread))
