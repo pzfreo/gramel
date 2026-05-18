@@ -112,46 +112,99 @@ class BladeParams(BaseModel):
     """§4.1 items 1–4 — blade dimensions."""
 
     thickness: float = Field(
-        default=0.8,
+        default=0.7,
         gt=0,
         description="Across the wide flat. Face the grub screw pushes against.",
-        json_schema_extra=_spec("§4.1.1"),
+        json_schema_extra=_spec("§4.1.1", status="MEASURED"),
     )
     width: float = Field(
-        default=5.0,
+        default=4.0,
         gt=0,
         description="Z dimension of the blade — sits in the slot.",
-        json_schema_extra=_spec("§4.1.2"),
+        json_schema_extra=_spec("§4.1.2", status="MEASURED"),
     )
     length: float = Field(
-        default=22.0,
+        default=23.0,
         gt=0,
         description="Total length including ground tip.",
-        json_schema_extra=_spec("§4.1.3"),
+        json_schema_extra=_spec("§4.1.3", status="MEASURED"),
     )
     bevel_angle: float = Field(
         default=25.0,
         gt=0,
         lt=90,
-        description="Single bevel angle.",
+        description="Single bevel — confirmed on the original. Angle still estimate.",
         json_schema_extra=_spec("§4.1.4", units="deg"),
+    )
+    tip_shape: Literal["round", "straight", "angled"] = Field(
+        default="round",
+        description="Geometry of the blade tip. The original tool's blades have rounded ends.",
+        json_schema_extra=_spec("§4.1 (M1.5)", status="MEASURED", units=""),
     )
 
 
 class SpacerParams(BaseModel):
-    """§4.1 items 5–6 — spacer dimensions."""
+    """
+    §4.1 items 5–6 — channel-width spacer.
+
+    USER-SUPPLIED: the original tool ships with 4 bone-shaped copper
+    *retainers* (see BladeRetainerParams) that are NOT the channel-width
+    setter. The actual channel width is set by an additional shim that
+    the luthier places between the two blades, and is the user's choice
+    of thickness. We model it here so the parameter chain still has a
+    single source of truth for the channel.
+    """
 
     thickness: float = Field(
         default=1.5,
         gt=0,
-        description="Spacer thickness — sets purfling channel width.",
+        description="Y dimension of the user-supplied shim between blades. Sets the purfling channel width. ESTIMATE — user choice.",
         json_schema_extra=_spec("§4.1.5"),
     )
-    height: float = Field(
+
+
+class BladeRetainerParams(BaseModel):
+    """
+    Bone-shaped copper retainer.
+
+    *Missing from the original spec.* Four of these per tool, all identical.
+    Layout: **two retainers per blade**, one on each side of the blade in
+    the slot's **X direction** (the 6 mm slot dimension). Two blades stacked
+    in Y direction (each with its own pair of X-side retainers) gives 4
+    retainers total. Total in-slot X stack: retainer | blade | retainer =
+    0.75 + 4 + 0.75 = 5.5 mm, fitting the 6 mm slot X with 0.5 mm clearance.
+
+    The bone shape locks each retainer in place — the narrow middle fits the
+    slot's 5 mm Y opening, the wider ends sit above the +Z and below the
+    −Z faces of the shaft so the retainer can't fall through.
+
+    Open question: do all four sit in the slot simultaneously, or only two
+    at a time (one per blade)?
+    """
+
+    length: float = Field(
+        default=10.0,
+        gt=0,
+        description="Total Z length of the retainer (long axis = slot's open Z direction). Wider ends stick out at the top and bottom of the slot.",
+        json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
+    )
+    end_width: float = Field(
+        default=5.5,
+        gt=0,
+        description="Y width at the bone-shaped ends. > slot's 5 mm Y so the ends lock against the +Z and −Z faces of the shaft.",
+        json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
+    )
+    middle_width: float = Field(
         default=4.5,
         gt=0,
-        description="Z height. Slightly less than blade.width so blades protrude.",
-        json_schema_extra=_spec("§4.1.6"),
+        description="Y width through the retainer's middle section. < slot's 5 mm Y so this section fits inside the slot.",
+        json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
+    )
+    thickness: float = Field(
+        default=0.75,
+        gt=0,
+        description="X dimension of the flat copper shim — the dimension perpendicular to the bone profile.",
+        json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
 
 
@@ -180,9 +233,9 @@ class ShaftParams(BaseModel):
     """§4.2 items 8–19 — shaft dimensions."""
 
     cross_section: Literal["round", "round_with_flat"] = Field(
-        default="round",
-        description="Shaft cross-section profile.",
-        json_schema_extra=_spec("§4.2.11", units=""),
+        default="round_with_flat",
+        description="Shaft cross-section profile. Measured: the original has a flat machined on the underside that registers against the depth-lock push rod — answers spec §5 open question Q3. Flat-on-flat contact gives a more positive lock AND prevents shaft rotation.",
+        json_schema_extra=_spec("§4.2.11", status="MEASURED", units=""),
     )
     outer_diameter: float = Field(
         default=7.9,
@@ -191,16 +244,16 @@ class ShaftParams(BaseModel):
         json_schema_extra=_spec("§4.2.12", status="MEASURED"),
     )
     blade_slot_width: float = Field(
-        default=4.5,
+        default=6.0,
         gt=0,
-        description="Y dimension of blade slot. Fits 2 blades + spacer + grub-screw advance.",
-        json_schema_extra=_spec("§4.2.8"),
+        description="Y dimension of blade slot (along the shaft). Fits 4 retainers + 2 blades + channel spacer + ~1.6 mm grub-screw advance.",
+        json_schema_extra=_spec("§4.2.8", status="MEASURED"),
     )
     blade_slot_length: float = Field(
-        default=5.5,
+        default=5.0,
         gt=0,
-        description="Z dimension of blade slot. Fits blade width plus clearance.",
-        json_schema_extra=_spec("§4.2.9"),
+        description="X dimension of blade slot (across the shaft). The 5 mm direction; fits blade.width (4 mm) plus clearance. Spec labels this 'Z' but it's actually the cross-section X dim — Z is the open through direction.",
+        json_schema_extra=_spec("§4.2.9", status="MEASURED"),
     )
     end_to_slot_distance: float = Field(
         default=8.0,
@@ -520,6 +573,7 @@ class PurflingCutterParams(BaseModel):
     process: ProcessConfig = Field(default_factory=ProcessConfig)
     blade: BladeParams = Field(default_factory=BladeParams)
     spacer: SpacerParams = Field(default_factory=SpacerParams)
+    blade_retainer: BladeRetainerParams = Field(default_factory=BladeRetainerParams)
     grub_screw: GrubScrewParams = Field(default_factory=GrubScrewParams)
     shaft: ShaftParams = Field(default_factory=ShaftParams)
     shank: ShankParams = Field(default_factory=ShankParams)
@@ -535,8 +589,24 @@ class PurflingCutterParams(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def stack_thickness(self) -> float:
-        """§4.1.7 — total clamped stack: blade + spacer + blade."""
-        return 2 * self.blade.thickness + self.spacer.thickness
+        """
+        §4.1.7 — total clamped stack thickness in Y direction (along shaft).
+
+        Layout in the slot's Y direction: retainer | retainer | blade |
+        channel-spacer | blade | retainer | retainer | grub-screw slack.
+        4 × retainer.thickness + 2 × blade.thickness + spacer.thickness.
+
+        The original spec defined this as just 2 × blade + spacer; the real
+        tool's 4 retainers also stack in this direction. With the default
+        1.5 mm channel spacer this gives 5.9 mm, leaving only 0.1 mm of
+        grub-screw advance in a 6 mm slot — measured "spare at the end"
+        is 1.6 mm with no channel spacer, dropping as the user adds one.
+        """
+        return (
+            4 * self.blade_retainer.thickness
+            + 2 * self.blade.thickness
+            + self.spacer.thickness
+        )
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -595,10 +665,18 @@ class PurflingCutterParams(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def shaft_wall_around_slot(self) -> float:
-        """§4.2.13 — min wall around blade slot inside shaft body (Y and Z faces)."""
-        wall_y = (self.shaft.outer_diameter - self.shaft.blade_slot_width) / 2
-        wall_z = (self.shaft.outer_diameter - self.shaft.blade_slot_length) / 2
-        return min(wall_y, wall_z)
+        """
+        §4.2.13 — wall thickness between the slot's X edge and the shaft's
+        outer surface, measured at the slot's mid-Z plane.
+
+        The slot is open in Z (top and bottom of the shaft) — there's no
+        Z wall. The slot extends along Y inside the shaft body, with end
+        walls handled separately by §4.2.14 (`shaft_wall_around_end_tap`).
+        The remaining relevant wall is in the X direction, taking
+        (shaft.outer_diameter − blade_slot_length) / 2 (where
+        blade_slot_length is the slot's X cross-section dim).
+        """
+        return (self.shaft.outer_diameter - self.shaft.blade_slot_length) / 2
 
     @computed_field  # type: ignore[prop-decorator]
     @property

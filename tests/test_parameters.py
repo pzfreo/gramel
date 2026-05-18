@@ -48,8 +48,9 @@ def test_production_mode_swaps_to_cnc_clearance() -> None:
 
 
 def test_stack_thickness() -> None:
-    # 2 × blade.thickness (0.8) + spacer.thickness (1.5) = 3.1
-    assert PurflingCutterParams().stack_thickness == pytest.approx(3.1)
+    # Layout in slot's Y direction: 2 retainers | blade | spacer | blade | 2 retainers
+    # 4 × 0.75 + 2 × 0.7 + 1.5 = 5.9
+    assert PurflingCutterParams().stack_thickness == pytest.approx(5.9)
 
 
 def test_crossbore_diameter_prototype() -> None:
@@ -95,11 +96,10 @@ def test_contact_corner_width() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_shaft_wall_around_slot_is_min_of_y_and_z() -> None:
-    # Y: (7.9 − 4.5) / 2 = 1.70
-    # Z: (7.9 − 5.5) / 2 = 1.20
-    # min = 1.20
-    assert PurflingCutterParams().shaft_wall_around_slot == pytest.approx(1.2)
+def test_shaft_wall_around_slot() -> None:
+    # Only the X-direction wall matters (slot is open in Z, end walls are §4.2.14).
+    # (7.9 − blade_slot_length=5) / 2 = 1.45
+    assert PurflingCutterParams().shaft_wall_around_slot == pytest.approx(1.45)
 
 
 def test_shaft_wall_around_end_tap() -> None:
@@ -133,10 +133,10 @@ def test_shank_wall_around_tapped_bore_is_min_of_x_up_and_z() -> None:
 
 
 def test_violation_4213_blade_slot_too_wide_for_shaft() -> None:
-    """§4.2.13 — widening the blade slot until shaft wall drops below the rule fails."""
+    """§4.2.13 — widening the slot in X until the side wall drops below the rule fails."""
     with pytest.raises(ValidationError, match=r"§4\.2\.13"):
-        # Y-wall = (7.9 − 6.5)/2 = 0.7; rule = max(0.8, 0.8) = 0.8
-        PurflingCutterParams(shaft={"blade_slot_width": 6.5})
+        # Wall = (7.9 − 6.5)/2 = 0.7; rule = max(0.8, 0.7) = 0.8
+        PurflingCutterParams(shaft={"blade_slot_length": 6.5})
 
 
 def test_violation_4214_tap_too_deep_for_end_to_slot() -> None:
@@ -178,7 +178,7 @@ def test_blade_thickness_carries_spec_metadata() -> None:
     extra = field.json_schema_extra
     assert isinstance(extra, dict)
     assert extra["spec_ref"] == "§4.1.1"
-    assert extra["status"] == "ESTIMATE"
+    assert extra["status"] == "MEASURED"
     assert extra["units"] == "mm"
     assert field.description == "Across the wide flat. Face the grub screw pushes against."
 
