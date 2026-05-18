@@ -48,7 +48,7 @@ def test_production_mode_swaps_to_cnc_clearance() -> None:
 
 
 def test_stack_thickness() -> None:
-    # Layout in slot's Y direction: 2 retainers | blade | spacer | blade | 2 retainers
+    # Layout in slot's X direction: 2 retainers | blade | spacer | blade | 2 retainers
     # 4 × 0.75 + 2 × 0.7 + 1.5 = 5.9
     assert PurflingCutterParams().stack_thickness == pytest.approx(5.9)
 
@@ -97,7 +97,7 @@ def test_contact_corner_width() -> None:
 
 
 def test_shaft_wall_around_slot() -> None:
-    # Only the X-direction wall matters (slot is open in Z, end walls are §4.2.14).
+    # Only the X-direction wall matters (slot is open in Y, end walls are §4.2.14).
     # (7.9 − blade_slot_length=5) / 2 = 1.45
     assert PurflingCutterParams().shaft_wall_around_slot == pytest.approx(1.45)
 
@@ -113,16 +113,16 @@ def test_shank_wall_between_bores() -> None:
 
 
 def test_shank_wall_around_crossbore_is_min_of_x_down_and_z() -> None:
-    # Bore axis along Y. Walls perpendicular to Y, excluding +X (toward tapped bore):
+    # Bore axis along X. Walls perpendicular to X, excluding +Z (toward tapped bore):
     #   X-down: crossbore_x (66) − crossbore_radius (4.075) = 61.925
-    #   Z either side: depth/2 (5.5) − crossbore_radius (4.075) = 1.425
+    #   Y either side: depth/2 (5.5) − crossbore_radius (4.075) = 1.425
     # min = 1.425
     assert PurflingCutterParams().shank_wall_around_crossbore == pytest.approx(1.425)
 
 
 def test_shank_wall_around_tapped_bore_is_min_of_x_up_and_z() -> None:
     #   X-up: tapped_bore_position_from_top (4.5) − tap_drill_radius (1.25) = 3.25
-    #   Z either side: depth/2 (5.5) − tap_drill_radius (1.25) = 4.25
+    #   Y either side: depth/2 (5.5) − tap_drill_radius (1.25) = 4.25
     # min = 3.25
     assert PurflingCutterParams().shank_wall_around_tapped_bore == pytest.approx(3.25)
 
@@ -133,7 +133,7 @@ def test_shank_wall_around_tapped_bore_is_min_of_x_up_and_z() -> None:
 
 
 def test_violation_4213_blade_slot_too_wide_for_shaft() -> None:
-    """§4.2.13 — widening the slot in X until the side wall drops below the rule fails."""
+    """§4.2.13 — widening the slot in Z until the side wall drops below the rule fails."""
     with pytest.raises(ValidationError, match=r"§4\.2\.13"):
         # Wall = (7.9 − 6.5)/2 = 0.7; rule = max(0.8, 0.7) = 0.8
         PurflingCutterParams(shaft={"blade_slot_length": 6.5})

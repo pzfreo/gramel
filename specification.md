@@ -3,7 +3,7 @@
 **For:** CAD draftsman producing a fully-dimensioned parametric 3D model for CNC quotation
 **Status:** Draft — measurements to be added (marked `[TBM]` throughout)
 **Units:** Metric (mm). Original tool is likely imperial; convert and round to sensible metric values.
-**Reference:** see `diagram.svg` / `diagram.png` for part naming and the X/Y/Z axes.
+**Reference:** see `diagram.svg` / `diagram.png` for part naming and the Z/X/Y axes.
 
 ---
 
@@ -35,11 +35,11 @@ These three features are the reason for the commission. The CAD model must prese
 
 See accompanying diagram. These names are canonical — please use them in the CAD part tree and in any correspondence.
 
-**Axes** (right-handed, origin at the centre of the working face at the height of the shaft):
+**Axes** (right-handed, Z-up convention matching how the tool is held):
 
-- **X** — along the shank (vertical in diagram); tool-travel direction in use.
-- **Y** — along the shaft AND normal to the working face. The shaft cross-bore and the shank tapped bore both run along Y and pass *through* the working face — the working face is the +Y face of the shank. Edge-margin adjustment translates the shaft along Y.
-- **Z** — perpendicular to both X and Y; blade-projection (depth-of-cut) direction. The relief slot's width is in Z (across the working face) and the slot's length is along X.
+- **Z** — along the shank (vertical in normal use). +Z = top of shank (drive-screw end); Z = 0 = bottom (depth-lock-knob end). Blades cut in −Z direction (downward into the violin top surface). The shank length is along Z.
+- **X** — along the shaft AND normal to the working face. The shaft cross-bore and the shank tapped bore both run along X and pass *through* the working face — the working face is the +X face of the shank. +X points toward the workpiece. Edge-margin adjustment translates the shaft along X.
+- **Y** — perpendicular to both. The tool-travel direction in use (along the violin's edge perimeter at the contact point). The relief slot's width is in Y (across the working face); the slot's length is along Z.
 
 **Parts:**
 
@@ -47,14 +47,14 @@ See accompanying diagram. These names are canonical — please use them in the C
 |---|---|
 | **Shank** | Square-section brass body. Spine of the tool. Doubles as the fence. |
 | **Working face** | Right-hand long face of the shank. Convex profile (~R 8 mm, ≈2 mm sagitta over the depth chord) with a vertical relief slot. Slot runs from the bottom of the shank up to the shaft cross-bore only — it does **not** continue above the shaft. |
-| **Top dome** | The +X end of the shank (where the drive screw sits) is rounded into a spherical dome of similar radius to the working face. Bottom end (where the depth-lock knob sits) is flat. |
+| **Top dome** | The +Z end of the shank (where the drive screw sits) is rounded into a spherical dome of similar radius to the working face. Bottom end (where the depth-lock knob sits) is flat. |
 | **Contact corners** | Two narrow strips of the working face, one each side of the relief slot. The actual bearing surfaces on the workpiece. |
 | **Relief slot** | Vertical slot down the centre of the working face. Runs from the bottom of the shank up to (but not above) the shaft cross-bore. |
 | **Shaft cross-bore** | Plain horizontal through-hole near the top of the shank. Sliding fit on the shaft. |
-| **Shank tapped bore** | Tapped horizontal through-hole, directly above and parallel to the shaft cross-bore. Carries the drive screw. Tapped along the full Y length of the shank. |
+| **Shank tapped bore** | Tapped horizontal through-hole, directly above and parallel to the shaft cross-bore. Carries the drive screw. Tapped along the full X length of the shank. |
 | **Depth-lock blind bore** | Long vertical bore running up inside the shank from the bottom, opening into the shaft cross-bore at the top. **Only the lower portion is tapped** (for the depth-lock bolt); above the tapped section is a smooth bore that holds the push rod. |
 | **Depth-lock push rod** | Steel rod sitting in the smooth (upper) section of the depth-lock blind bore. Its lower end is pushed up by the depth-lock bolt; its upper end bears on the underside of the shaft to lock it. **Missing from earlier drafts of this spec.** |
-| **Shaft** | Brass bar passing horizontally through the shaft cross-bore. Carries the blades at its right end. Translates in Y to set edge margin. |
+| **Shaft** | Brass bar passing horizontally through the shaft cross-bore. Carries the blades at its right end. Translates in X to set edge margin. |
 | **Blade slot** | Vertical through-slot in the right end of the shaft. Open top and bottom (blades drop through). Wide enough to hold two blades plus a spacer side by side. |
 | **Shaft end tap** | Tapped hole in the right end face of the shaft, along the shaft axis. Receives the grub screw. |
 | **Grub screw** | Steel screw threaded into the shaft end tap from the right. Its inner end pushes the blade stack horizontally against the left wall of the blade slot, clamping blades and spacer together. |
@@ -73,13 +73,13 @@ See accompanying diagram. These names are canonical — please use them in the C
 
 For the draftsman, so the CAD assembly mates are physically correct.
 
-**Setting edge margin.** Turning the thumbwheel rotates the integral thumbwheel + drive screw assembly. The drive screw runs in the shank tapped bore, so its rotation translates it in Y relative to the shank. The thumbwheel translates with it. The drive plate (mounted to the outboard end of the shaft) is captured on the silver screw between the screw's head (outboard side of plate) and the thumbwheel's left end face (inboard side of plate), with a deliberate tiny axial play so the plate doesn't bind. As the thumbwheel-and-drive-screw assembly translates in Y, the drive plate is dragged along with it, and the shaft follows. The thumbwheel, drive screw, and silver screw all rotate together; the drive plate and shaft translate without rotating.
+**Setting edge margin.** Turning the thumbwheel rotates the integral thumbwheel + drive screw assembly. The drive screw runs in the shank tapped bore, so its rotation translates it in X relative to the shank. The thumbwheel translates with it. The drive plate (mounted to the outboard end of the shaft) is captured on the silver screw between the screw's head (outboard side of plate) and the thumbwheel's left end face (inboard side of plate), with a deliberate tiny axial play so the plate doesn't bind. As the thumbwheel-and-drive-screw assembly translates in X, the drive plate is dragged along with it, and the shaft follows. The thumbwheel, drive screw, and silver screw all rotate together; the drive plate and shaft translate without rotating.
 
-**Locking the setting.** The depth-lock knob, at the bottom of the shank, is on the end of an M6 bolt that engages the **lower (tapped) section** of the depth-lock blind bore. Above the tapped section the bore is smooth and contains a steel push rod. Tightening the knob advances the bolt up; the bolt's tip pushes the push rod; the push rod's upper end bears on the underside of the shaft (which crosses through the upper part of the shank). This pinches the shaft against the upper wall of the shaft cross-bore and locks it in Y. The push rod is a separate intermediary part — earlier drafts of this spec incorrectly described the bolt itself as bearing on the shaft.
+**Locking the setting.** The depth-lock knob, at the bottom of the shank, is on the end of an M6 bolt that engages the **lower (tapped) section** of the depth-lock blind bore. Above the tapped section the bore is smooth and contains a steel push rod. Tightening the knob advances the bolt up; the bolt's tip pushes the push rod; the push rod's upper end bears on the underside of the shaft (which crosses through the upper part of the shank). This pinches the shaft against the upper wall of the shaft cross-bore and locks it in X. The push rod is a separate intermediary part — earlier drafts of this spec incorrectly described the bolt itself as bearing on the shaft.
 
 **Setting blade spacing and projection.** With the grub screw loose, blades can be dropped into the blade slot from above and fall straight through (top and bottom of the slot are open). The luthier positions: blade — spacer — blade in the slot, sets the vertical position to give the desired blade projection (depth of cut), and tightens the grub screw. The grub screw threads into the shaft end tap from the right; its inner end advances along the shaft axis and pushes the rightmost blade leftward. This pinches the whole stack — blade, spacer, blade — against the left wall of the blade slot. Blade spacing equals the spacer thickness.
 
-**Using the tool.** Working face of the shank rides on the plate edge; the two contact corners bear, the relief slot clears burrs and irregularities. The tool is drawn along the edge (X direction). Both blades cut simultaneously.
+**Using the tool.** Working face of the shank rides on the plate edge; the two contact corners bear, the relief slot clears burrs and irregularities. The tool is drawn along the edge (Y direction). Both blades cut simultaneously.
 
 ---
 
@@ -94,19 +94,19 @@ Each tier table below names the dimension by its full **field path** (`blade.thi
 | # | Parameter | Code field | Value | Notes |
 |---|---|---|---|---|
 | 1 | Blade thickness | `blade.thickness` | `[TBM]` (likely 0.6–1.0 mm) | Across the wide flat. The face the grub screw pushes against. |
-| 2 | Blade width | `blade.width` | `[TBM]` (likely 4–6 mm) | The Z dimension of the blade, sitting in the slot. |
+| 2 | Blade width | `blade.width` | `[TBM]` (likely 4–6 mm) | The Y dimension of the blade, sitting in the slot. |
 | 3 | Blade length | `blade.length` | `[TBM]` (likely 18–28 mm) | Total length, including ground tip. Must be long enough that the blade can fall fully into the slot AND extend below for the cut. |
 | 4 | Blade bevel | `blade.bevel_angle` | `[TBM]` | Single bevel; angle and side. |
 | 5 | Spacer thickness range | `spacer.thickness` | `[TBM]` (target 1.0–3.0 mm in 0.2 mm steps) | Sets purfling channel width. Multiple spacers will be supplied. |
-| 6 | Spacer height (Z) | `spacer.height` | Slightly less than `blade.width` | So the blades protrude below the spacer when set deep. `[TBM]` |
+| 6 | Spacer height (Y) | `spacer.height` | Slightly less than `blade.width` | So the blades protrude below the spacer when set deep. `[TBM]` |
 | 7 | Total clamped stack thickness | `stack_thickness` (derived) | `= 2 × blade.thickness + spacer.thickness` | Range determines blade slot width. |
 
 ### 4.2 Tier 2 — Shaft (driven by Tier 1 + wall-thickness rules)
 
 | # | Parameter | Code field | Value rule | Notes |
 |---|---|---|---|---|
-| 8 | Blade slot width (Y) | `shaft.blade_slot_width` | `≥ max(stack_thickness) + grub_screw.max_nose_advance + clearance` | Must fit the widest expected stack plus enough room for the grub screw to advance and clamp. |
-| 9 | Blade slot length (Z) | `shaft.blade_slot_length` | `≥ blade.width + clearance` | Just larger than blade width so blades sit cleanly. |
+| 8 | Blade slot width (X) | `shaft.blade_slot_width` | `≥ max(stack_thickness) + grub_screw.max_nose_advance + clearance` | Must fit the widest expected stack plus enough room for the grub screw to advance and clamp. |
+| 9 | Blade slot length (Y) | `shaft.blade_slot_length` | `≥ blade.width + clearance` | Just larger than blade width so blades sit cleanly. |
 | 10 | Blade slot vertical extent | (through) | Open top and bottom | Blades fall freely through the shaft. Critical: the slot must NOT have a closed bottom. |
 | 11 | Shaft cross-section | `shaft.cross_section` | Round | Recommended round; rotation of the shaft is prevented by the drive plate's screw connection and (if needed) by the depth lock bearing on a flat — see open question Q3. |
 | 12 | Shaft OD | `shaft.outer_diameter` | Derived from items 8–9 with wall rules | Round to nearest 0.5 mm. |
@@ -116,7 +116,7 @@ Each tier table below names the dimension by its full **field path** (`blade.thi
 | 15 | Grub screw thread | `grub_screw.thread` | M3 or M4 `[TBM]` | Specify before sizing shaft end. |
 | 16 | Grub screw nose protrusion (max) | `grub_screw.max_nose_advance` | `≥ shaft.blade_slot_width − min(stack_thickness)` | Grub screw must be able to reach the thinnest stack and clamp it. |
 | 17 | Distance from shaft right-end face to blade slot | `shaft.end_to_slot_distance` | `[TBM]` | Determines how much wall is between shaft end tap and blade slot. See item 14. |
-| 18 | Shaft total length | `shaft.length` | `[TBM]` | Must support: blade slot at right end + protrusion through shank during full Y travel + length to clear thumbwheel + axial gap + drive plate at outboard (left) end. |
+| 18 | Shaft total length | `shaft.length` | `[TBM]` | Must support: blade slot at right end + protrusion through shank during full X travel + length to clear thumbwheel + axial gap + drive plate at outboard (left) end. |
 | 19 | Drive plate mounting on shaft | `shaft.drive_plate_mount` | Two tapped holes, M2 or M2.5 `[TBM]`, on the **outboard end face of the shaft** | Replaces the original soldered joint. The two screws also stop the drive plate (and the shaft) from rotating. |
 
 ### 4.3 Tier 3 — Shank (driven by Tier 2 + wall-thickness rules)
@@ -127,23 +127,23 @@ Each tier table below names the dimension by its full **field path** (`blade.thi
 | 21 | Shank tapped bore | `drive_screw.thread` | M4 × 0.5 fine, or M3 fine `[TBM]` | Fine pitch preferred for fine edge-margin adjustment. |
 | 22 | Centre-to-centre distance between shank tapped bore and shaft cross-bore | `shank.crossbore_to_tapped_bore_gap` | `[TBM]` | Must be large enough that wall between the two bores (≥ 1.5 × thread major radius, item 23) is preserved. |
 | 23 | Wall thickness between shank tapped bore and shaft cross-bore | `shank_wall_between_bores` (derived) | `= gap − crossbore_radius − tapped_drill_radius`; rule: `≥ 1.0 × thread major radius`, `≥ 1.2 mm` | **Critical constraint.** Wall rule relaxed after measuring the original (was `≥ 1.5 × radius`, `≥ 2 mm`). |
-| 24 | Wall thickness around shaft cross-bore (other directions) | `shank_wall_around_crossbore` (derived) | `= min(crossbore_x − crossbore_radius, depth/2 − crossbore_radius)`; rule: `≥ 0.15 × D_xb`, `≥ 1 mm` | **Critical constraint.** Wall rule relaxed after measuring the original tool (was `≥ 0.6 × D_xb`, `≥ 3 mm` — those values were a CAD-shop guess; the real brass tool runs much closer to 0.15× the bore diameter). Bore axis is along Y; walls measured in X (toward bottom of shank) and Z (top and bottom of cross-section). Assumes bore centred in Z. |
+| 24 | Wall thickness around shaft cross-bore (other directions) | `shank_wall_around_crossbore` (derived) | `= min(crossbore_x − crossbore_radius, depth/2 − crossbore_radius)`; rule: `≥ 0.15 × D_xb`, `≥ 1 mm` | **Critical constraint.** Wall rule relaxed after measuring the original tool (was `≥ 0.6 × D_xb`, `≥ 3 mm` — those values were a CAD-shop guess; the real brass tool runs much closer to 0.15× the bore diameter). Bore axis is along X; walls measured in Z (toward bottom of shank) and Y (top and bottom of cross-section). Assumes bore centred in Y. |
 | 25 | Wall thickness around shank tapped bore (other directions) | `shank_wall_around_tapped_bore` (derived) | `= min(pos_tb − tap_drill_radius, depth/2 − tap_drill_radius)`; rule: `≥ 1.0 × thread major radius`, `≥ 1 mm` | **Critical constraint.** Wall rule relaxed (was `≥ 1.5 × radius`, `≥ 3 mm`). |
-| 26 | Shank cross-section | `shank.width` × `shank.depth` (Y × Z) | Square (or near-square rectangular) | `width` is depth-from-working-face into the body (Y direction); `depth` is the cross-section dimension perpendicular to both the shank length and the shaft (Z direction). Must satisfy items 23, 24, 25. |
-| 27 | Shank length (X) | `shank.length` | `[TBM]` (likely 90–110 mm) | Affects balance, reach, and the length of the depth-lock blind bore. |
+| 26 | Shank cross-section | `shank.width` × `shank.depth` (X × Y) | Square (or near-square rectangular) | `width` is depth-from-working-face into the body (X direction); `depth` is the cross-section dimension perpendicular to both the shank length and the shaft (Y direction). Must satisfy items 23, 24, 25. |
+| 27 | Shank length (Z) | `shank.length` | `[TBM]` (likely 90–110 mm) | Affects balance, reach, and the length of the depth-lock blind bore. |
 | 28 | Shank cross-bore position (from top of shank) | `shank.crossbore_position_from_top` | `[TBM]` | Near the top. Sets how high the mechanism sits relative to the working face. |
 | 29 | Shank tapped bore position | `shank.tapped_bore_position_from_top` | `= shank.crossbore_position_from_top − shank.crossbore_to_tapped_bore_gap` | Derived; sits above the shaft cross-bore. |
 | 30 | Depth-lock blind bore diameter | `shank.depth_lock_bore_diameter` | Per depth-lock thread tap-drill, also accepts the push rod (sliding fit) | M6 tap drill is 5.0 mm; same diameter also accepts the 5 mm steel push rod in the upper (untapped) section of the bore. |
 | 30a | Depth-lock bore threaded length | `shank.depth_lock_threaded_length` | `[TBM]` (ESTIMATE: 12 mm) | Only the *lower* section of the bore is tapped — typically just enough to engage the bolt fully. Above the tapped section the bore is smooth and contains the push rod. |
 | 31 | Depth-lock blind bore depth | `shank.depth_lock_bore_depth` (derived) | `= shank.length − shank.crossbore_position_from_top` | Bore extends from the bottom of the shank up to and into the shaft cross-bore — the push rod must reach the cross-bore region to bear on the shaft. (Earlier draft of this spec called for a `small_clearance` below the cross-bore; that was wrong.) |
 | 32 | Depth-lock thread | `depth_lock.thread` | M6 measured | Hand-clamped, not metered. |
-| 33 | Relief slot width (Z) | `shank.relief_slot_width` | `[TBM]` (likely 2–8 mm) | Wide enough to clear edge irregularities; narrow enough to keep contact corners close. Measured *across* the working face, perpendicular to slot length. |
-| 34 | Relief slot depth (Y) | `shank.relief_slot_depth` | ~1 mm | Depth into the body from the working face. Just enough to guarantee no contact in slot region. |
-| 34a | Relief slot length (X) | `relief_slot_length` (derived) | `= shank.length − shank.crossbore_position_from_top` | Slot runs from the bottom of the shank up to the shaft cross-bore. Does *not* extend above the shaft (corrected from earlier drafts that said "full length of the shank"). |
+| 33 | Relief slot width (Y) | `shank.relief_slot_width` | `[TBM]` (likely 2–8 mm) | Wide enough to clear edge irregularities; narrow enough to keep contact corners close. Measured *across* the working face, perpendicular to slot length. |
+| 34 | Relief slot depth (X) | `shank.relief_slot_depth` | ~1 mm | Depth into the body from the working face. Just enough to guarantee no contact in slot region. |
+| 34a | Relief slot length (Z) | `relief_slot_length` (derived) | `= shank.length − shank.crossbore_position_from_top` | Slot runs from the bottom of the shank up to the shaft cross-bore. Does *not* extend above the shaft (corrected from earlier drafts that said "full length of the shank"). |
 | 35 | Working face convexity radius | `shank.working_face_radius` (derived) | Derived from the measured sagitta/chord: `R = (c² + 4s²) / (8s)` | Earlier spec drafts described this as a "large radius". Measurement gives R ≈ 8 mm on the original — far smaller than implied; the spec was wrong. |
-| 35a | Top dome radius | `shank.top_dome_radius` | Similar to working face radius | Spherical dome at the +X end (top, next to the drive screw). Bottom end (−X, next to the depth-lock knob) is flat. |
+| 35a | Top dome radius | `shank.top_dome_radius` | Similar to working face radius | Spherical dome at the +Z end (top, next to the drive screw). Bottom end (−Z, next to the depth-lock knob) is flat. |
 | 35b | Edge fillet radius | `shank.edge_fillet_radius` | ~0.5 mm | Ergonomic finishing layer, not previously specified in §4. Applied to every external edge of the shank. |
-| 36 | Contact corner width (Z) | `shank.contact_corner_width` (derived) | `= (shank.depth − shank.relief_slot_width) / 2` | Symmetric. Contact corners sit either side of the relief slot, measured in Z across the working face. |
+| 36 | Contact corner width (Y) | `shank.contact_corner_width` (derived) | `= (shank.depth − shank.relief_slot_width) / 2` | Symmetric. Contact corners sit either side of the relief slot, measured in Y across the working face. |
 
 ### 4.4 Tier 4 — Drive train
 
@@ -151,7 +151,7 @@ Each tier table below names the dimension by its full **field path** (`blade.thi
 |---|---|---|---|---|
 | 37 | Drive screw thread | `drive_screw.thread` | Matches item 21 | |
 | 38 | Drive screw thread pitch | `drive_screw.thread_pitch` | ≈ 0.5 mm (user estimates 2 turns/mm) | Sets adjustment resolution. |
-| 39 | Drive screw length | `drive_screw.length` | `[TBM]` | Must support full Y travel of shaft + adequate engagement at minimum-margin setting. |
+| 39 | Drive screw length | `drive_screw.length` | `[TBM]` | Must support full X travel of shaft + adequate engagement at minimum-margin setting. |
 | 40 | Drive screw left-end tap | `drive_screw.left_face_tap` | For silver screw; M2 or M2.5 `[TBM]` | Bottomed by the silver screw — see Tier 5. Depth: `drive_screw.left_face_tap_depth`. |
 | 41 | Thumbwheel diameter | `thumbwheel.diameter` | `[TBM]` (likely 15–22 mm) | Big enough for fingertip torque; small enough not to foul the work. |
 | 42 | Thumbwheel thickness | `thumbwheel.thickness` | `[TBM]` | |
@@ -160,15 +160,15 @@ Each tier table below names the dimension by its full **field path** (`blade.thi
 
 ### 4.5 Tier 5 — Drive plate and silver-screw bearing
 
-Geometry, outboard → inboard along Y: silver-screw head → drive plate → axial-play gap → thumbwheel left face → (silver-screw thread engagement inside thumbwheel).
+Geometry, outboard → inboard along X: silver-screw head → drive plate → axial-play gap → thumbwheel left face → (silver-screw thread engagement inside thumbwheel).
 
 | # | Parameter | Code field | Value rule | Notes |
 |---|---|---|---|---|
-| 45 | Drive plate height (Z) above shaft | `drive_plate.height` | `shank.crossbore_to_tapped_bore_gap + clearance_above_screw` | Plate must rise from shaft top to drive-screw axis, with enough material above and below the clearance hole. |
-| 46 | Drive plate width (X) | `drive_plate.width` | `[TBM]` | |
-| 47 | Drive plate thickness (Y) | `drive_plate.thickness` | `[TBM]` (likely 1.5–2.5 mm) | |
+| 45 | Drive plate height (Y) above shaft | `drive_plate.height` | `shank.crossbore_to_tapped_bore_gap + clearance_above_screw` | Plate must rise from shaft top to drive-screw axis, with enough material above and below the clearance hole. |
+| 46 | Drive plate width (Z) | `drive_plate.width` | `[TBM]` | |
+| 47 | Drive plate thickness (X) | `drive_plate.thickness` | `[TBM]` (likely 1.5–2.5 mm) | |
 | 48 | Drive plate clearance hole | `drive_plate.clearance_hole_diameter` | `≥ silver_screw.thread.major × 1.1` | Light radial clearance — does not need precision (per user; see §8). |
-| 49 | Drive plate position on shaft (X) | `drive_plate.shaft_mount_position` | Mounted on the outboard end face of the shaft | The shaft must be long enough on its outboard side that the drive plate sits clear of the thumbwheel. The axial-play gap (item 53) sits between them. |
+| 49 | Drive plate position on shaft (Z) | `drive_plate.shaft_mount_position` | Mounted on the outboard end face of the shaft | The shaft must be long enough on its outboard side that the drive plate sits clear of the thumbwheel. The axial-play gap (item 53) sits between them. |
 | 50 | Silver screw thread | `silver_screw.thread` | Per item 40 | M2 or M2.5 `[TBM]`. |
 | 51 | Silver screw useful length (head underside to tip) | `silver_screw.length` *(owned by `captive_bearing`)* | `= drive_plate.thickness + captive_bearing.axial_play + drive_screw.left_face_tap_depth` | **Critical:** the screw must bottom on the tap with `captive_bearing.axial_play` mm of axial clearance remaining between its head and the drive plate. |
 | 52 | Silver screw head | `silver_screw.head` | Pan or cheese; larger than `drive_plate.clearance_hole_diameter` | Acts as the retainer. |
@@ -263,8 +263,8 @@ General machining tolerance: **±0.05 mm** unless noted otherwise.
 After manufacture, the tool must:
 
 1. Sit stable on a flat reference edge with both contact corners bearing simultaneously — no rocking.
-2. Allow continuous, smooth Y travel of the shaft through the full range with the depth-lock knob loose.
-3. Allow the depth lock to clamp the shaft firmly with no perceptible Y movement under reasonable hand force.
+2. Allow continuous, smooth X travel of the shaft through the full range with the depth-lock knob loose.
+3. Allow the depth lock to clamp the shaft firmly with no perceptible X movement under reasonable hand force.
 4. Allow the edge-margin thumbwheel to be turned by fingertip force, with one full rotation producing approximately `[TBM]` mm of shaft translation (matching the drive-screw pitch), repeatable to within ±0.05 mm.
 5. Drive plate to spin freely on the silver-screw bearing — no binding when the thumbwheel is rotated; no axial slop greater than `[TBM]` mm (target ≤ 0.3 mm).
 6. Hold blades square to the shaft axis and parallel to each other to within ±0.1° after grub-screw clamping.
