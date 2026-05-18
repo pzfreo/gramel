@@ -35,6 +35,7 @@ from gramel.parameters import (
     _THREAD_MAJOR_RADIUS,
     PurflingCutterParams,
 )
+from gramel.parts._threads import external_thread_section
 
 
 def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
@@ -68,9 +69,19 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
     unthreaded = (
         Pos(x_unth, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=unth_r, height=unth_len)
     )
-    thread = (
-        Pos(x_thread, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=thread_r, height=thread_len)
-    )
+
+    # Drive-screw thread: real ISO helix on the FDM prototype path; plain
+    # major-diameter cylinder on the CNC path (the shop reads the thread
+    # callout off the drawing, not the geometry — see _threads.py docstring).
+    thread_start_x = boss_len + disc_thick + unth_len
+    if params.process.prototype:
+        thread = Pos(thread_start_x, 0, 0) * Rot(0, 90, 0) * external_thread_section(
+            ds.thread, thread_len
+        )
+    else:
+        thread = (
+            Pos(x_thread, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=thread_r, height=thread_len)
+        )
 
     body = silver_boss + disc + unthreaded + thread
 

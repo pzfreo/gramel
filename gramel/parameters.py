@@ -55,6 +55,16 @@ _TAP_DRILL_DIAMETER: dict[str, float] = {
     "M6": 5.0,
 }
 
+# ISO metric coarse-thread pitches (mm).
+_THREAD_PITCH: dict[str, float] = {
+    "M2": 0.4,
+    "M2.5": 0.45,
+    "M3": 0.5,
+    "M4": 0.7,
+    "M5": 0.8,
+    "M6": 1.0,
+}
+
 
 def _thread_major_radius(thread: str) -> float:
     if thread not in _THREAD_MAJOR_RADIUS:
