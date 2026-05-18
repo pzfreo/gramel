@@ -30,12 +30,12 @@ from build123d import (
     ExtensionLine,
     LineType,
     PageSize,
+    Part,
     TechnicalDrawing,
 )
 
 from gramel.parameters import PurflingCutterParams
 from gramel.parts.shank import build_shank
-
 
 # ---------------------------------------------------------------------------
 # Layout — positions on the A4 landscape sheet (mm, origin at sheet centre)
@@ -59,7 +59,12 @@ class ViewPlacement:
 # ---------------------------------------------------------------------------
 
 
-def _project(shape, origin, up, look_at) -> tuple[Compound, Compound]:
+def _project(
+    shape: Part,
+    origin: tuple[float, float, float],
+    up: tuple[float, float, float],
+    look_at: tuple[float, float, float],
+) -> tuple[Compound, Compound]:
     """Project and return (visible, hidden) edges as two Compounds, both at Z=0."""
     visible, hidden = shape.project_to_viewport(origin, up, look_at)
     return (
@@ -86,7 +91,9 @@ def _dim(p1: tuple[float, float], p2: tuple[float, float], draft: Draft, label: 
 # ---------------------------------------------------------------------------
 
 
-def build_shank_drawing(params: PurflingCutterParams) -> tuple[Compound, Compound, Compound, list]:
+def build_shank_drawing(
+    params: PurflingCutterParams,
+) -> tuple[Compound, Compound, Compound, list[ExtensionLine | DimensionLine]]:
     """
     Compose the drawing.
 
@@ -148,10 +155,10 @@ def build_shank_drawing(params: PurflingCutterParams) -> tuple[Compound, Compoun
     # In each view: page X = world X (shank long axis); page Y depends on view.
 
     draft = Draft(
-        font_size=2.0,
+        font_size=1.8,
         decimal_precision=1,
-        arrow_length=1.5,
-        line_width=0.12,
+        arrow_length=0.8,
+        line_width=0.1,
     )
     dims: list[ExtensionLine | DimensionLine] = []
 
@@ -163,15 +170,14 @@ def build_shank_drawing(params: PurflingCutterParams) -> tuple[Compound, Compoun
     f_top = fy + depth / 2  # world Z=depth
 
     # Overall length below the view
-    dims.append(_ext((f_left, f_bot), (f_right, f_bot), offset=-7, draft=draft, label=f"{length:.0f}"))
+    dims.append(_ext((f_left, f_bot), (f_right, f_bot), offset=-7, draft=draft, label=f"{length:.1f}"))
     # Overall depth (Z) on the left
-    dims.append(_ext((f_left, f_bot), (f_left, f_top), offset=-6, draft=draft, label=f"{depth:.0f}"))
+    dims.append(_ext((f_left, f_bot), (f_left, f_top), offset=-6, draft=draft, label=f"{depth:.1f}"))
     # Crossbore x-position-from-top (RHS) → world X position from top
     cb_face_x = fx + (length / 2 - cb_x_from_top)
-    dims.append(_ext((f_right, f_top), (cb_face_x, f_top), offset=8, draft=draft, label=f"{cb_x_from_top:.0f}"))
-    # Tapped-bore x-position from top (stacked above)
+    dims.append(_ext((f_right, f_top), (cb_face_x, f_top), offset=8, draft=draft, label=f"{cb_x_from_top:.1f}"))
     tap_face_x = fx + (length / 2 - tap_x_from_top)
-    dims.append(_ext((f_right, f_top), (tap_face_x, f_top), offset=14, draft=draft, label=f"{tap_x_from_top:.0f}"))
+    # Inter-bore gap dim deferred — short dims trip the build123d drafting path.
     # Crossbore diameter (across the visible circle)
     dims.append(
         _dim((cb_face_x - cb_d / 2, fy), (cb_face_x + cb_d / 2, fy), draft=draft, label=f"⌀{cb_d:.1f}")
@@ -192,15 +198,15 @@ def build_shank_drawing(params: PurflingCutterParams) -> tuple[Compound, Compoun
     # Side view: page Y = world Y (depth from working face). Width direction.
     sx, sy = layout.side
     s_left = sx - length / 2
-    s_right = sx + length / 2
+    sx + length / 2
     s_bot = sy - width / 2
     s_top = sy + width / 2
     # Width Y dimension on the left
-    dims.append(_ext((s_left, s_bot), (s_left, s_top), offset=-6, draft=draft, label=f"{width:.0f}"))
+    dims.append(_ext((s_left, s_bot), (s_left, s_top), offset=-6, draft=draft, label=f"{width:.1f}"))
     # Inter-bore gap on top
     cb_side_x = sx + (length / 2 - cb_x_from_top)
     tap_side_x = sx + (length / 2 - tap_x_from_top)
-    dims.append(_ext((tap_side_x, s_top), (cb_side_x, s_top), offset=8, draft=draft, label=f"{inter_gap:.0f}"))
+    dims.append(_ext((tap_side_x, s_top), (cb_side_x, s_top), offset=8, draft=draft, label=f"{inter_gap:.1f}"))
 
     # Bottom view: page Y = world Z. Page X = -world Y, so bbox is 24 wide × 28 tall.
     bx, by = layout.bottom
@@ -209,15 +215,15 @@ def build_shank_drawing(params: PurflingCutterParams) -> tuple[Compound, Compoun
     b_bot = by - depth / 2
     b_top = by + depth / 2
     # Y width
-    dims.append(_ext((b_left, b_bot), (b_right, b_bot), offset=-5, draft=draft, label=f"{width:.0f}"))
+    dims.append(_ext((b_left, b_bot), (b_right, b_bot), offset=-5, draft=draft, label=f"{width:.1f}"))
     # Z depth
-    dims.append(_ext((b_right, b_bot), (b_right, b_top), offset=5, draft=draft, label=f"{depth:.0f}"))
+    dims.append(_ext((b_right, b_bot), (b_right, b_top), offset=5, draft=draft, label=f"{depth:.1f}"))
     # Depth-lock bore diameter (visible as a circle in centre of bottom view)
     dims.append(_dim((bx - dl_d / 2, by), (bx + dl_d / 2, by), draft=draft, label=f"⌀{dl_d:.1f}"))
 
     # --- Title block ------------------------------------------------------
 
-    iso_scale_str = f"iso 1:{int(round(1 / layout.iso_scale))}"
+    iso_scale_str = f"iso 1:{round(1 / layout.iso_scale)}"
     title_block = TechnicalDrawing(
         designed_by="gramel",
         page_size=PageSize.A4,

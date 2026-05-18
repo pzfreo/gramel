@@ -185,10 +185,10 @@ class ShaftParams(BaseModel):
         json_schema_extra=_spec("§4.2.11", units=""),
     )
     outer_diameter: float = Field(
-        default=10.0,
+        default=7.9,
         gt=0,
-        description="Shaft OD. ESTIMATE; sized to satisfy wall rules around the blade slot.",
-        json_schema_extra=_spec("§4.2.12"),
+        description="Shaft OD (measured on the original tool).",
+        json_schema_extra=_spec("§4.2.12", status="MEASURED"),
     )
     blade_slot_width: float = Field(
         default=4.5,
@@ -239,24 +239,52 @@ class ShaftParams(BaseModel):
 
 
 class DepthLockParams(BaseModel):
-    """§4.3 item 32 — depth-lock bolt and knob."""
+    """
+    §4.3 item 32 — depth-lock bolt, thumbwheel, and push rod.
+
+    Mechanism (corrected from spec): the bolt's tip does NOT bear on the shaft
+    directly. Instead, the depth-lock bore is tapped for only the lower portion;
+    above the threaded section sits a free-sliding steel push rod. Tightening
+    the thumbwheel advances the bolt, which pushes the rod up against the
+    underside of the shaft. The spec's `Depth-lock bolt — its upper end bears
+    directly on the underside of the shaft` is incorrect; the push rod is the
+    intermediary.
+    """
 
     thread: str = Field(
-        default="M4",
-        description="Depth-lock bolt thread designation.",
-        json_schema_extra=_spec("§4.3.32", units=""),
+        default="M6",
+        description="Depth-lock bolt thread (measured OD = 6 mm → M6).",
+        json_schema_extra=_spec("§4.3.32", status="MEASURED", units=""),
+    )
+    bolt_thread_length: float = Field(
+        default=18.0,
+        gt=0,
+        description="Length of threaded portion of the depth-lock bolt.",
+        json_schema_extra=_spec("§4.3 (bolt — not numbered)", status="MEASURED"),
     )
     knob_diameter: float = Field(
-        default=16.0,
+        default=10.0,
         gt=0,
-        description="Knob OD at the bottom of the shank.",
-        json_schema_extra=_spec("§4.3 (knob — not numbered)"),
+        description="Thumbwheel OD at the bottom of the shank.",
+        json_schema_extra=_spec("§4.3 (knob — not numbered)", status="MEASURED"),
     )
     knob_thickness: float = Field(
-        default=6.0,
+        default=14.0,
         gt=0,
-        description="Knob thickness (X dimension).",
-        json_schema_extra=_spec("§4.3 (knob — not numbered)"),
+        description="Thumbwheel length along the bolt axis (X).",
+        json_schema_extra=_spec("§4.3 (knob — not numbered)", status="MEASURED"),
+    )
+    push_rod_diameter: float = Field(
+        default=5.0,
+        gt=0,
+        description="Steel push-rod diameter. Slides freely in the upper (untapped) section of the depth-lock bore.",
+        json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="MEASURED"),
+    )
+    push_rod_length: float = Field(
+        default=45.5,
+        gt=0,
+        description="Steel push-rod length. Sits above the bolt; pushed up against the shaft to lock.",
+        json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="MEASURED"),
     )
 
 
@@ -264,58 +292,76 @@ class ShankParams(BaseModel):
     """§4.3 items 20–36 — shank dimensions (user-set; walls are derived on the top-level model)."""
 
     width: float = Field(
-        default=24.0,
+        default=13.55,
         gt=0,
-        description="Shank cross-section Y dimension.",
-        json_schema_extra=_spec("§4.3.26"),
+        description="Shank cross-section Y dimension (from back of shank to peak of convex working face, includes sagitta).",
+        json_schema_extra=_spec("§4.3.26", status="MEASURED"),
     )
     depth: float = Field(
-        default=28.0,
+        default=11.0,
         gt=0,
-        description="Shank cross-section Z dimension.",
-        json_schema_extra=_spec("§4.3.26"),
+        description="Shank cross-section Z dimension (across the working face).",
+        json_schema_extra=_spec("§4.3.26", status="MEASURED"),
     )
     length: float = Field(
-        default=100.0,
+        default=80.0,
         gt=0,
         description="Shank length along X. Affects balance, reach, depth-lock bore length.",
-        json_schema_extra=_spec("§4.3.27"),
+        json_schema_extra=_spec("§4.3.27", status="MEASURED"),
     )
     crossbore_position_from_top: float = Field(
-        default=16.0,
+        default=14.0,
         gt=0,
         description="Distance from the top of the shank to the shaft cross-bore axis.",
-        json_schema_extra=_spec("§4.3.28"),
+        json_schema_extra=_spec("§4.3.28", status="MEASURED"),
     )
     crossbore_to_tapped_bore_gap: float = Field(
-        default=10.0,
+        default=9.5,
         gt=0,
-        description="Centre-to-centre distance between shaft cross-bore and shank tapped bore.",
-        json_schema_extra=_spec("§4.3.22"),
+        description="Centre-to-centre distance between shaft cross-bore and shank tapped bore. Derived from measured crossbore_position_from_top (14) − tapped-bore-position-from-top (4.5).",
+        json_schema_extra=_spec("§4.3.22", status="DERIVED"),
     )
     depth_lock_bore_diameter: float = Field(
-        default=3.5,
+        default=5.0,
         gt=0,
-        description="Depth-lock blind bore diameter (drill before tap).",
-        json_schema_extra=_spec("§4.3.30"),
+        description="Depth-lock blind bore diameter. M6 tap drill is 5.0 mm; same diameter also accepts the 5 mm push rod (sliding fit in the untapped upper section).",
+        json_schema_extra=_spec("§4.3.30", status="DERIVED"),
+    )
+    depth_lock_threaded_length: float = Field(
+        default=12.0,
+        gt=0,
+        description="Length of the M6-tapped section at the BOTTOM of the depth-lock bore. The remainder of the bore (up to the crossbore) is a smooth sliding fit for the push rod. ESTIMATE: bolt thread length is 18 mm, so 12 mm of tapped engagement is sufficient and leaves the rest as push-rod travel.",
+        json_schema_extra=_spec("§4.3 (threading depth — not in spec)"),
     )
     relief_slot_width: float = Field(
-        default=6.0,
+        default=2.0,
         gt=0,
-        description="Relief slot Y width — central groove down the working face.",
-        json_schema_extra=_spec("§4.3.33"),
+        description="Relief slot Z width — central groove down the working face.",
+        json_schema_extra=_spec("§4.3.33", status="MEASURED"),
     )
     relief_slot_depth: float = Field(
         default=1.0,
         gt=0,
-        description="Relief slot Z depth — shallow groove, no contact in slot region.",
-        json_schema_extra=_spec("§4.3.34"),
+        description="Relief slot Y depth — into body from working face. 1 mm at deepest (centre); slightly less at slot edges where the convex face is lower.",
+        json_schema_extra=_spec("§4.3.34", status="MEASURED"),
     )
     working_face_radius: float = Field(
-        default=200.0,
+        default=8.11,
         gt=0,
-        description="Convexity radius of working face. Large — contact stays on slot edges.",
-        json_schema_extra=_spec("§4.3.35"),
+        description="Convexity radius of working face. Derived from measured sagitta 2.15 mm over chord depth 11 mm: R = (c² + 4s²)/(8s).",
+        json_schema_extra=_spec("§4.3.35", status="DERIVED"),
+    )
+    top_dome_radius: float = Field(
+        default=8.11,
+        gt=0,
+        description="Radius of the spherical dome at the +X end of the shank (next to the drive screw). Rounded in *both* Y and Z directions — i.e. a sphere, not a single-axis cylinder like the working face. Similar radius to working_face_radius per the original. Bottom (−X) face is flat.",
+        json_schema_extra=_spec("§4.3 (top dome — not in spec)", status="MEASURED"),
+    )
+    edge_fillet_radius: float = Field(
+        default=0.5,
+        ge=0,
+        description="Radius of fillet applied to every external edge of the shank.",
+        json_schema_extra=_spec("§8 (finishing — not in §4)", status="MEASURED"),
     )
 
 
@@ -328,9 +374,9 @@ class DriveScrewParams(BaseModel):
     """§4.4 items 37–40, 44 — drive screw (integral with thumbwheel)."""
 
     thread: str = Field(
-        default="M4",
-        description="Drive-screw thread. Matches shank tapped bore (§4.3.21).",
-        json_schema_extra=_spec("§4.4.37", units=""),
+        default="M3",
+        description="Drive-screw thread (measured OD = 3 mm → M3). Matches shank tapped bore (§4.3.21), which is fully threaded along its full Y length (= shank.width).",
+        json_schema_extra=_spec("§4.4.37", status="MEASURED", units=""),
     )
     thread_pitch: float = Field(
         default=0.5,
@@ -513,9 +559,25 @@ class PurflingCutterParams(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def depth_lock_bore_depth(self) -> float:
-        """§4.3.31 — derived from shank length and crossbore position."""
-        small_clearance = 1.0
-        return self.shank.length - self.shank.crossbore_position_from_top - small_clearance
+        """
+        §4.3.31 — bore extends from the bottom face up to the crossbore axis.
+
+        Originally the spec called for a `small_clearance` so the bore stopped
+        just below the crossbore. Measurement showed the bore actually meets
+        the crossbore (it has to — the push rod's upper end sits in the
+        crossbore region so it can press on the shaft). So no clearance term.
+        """
+        return self.shank.length - self.shank.crossbore_position_from_top
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def relief_slot_length(self) -> float:
+        """
+        Slot runs along X from the bottom of the shank up to (but not past)
+        the shaft cross-bore. Measured against the original tool: slot stops
+        at the shaft level, doesn't extend above. So length = length − crossbore_position_from_top.
+        """
+        return self.shank.length - self.shank.crossbore_position_from_top
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -588,40 +650,49 @@ class PurflingCutterParams(BaseModel):
 
     @model_validator(mode="after")
     def _validate_walls(self) -> "PurflingCutterParams":
-        # §4.2.13 — wall around blade slot ≥ 2 mm and ≥ 1.5 × blade.thickness
-        min_slot_wall = max(2.0, 1.5 * self.blade.thickness)
+        """
+        Wall-thickness rules.
+
+        Rules relaxed from the original spec after measuring the real tool —
+        the original ≥3 mm / ≥0.6 × D constants were conservative CAD-shop
+        guesses; the working brass tool sits closer to 1× thread radius and
+        ~0.15 × bore diameter. New rules are: ≥1 mm floor, plus a ratio
+        appropriate to the feature.
+        """
+        # §4.2.13 — wall around blade slot
+        min_slot_wall = max(0.8, 1.0 * self.blade.thickness)
         if self.shaft_wall_around_slot < min_slot_wall:
             raise ValueError(
                 f"shaft_wall_around_slot ({self.shaft_wall_around_slot:.3f}) "
                 f"< min {min_slot_wall:.3f} (§4.2.13)."
             )
 
-        # §4.2.14 — wall around shaft end tap ≥ 1.5 × grub-screw major radius
-        min_end_tap_wall = 1.5 * _thread_major_radius(self.grub_screw.thread)
+        # §4.2.14 — wall around shaft end tap
+        min_end_tap_wall = 1.0 * _thread_major_radius(self.grub_screw.thread)
         if self.shaft_wall_around_end_tap < min_end_tap_wall:
             raise ValueError(
                 f"shaft_wall_around_end_tap ({self.shaft_wall_around_end_tap:.3f}) "
                 f"< min {min_end_tap_wall:.3f} (§4.2.14)."
             )
 
-        # §4.3.23 — wall between bores ≥ 1.5 × drive-screw major radius and ≥ 2 mm
-        min_wall_bb = max(2.0, 1.5 * _thread_major_radius(self.drive_screw.thread))
+        # §4.3.23 — wall between bores
+        min_wall_bb = max(1.2, 1.0 * _thread_major_radius(self.drive_screw.thread))
         if self.shank_wall_between_bores < min_wall_bb:
             raise ValueError(
                 f"shank_wall_between_bores ({self.shank_wall_between_bores:.3f}) "
                 f"< min {min_wall_bb:.3f} (§4.3.23)."
             )
 
-        # §4.3.24 — wall around cross-bore ≥ 0.6 × cross-bore diameter and ≥ 3 mm
-        min_wall_xb = max(3.0, 0.6 * self.crossbore_diameter)
+        # §4.3.24 — wall around cross-bore (perpendicular to bore axis)
+        min_wall_xb = max(1.0, 0.15 * self.crossbore_diameter)
         if self.shank_wall_around_crossbore < min_wall_xb:
             raise ValueError(
                 f"shank_wall_around_crossbore ({self.shank_wall_around_crossbore:.3f}) "
                 f"< min {min_wall_xb:.3f} (§4.3.24)."
             )
 
-        # §4.3.25 — wall around tapped bore ≥ 1.5 × drive-screw major radius and ≥ 3 mm
-        min_wall_tap = max(3.0, 1.5 * _thread_major_radius(self.drive_screw.thread))
+        # §4.3.25 — wall around tapped bore (perpendicular to bore axis)
+        min_wall_tap = max(1.0, 1.0 * _thread_major_radius(self.drive_screw.thread))
         if self.shank_wall_around_tapped_bore < min_wall_tap:
             raise ValueError(
                 f"shank_wall_around_tapped_bore ({self.shank_wall_around_tapped_bore:.3f}) "
