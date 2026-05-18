@@ -180,6 +180,7 @@ def test_blade_thickness_carries_spec_metadata() -> None:
     assert extra["spec_ref"] == "§4.1.1"
     assert extra["status"] == "MEASURED"
     assert extra["units"] == "mm"
+    assert field.description is not None
     assert "wide flat" in field.description
     assert "grub screw" in field.description
 

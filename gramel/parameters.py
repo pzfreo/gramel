@@ -237,6 +237,19 @@ class ShaftParams(BaseModel):
         description="Shaft cross-section profile. Measured: the original has a flat machined on the underside that registers against the depth-lock push rod — answers spec §5 open question Q3. Flat-on-flat contact gives a more positive lock AND prevents shaft rotation.",
         json_schema_extra=_spec("§4.2.11", status="MEASURED", units=""),
     )
+    flat_depth: float = Field(
+        default=0.7,
+        gt=0,
+        description="Depth of the flat machined on the −Z underside of the shaft (how far below the original cylinder surface the flat sits). ESTIMATE — to be measured.",
+        json_schema_extra=_spec("§4.2.11 (flat — not in spec items)"),
+    )
+    # Flat extends the full shaft.length — no separate flat_length parameter.
+    drive_plate_mount_depth: float = Field(
+        default=5.0,
+        gt=0,
+        description="Depth of the tapped holes on the shaft's outboard end face (for the drive-plate screws). ESTIMATE.",
+        json_schema_extra=_spec("§4.2.19 (mount depth — not numbered)"),
+    )
     outer_diameter: float = Field(
         default=7.9,
         gt=0,
@@ -268,10 +281,10 @@ class ShaftParams(BaseModel):
         json_schema_extra=_spec("§4.2.14 (related)"),
     )
     length: float = Field(
-        default=100.0,
+        default=45.0,
         gt=0,
-        description="Total shaft length. Slot + travel + drive-plate clearance.",
-        json_schema_extra=_spec("§4.2.18"),
+        description="Total shaft length (measured on the original).",
+        json_schema_extra=_spec("§4.2.18", status="MEASURED"),
     )
     drive_plate_mount_thread: str = Field(
         default="M2",
