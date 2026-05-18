@@ -114,19 +114,19 @@ class BladeParams(BaseModel):
     thickness: float = Field(
         default=0.7,
         gt=0,
-        description="Across the wide flat. Face the grub screw pushes against.",
+        description="X dimension when seated in the slot — along the shaft, the direction the grub screw pushes. Across the wide flat of the blade.",
         json_schema_extra=_spec("§4.1.1", status="MEASURED"),
     )
     width: float = Field(
         default=4.0,
         gt=0,
-        description="Y dimension of the blade — sits in the slot.",
+        description="Y dimension when seated — perpendicular to the shaft, fits in the slot's 5 mm Y dim with clearance.",
         json_schema_extra=_spec("§4.1.2", status="MEASURED"),
     )
     length: float = Field(
         default=23.0,
         gt=0,
-        description="Total length including ground tip.",
+        description="Z dimension when seated — vertical in use, longer than the slot's Z extent so blades drop through and project below for cutting.",
         json_schema_extra=_spec("§4.1.3", status="MEASURED"),
     )
     bevel_angle: float = Field(
