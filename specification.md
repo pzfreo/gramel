@@ -37,9 +37,9 @@ See accompanying diagram. These names are canonical — please use them in the C
 
 **Axes** (right-handed, origin at the centre of the working face at the height of the shaft):
 
-- **X** — along the shank (vertical in diagram); tool-travel direction in use
-- **Y** — along the shaft (horizontal in diagram); edge-margin adjustment direction
-- **Z** — out of page / normal to working face; blade-projection (depth-of-cut) direction
+- **X** — along the shank (vertical in diagram); tool-travel direction in use.
+- **Y** — along the shaft AND normal to the working face. The shaft cross-bore and the shank tapped bore both run along Y and pass *through* the working face — the working face is the +Y face of the shank. Edge-margin adjustment translates the shaft along Y.
+- **Z** — perpendicular to both X and Y; blade-projection (depth-of-cut) direction. The relief slot's width is in Z (across the working face) and the slot's length is along X.
 
 **Parts:**
 
@@ -85,85 +85,88 @@ For the draftsman, so the CAD assembly mates are physically correct.
 
 The CAD model should be built **parametrically**: the dimensions in §4.1 drive everything else. Wall-thickness rules in later tiers depend on those. Changing a driving parameter (e.g. blade thickness if a different blade supply is found) must propagate cleanly through the model.
 
+Each tier table below names the dimension by its full **field path** (`blade.thickness`, `shank.length`, etc.), replacing the original short symbols (`t_b`, `L_shank`). A few fields are owned by mate classes that span multiple parts (e.g. `captive_bearing.axial_play`) — noted in the relevant rows.
+
 ### 4.1 Tier 1 — Blades and spacer (decide first)
 
-| # | Parameter | Symbol | Value | Notes |
+| # | Parameter | Code field | Value | Notes |
 |---|---|---|---|---|
-| 1 | Blade thickness | `t_b` | `[TBM]` (likely 0.6–1.0 mm) | Across the wide flat. The face the grub screw pushes against. |
-| 2 | Blade width | `w_b` | `[TBM]` (likely 4–6 mm) | The Z dimension of the blade, sitting in the slot. |
-| 3 | Blade length | `l_b` | `[TBM]` (likely 18–28 mm) | Total length, including ground tip. Must be long enough that the blade can fall fully into the slot AND extend below for the cut. |
-| 4 | Blade bevel | `α_b` | `[TBM]` | Single bevel; angle and side. |
-| 5 | Spacer thickness range | `t_s` | `[TBM]` (target 1.0–3.0 mm in 0.2 mm steps) | Sets purfling channel width. Multiple spacers will be supplied. |
-| 6 | Spacer height (Z) | `h_s` | Slightly less than `w_b` | So the blades protrude below the spacer when set deep. `[TBM]` |
-| 7 | Total clamped stack thickness | `t_stack = 2·t_b + t_s` | Derived | Range determines blade slot width. |
+| 1 | Blade thickness | `blade.thickness` | `[TBM]` (likely 0.6–1.0 mm) | Across the wide flat. The face the grub screw pushes against. |
+| 2 | Blade width | `blade.width` | `[TBM]` (likely 4–6 mm) | The Z dimension of the blade, sitting in the slot. |
+| 3 | Blade length | `blade.length` | `[TBM]` (likely 18–28 mm) | Total length, including ground tip. Must be long enough that the blade can fall fully into the slot AND extend below for the cut. |
+| 4 | Blade bevel | `blade.bevel_angle` | `[TBM]` | Single bevel; angle and side. |
+| 5 | Spacer thickness range | `spacer.thickness` | `[TBM]` (target 1.0–3.0 mm in 0.2 mm steps) | Sets purfling channel width. Multiple spacers will be supplied. |
+| 6 | Spacer height (Z) | `spacer.height` | Slightly less than `blade.width` | So the blades protrude below the spacer when set deep. `[TBM]` |
+| 7 | Total clamped stack thickness | `stack_thickness` (derived) | `= 2 × blade.thickness + spacer.thickness` | Range determines blade slot width. |
 
 ### 4.2 Tier 2 — Shaft (driven by Tier 1 + wall-thickness rules)
 
-| # | Parameter | Symbol | Value rule | Notes |
+| # | Parameter | Code field | Value rule | Notes |
 |---|---|---|---|---|
-| 8 | Blade slot width (Y) | `W_slot` | `≥ max(t_stack) + grub-screw nose advance + clearance` | Must fit the widest expected stack plus enough room for the grub screw to advance and clamp. |
-| 9 | Blade slot length (Z) | `L_slot` | `≥ w_b + clearance` | Just larger than blade width so blades sit cleanly. |
-| 10 | Blade slot vertical extent | through | Open top and bottom | Blades fall freely through the shaft. Critical: the slot must NOT have a closed bottom. |
-| 11 | Shaft cross-section | `S_shaft` | Round | Recommended round; rotation of the shaft is prevented by the drive plate's screw connection and (if needed) by the depth lock bearing on a flat — see open question Q3. |
-| 12 | Shaft OD | `d_shaft` | Derived from items 8–9 with wall rules | Round to nearest 0.5 mm. |
-| 13 | Wall thickness around blade slot | `wall_slot` | `≥ 2 mm`, `≥ 1.5 × t_b` | **Critical constraint.** Between slot and outer surface of shaft, in all directions. |
-| 14 | Wall thickness around shaft end tap | `wall_tap` | `≥ 1.5 × thread major radius` | **Critical constraint.** Between the threaded hole at the right end of the shaft and the far wall of the blade slot. Determines how thick the wall is *between* the shaft end tap and the blade slot. |
-| 15 | Grub screw thread | `thr_grub` | M3 or M4 `[TBM]` | Specify before sizing shaft end. |
-| 16 | Grub screw nose protrusion (max) | `L_grub_in` | `≥ W_slot − min(t_stack)` | Grub screw must be able to reach the thinnest stack and clamp it. |
-| 17 | Distance from shaft right-end face to blade slot | `pos_slot` | `[TBM]` | Determines how much wall is between shaft end tap and blade slot. See item 14. |
-| 18 | Shaft total length | `L_shaft` | `[TBM]` | Must support: blade slot at right end + protrusion through shank during full Y travel + length to clear thumbwheel + axial gap + drive plate at outboard (left) end. |
-| 19 | Drive plate mounting on shaft | `mount_dp` | Two tapped holes, M2 or M2.5 `[TBM]`, on the **outboard end face of the shaft** | Replaces the original soldered joint. The two screws also stop the drive plate (and the shaft) from rotating. |
+| 8 | Blade slot width (Y) | `shaft.blade_slot_width` | `≥ max(stack_thickness) + grub_screw.max_nose_advance + clearance` | Must fit the widest expected stack plus enough room for the grub screw to advance and clamp. |
+| 9 | Blade slot length (Z) | `shaft.blade_slot_length` | `≥ blade.width + clearance` | Just larger than blade width so blades sit cleanly. |
+| 10 | Blade slot vertical extent | (through) | Open top and bottom | Blades fall freely through the shaft. Critical: the slot must NOT have a closed bottom. |
+| 11 | Shaft cross-section | `shaft.cross_section` | Round | Recommended round; rotation of the shaft is prevented by the drive plate's screw connection and (if needed) by the depth lock bearing on a flat — see open question Q3. |
+| 12 | Shaft OD | `shaft.outer_diameter` | Derived from items 8–9 with wall rules | Round to nearest 0.5 mm. |
+| 13 | Wall thickness around blade slot | `shaft_wall_around_slot` (derived) | `= min((OD − slot_width)/2, (OD − slot_length)/2)`; rule: `≥ 2 mm`, `≥ 1.5 × blade.thickness` | **Critical constraint.** Derived from shaft OD and slot dimensions; spec rule enforced by validator. |
+| 14 | Wall thickness around shaft end tap | `shaft_wall_around_end_tap` (derived) | `= shaft.end_to_slot_distance − shaft.end_tap_depth`; rule: `≥ 1.5 × thread major radius` | **Critical constraint.** Between the threaded hole at the right end of the shaft and the far wall of the blade slot. |
+| 14a | Grub-screw tap depth (from right end face) | `shaft.end_tap_depth` | `[TBM]` | Depth of the tap that the grub screw threads into. Drives item 14. |
+| 15 | Grub screw thread | `grub_screw.thread` | M3 or M4 `[TBM]` | Specify before sizing shaft end. |
+| 16 | Grub screw nose protrusion (max) | `grub_screw.max_nose_advance` | `≥ shaft.blade_slot_width − min(stack_thickness)` | Grub screw must be able to reach the thinnest stack and clamp it. |
+| 17 | Distance from shaft right-end face to blade slot | `shaft.end_to_slot_distance` | `[TBM]` | Determines how much wall is between shaft end tap and blade slot. See item 14. |
+| 18 | Shaft total length | `shaft.length` | `[TBM]` | Must support: blade slot at right end + protrusion through shank during full Y travel + length to clear thumbwheel + axial gap + drive plate at outboard (left) end. |
+| 19 | Drive plate mounting on shaft | `shaft.drive_plate_mount` | Two tapped holes, M2 or M2.5 `[TBM]`, on the **outboard end face of the shaft** | Replaces the original soldered joint. The two screws also stop the drive plate (and the shaft) from rotating. |
 
 ### 4.3 Tier 3 — Shank (driven by Tier 2 + wall-thickness rules)
 
-| # | Parameter | Symbol | Value rule | Notes |
+| # | Parameter | Code field | Value rule | Notes |
 |---|---|---|---|---|
-| 20 | Shaft cross-bore diameter | `D_xb` | `d_shaft + sliding-fit allowance` | **Precision fit.** H7/g6 or equivalent (≈ 0.02–0.04 mm clearance). |
-| 21 | Shank tapped bore | `thr_drive` | M4 × 0.5 fine, or M3 fine `[TBM]` | Fine pitch preferred for fine edge-margin adjustment. |
-| 22 | Centre-to-centre distance between shank tapped bore and shaft cross-bore | `gap_bores` | `[TBM]` | Must be large enough that wall between the two bores (≥ 1.5 × thread major radius, item 23) is preserved. |
-| 23 | Wall thickness between shank tapped bore and shaft cross-bore | `wall_bb` | `≥ 1.5 × thread major radius`, `≥ 2 mm` | **Critical constraint.** |
-| 24 | Wall thickness around shaft cross-bore (other directions) | `wall_xb` | `≥ D_xb × 0.6`, `≥ 3 mm` | **Critical constraint.** |
-| 25 | Wall thickness around shank tapped bore (other directions) | `wall_tap_shank` | `≥ 1.5 × thread major radius`, `≥ 3 mm` | **Critical constraint.** |
-| 26 | Shank cross-section | `S_shank` | Square (or near-square rectangular) | Must satisfy items 23, 24, 25. |
-| 27 | Shank length (X) | `L_shank` | `[TBM]` (likely 90–110 mm) | Affects balance, reach, and the length of the depth-lock blind bore. |
-| 28 | Shank cross-bore position (from top of shank) | `pos_xb` | `[TBM]` | Near the top. Sets how high the mechanism sits relative to the working face. |
-| 29 | Shank tapped bore position | `pos_tb` | `pos_xb − gap_bores` | Derived; sits above the shaft cross-bore. |
-| 30 | Depth-lock blind bore diameter | `D_dlb` | Per depth-lock thread, plus tapping allowance | Tapped for the depth-lock bolt's full engagement length. |
-| 31 | Depth-lock blind bore depth | `L_dlb` | `= L_shank − pos_xb − small_clearance` | Must run from the bottom of the shank up to just below the shaft cross-bore. Bolt's tip bears on shaft when tightened. |
-| 32 | Depth-lock thread | `thr_lock` | M4 or M5 `[TBM]` | Coarser is fine; this is hand-clamped, not metered. |
-| 33 | Relief slot width (Y) | `w_rs` | `[TBM]` (likely 4–8 mm) | Wide enough to clear edge irregularities; narrow enough to keep contact corners close. |
-| 34 | Relief slot depth (Z) | `d_rs` | ~1 mm per original | Just enough to guarantee no contact in slot region. |
-| 35 | Working face convexity radius | `R_wf` | `[TBM]` | Large radius; in practice formed so contact is strictly on the corners of the relief slot. |
-| 36 | Contact corner width (Y) | `w_cc` | `(S_shank.Y − w_rs) / 2` | Derived; symmetric. |
+| 20 | Shaft cross-bore diameter | `shank.crossbore_diameter` | `shaft.outer_diameter + sliding-fit allowance` | **Precision fit.** H7/g6 or equivalent (≈ 0.02–0.04 mm clearance). |
+| 21 | Shank tapped bore | `drive_screw.thread` | M4 × 0.5 fine, or M3 fine `[TBM]` | Fine pitch preferred for fine edge-margin adjustment. |
+| 22 | Centre-to-centre distance between shank tapped bore and shaft cross-bore | `shank.crossbore_to_tapped_bore_gap` | `[TBM]` | Must be large enough that wall between the two bores (≥ 1.5 × thread major radius, item 23) is preserved. |
+| 23 | Wall thickness between shank tapped bore and shaft cross-bore | `shank_wall_between_bores` (derived) | `= gap − crossbore_radius − tapped_drill_radius`; rule: `≥ 1.5 × thread major radius`, `≥ 2 mm` | **Critical constraint.** Derived from inter-bore gap and bore radii; rule enforced by validator. |
+| 24 | Wall thickness around shaft cross-bore (other directions) | `shank_wall_around_crossbore` (derived) | `= min(crossbore_x − crossbore_radius, depth/2 − crossbore_radius)`; rule: `≥ 0.6 × D_xb`, `≥ 3 mm` | **Critical constraint.** Bore axis is along Y (through the working face); walls measured in X (toward bottom of shank) and Z (top and bottom of cross-section). Assumes bore centred in Z. |
+| 25 | Wall thickness around shank tapped bore (other directions) | `shank_wall_around_tapped_bore` (derived) | `= min(pos_tb − tap_drill_radius, depth/2 − tap_drill_radius)`; rule: `≥ 1.5 × thread major radius`, `≥ 3 mm` | **Critical constraint.** Walls measured in X (toward top of shank) and Z (top and bottom of cross-section). |
+| 26 | Shank cross-section | `shank.width` × `shank.depth` (Y × Z) | Square (or near-square rectangular) | `width` is depth-from-working-face into the body (Y direction); `depth` is the cross-section dimension perpendicular to both the shank length and the shaft (Z direction). Must satisfy items 23, 24, 25. |
+| 27 | Shank length (X) | `shank.length` | `[TBM]` (likely 90–110 mm) | Affects balance, reach, and the length of the depth-lock blind bore. |
+| 28 | Shank cross-bore position (from top of shank) | `shank.crossbore_position_from_top` | `[TBM]` | Near the top. Sets how high the mechanism sits relative to the working face. |
+| 29 | Shank tapped bore position | `shank.tapped_bore_position_from_top` | `= shank.crossbore_position_from_top − shank.crossbore_to_tapped_bore_gap` | Derived; sits above the shaft cross-bore. |
+| 30 | Depth-lock blind bore diameter | `shank.depth_lock_bore_diameter` | Per depth-lock thread, plus tapping allowance | Tapped for the depth-lock bolt's full engagement length. |
+| 31 | Depth-lock blind bore depth | `shank.depth_lock_bore_depth` | `= shank.length − shank.crossbore_position_from_top − small_clearance` | Must run from the bottom of the shank up to just below the shaft cross-bore. Bolt's tip bears on shaft when tightened. |
+| 32 | Depth-lock thread | `depth_lock.thread` | M4 or M5 `[TBM]` | Coarser is fine; this is hand-clamped, not metered. |
+| 33 | Relief slot width (Z) | `shank.relief_slot_width` | `[TBM]` (likely 4–8 mm) | Wide enough to clear edge irregularities; narrow enough to keep contact corners close. Measured *across* the working face, perpendicular to slot length. |
+| 34 | Relief slot depth (Y) | `shank.relief_slot_depth` | ~1 mm per original | Depth into the body from the working face. Just enough to guarantee no contact in slot region. |
+| 35 | Working face convexity radius | `shank.working_face_radius` | `[TBM]` | Large radius; in practice formed so contact is strictly on the corners of the relief slot. |
+| 36 | Contact corner width (Z) | `shank.contact_corner_width` (derived) | `= (shank.depth − shank.relief_slot_width) / 2` | Symmetric. Contact corners sit either side of the relief slot, measured in Z across the working face. |
 
 ### 4.4 Tier 4 — Drive train
 
-| # | Parameter | Symbol | Value rule | Notes |
+| # | Parameter | Code field | Value rule | Notes |
 |---|---|---|---|---|
-| 37 | Drive screw thread | — | Matches item 21 | |
-| 38 | Drive screw thread pitch | `p_drive` | ≈ 0.5 mm (user estimates 2 turns/mm) | Sets adjustment resolution. |
-| 39 | Drive screw length | `L_drive` | `[TBM]` | Must support full Y travel of shaft + adequate engagement at minimum-margin setting. |
-| 40 | Drive screw left-end tap | `tap_ds` | For silver screw; M2 or M2.5 `[TBM]` | Bottomed by the silver screw — see Tier 5. |
-| 41 | Thumbwheel diameter | `D_tw` | `[TBM]` (likely 15–22 mm) | Big enough for fingertip torque; small enough not to foul the work. |
-| 42 | Thumbwheel thickness | `t_tw` | `[TBM]` | |
-| 43 | Thumbwheel knurl | — | Straight (axial) `[TBM]` | |
+| 37 | Drive screw thread | `drive_screw.thread` | Matches item 21 | |
+| 38 | Drive screw thread pitch | `drive_screw.thread_pitch` | ≈ 0.5 mm (user estimates 2 turns/mm) | Sets adjustment resolution. |
+| 39 | Drive screw length | `drive_screw.length` | `[TBM]` | Must support full Y travel of shaft + adequate engagement at minimum-margin setting. |
+| 40 | Drive screw left-end tap | `drive_screw.left_face_tap` | For silver screw; M2 or M2.5 `[TBM]` | Bottomed by the silver screw — see Tier 5. Depth: `drive_screw.left_face_tap_depth`. |
+| 41 | Thumbwheel diameter | `thumbwheel.diameter` | `[TBM]` (likely 15–22 mm) | Big enough for fingertip torque; small enough not to foul the work. |
+| 42 | Thumbwheel thickness | `thumbwheel.thickness` | `[TBM]` | |
+| 43 | Thumbwheel knurl | `thumbwheel.knurl` | Straight (axial) `[TBM]` | |
 | 44 | Drive screw and thumbwheel join | — | **Integral** — one piece, or permanently joined | Must rotate as a unit. |
 
 ### 4.5 Tier 5 — Drive plate and silver-screw bearing
 
 Geometry, outboard → inboard along Y: silver-screw head → drive plate → axial-play gap → thumbwheel left face → (silver-screw thread engagement inside thumbwheel).
 
-| # | Parameter | Symbol | Value rule | Notes |
+| # | Parameter | Code field | Value rule | Notes |
 |---|---|---|---|---|
-| 45 | Drive plate height (Z) above shaft | `h_dp` | `gap_bores + clearance_above_screw` | Plate must rise from shaft top to drive-screw axis, with enough material above and below the clearance hole. |
-| 46 | Drive plate width (X) | `w_dp` | `[TBM]` | |
-| 47 | Drive plate thickness (Y) | `t_dp` | `[TBM]` (likely 1.5–2.5 mm) | |
-| 48 | Drive plate clearance hole | `D_dp_hole` | `≥ silver-screw major × 1.1` | Light radial clearance — does not need precision (per user; see §8). |
-| 49 | Drive plate position on shaft (X) | `pos_dp` | Mounted on the outboard end face of the shaft | The shaft must be long enough on its outboard side that the drive plate sits clear of the thumbwheel. The axial-play gap (item 53) sits between them. |
-| 50 | Silver screw thread | `thr_ss` | Per item 40 | M2 or M2.5 `[TBM]`. |
-| 51 | Silver screw useful length (head underside to tip) | `L_ss` | `= t_dp + play + D_tap` | Where `D_tap` is the depth of the tap in the thumbwheel left face (item 40), and `play` is the designed axial bearing clearance. **Critical:** the screw must bottom on the tap with `play` mm of axial clearance remaining between its head and the drive plate. |
-| 52 | Silver screw head | — | Pan or cheese; larger than `D_dp_hole` | Acts as the retainer. |
-| 53 | Axial play | `play` | 0.1–0.3 mm | The designed bearing clearance. Verify after assembly with feeler gauges. |
+| 45 | Drive plate height (Z) above shaft | `drive_plate.height` | `shank.crossbore_to_tapped_bore_gap + clearance_above_screw` | Plate must rise from shaft top to drive-screw axis, with enough material above and below the clearance hole. |
+| 46 | Drive plate width (X) | `drive_plate.width` | `[TBM]` | |
+| 47 | Drive plate thickness (Y) | `drive_plate.thickness` | `[TBM]` (likely 1.5–2.5 mm) | |
+| 48 | Drive plate clearance hole | `drive_plate.clearance_hole_diameter` | `≥ silver_screw.thread.major × 1.1` | Light radial clearance — does not need precision (per user; see §8). |
+| 49 | Drive plate position on shaft (X) | `drive_plate.shaft_mount_position` | Mounted on the outboard end face of the shaft | The shaft must be long enough on its outboard side that the drive plate sits clear of the thumbwheel. The axial-play gap (item 53) sits between them. |
+| 50 | Silver screw thread | `silver_screw.thread` | Per item 40 | M2 or M2.5 `[TBM]`. |
+| 51 | Silver screw useful length (head underside to tip) | `silver_screw.length` *(owned by `captive_bearing`)* | `= drive_plate.thickness + captive_bearing.axial_play + drive_screw.left_face_tap_depth` | **Critical:** the screw must bottom on the tap with `captive_bearing.axial_play` mm of axial clearance remaining between its head and the drive plate. |
+| 52 | Silver screw head | `silver_screw.head` | Pan or cheese; larger than `drive_plate.clearance_hole_diameter` | Acts as the retainer. |
+| 53 | Axial play | `captive_bearing.axial_play` *(owned by `captive_bearing`)* | 0.1–0.3 mm | The designed bearing clearance. Verify after assembly with feeler gauges. |
 
 This is the *bearing*: silver-screw head + drive plate + thumbwheel left end face form a captive but non-binding interface. The drive plate floats in the axial-play gap; the thumbwheel rotates freely.
 
