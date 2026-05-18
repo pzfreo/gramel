@@ -255,6 +255,18 @@ class ShaftParams(BaseModel):
         description="Depth of the tapped holes on the shaft's outboard end face (for the drive-plate screws). ESTIMATE.",
         json_schema_extra=_spec("§4.2.19 (mount depth — not numbered)"),
     )
+    tenon_height: float = Field(
+        default=2.0,
+        gt=0,
+        description="Z dimension of the anti-rotation tenon — a horizontal rib across the shaft's −X end face. The tenon's Y extent is the full shaft diameter (one mill pass instead of a small rectangle).",
+        json_schema_extra=_spec("§4.2.19 (tenon — design addition)"),
+    )
+    tenon_depth: float = Field(
+        default=1.0,
+        gt=0,
+        description="X projection of the tenon outboard from the shaft's −X end face.",
+        json_schema_extra=_spec("§4.2.19 (tenon — design addition)"),
+    )
     outer_diameter: float = Field(
         default=7.9,
         gt=0,
@@ -411,10 +423,10 @@ class ShankParams(BaseModel):
         json_schema_extra=_spec("§4.3.35", status="DERIVED"),
     )
     top_dome_radius: float = Field(
-        default=8.11,
+        default=30.0,
         gt=0,
-        description="Radius of the spherical dome at the +Z end of the shank (next to the drive screw). Rounded in *both* X and Y directions — i.e. a sphere, not a single-axis cylinder like the working face. Similar radius to working_face_radius per the original. Bottom (−Z) face is flat.",
-        json_schema_extra=_spec("§4.3 (top dome — not in spec)", status="MEASURED"),
+        description="Radius of the spherical dome at the +Z end of the shank. Rounded in *both* X and Y directions (sphere, not a single-axis cylinder). Must be large enough that the dome's lowest point (at the +X +Y corner) sits above the top of the tapped bore — empirically requires R ≥ ~15 mm for the current shank/bore proportions. R = 30 mm gives a ~1.5 mm wall above the bore.",
+        json_schema_extra=_spec("§4.3 (top dome — not in spec)"),
     )
     edge_fillet_radius: float = Field(
         default=0.5,
@@ -517,16 +529,22 @@ class DrivePlateParams(BaseModel):
         json_schema_extra=_spec("§4.5.45 (egg shape — not in spec)", status="MEASURED"),
     )
     thickness: float = Field(
-        default=2.0,
+        default=2.5,
         gt=0,
-        description="Plate thickness (X dimension — the plate's normal direction).",
+        description="Plate thickness (X dimension — the plate's normal direction). 2.5 mm = 1 mm slot + 1.5 mm wall on the front face.",
         json_schema_extra=_spec("§4.5.47", status="MEASURED"),
     )
-    clearance_hole_diameter: float = Field(
+    silver_clearance_hole_diameter: float = Field(
         default=2.4,
         gt=0,
-        description="Clearance hole the silver screw passes through (loose fit). M2 silver-screw major 2.0 + ~0.4 mm clearance.",
+        description="Hole the SILVER screw passes through. 0.2 mm radial clearance on M2 — sufficient for the captive bearing to spin freely without binding.",
         json_schema_extra=_spec("§4.5.48"),
+    )
+    mount_hole_diameter: float = Field(
+        default=2.4,
+        gt=0,
+        description="Hole the MOUNT screw passes through (shaft end of plate). Standard M2 clearance fit (~0.2 mm radial). Doesn't need the sloppy captive-bearing tolerance.",
+        json_schema_extra=_spec("§4.5 (mount hole — distinct from silver hole)"),
     )
 
 
