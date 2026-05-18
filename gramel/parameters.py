@@ -217,9 +217,15 @@ class GrubScrewParams(BaseModel):
     """§4.2 items 15–16 — blade-clamp grub screw."""
 
     thread: str = Field(
-        default="M3",
-        description="Grub-screw thread designation.",
-        json_schema_extra=_spec("§4.2.15", units=""),
+        default="M4",
+        description="Grub-screw thread. Original tool has a non-standard 4.4 mm diameter — we substitute M4 (4 mm) as the closest convenient standard size.",
+        json_schema_extra=_spec("§4.2.15", status="MEASURED", units=""),
+    )
+    length: float = Field(
+        default=10.0,
+        gt=0,
+        description="Total threaded length of the grub screw. M4 × 10 mm.",
+        json_schema_extra=_spec("§4.2 (grub screw length — not numbered)", status="MEASURED"),
     )
     max_nose_advance: float = Field(
         default=3.0,
@@ -236,6 +242,30 @@ class ShaftParams(BaseModel):
         default="round_with_flat",
         description="Shaft cross-section profile. Measured: the original has a flat machined on the underside that registers against the depth-lock push rod — answers spec §5 open question Q3. Flat-on-flat contact gives a more positive lock AND prevents shaft rotation.",
         json_schema_extra=_spec("§4.2.11", status="MEASURED", units=""),
+    )
+    flat_depth: float = Field(
+        default=0.6,
+        gt=0,
+        description="Depth of the flat machined on the −Z underside of the shaft — the sagitta of the cylinder segment removed from the bottom. Flat extends the full shaft.length.",
+        json_schema_extra=_spec("§4.2.11 (flat — not in spec items)", status="MEASURED"),
+    )
+    drive_plate_mount_depth: float = Field(
+        default=5.0,
+        gt=0,
+        description="Depth of the tapped holes on the shaft's outboard end face (for the drive-plate screws). ESTIMATE.",
+        json_schema_extra=_spec("§4.2.19 (mount depth — not numbered)"),
+    )
+    tenon_height: float = Field(
+        default=2.0,
+        gt=0,
+        description="Z dimension of the anti-rotation tenon — a horizontal rib across the shaft's −X end face. The tenon's Y extent is the full shaft diameter (one mill pass instead of a small rectangle).",
+        json_schema_extra=_spec("§4.2.19 (tenon — design addition)"),
+    )
+    tenon_depth: float = Field(
+        default=1.0,
+        gt=0,
+        description="X projection of the tenon outboard from the shaft's −X end face.",
+        json_schema_extra=_spec("§4.2.19 (tenon — design addition)"),
     )
     outer_diameter: float = Field(
         default=7.9,
@@ -256,33 +286,21 @@ class ShaftParams(BaseModel):
         json_schema_extra=_spec("§4.2.9", status="MEASURED"),
     )
     end_to_slot_distance: float = Field(
-        default=8.0,
+        default=4.0,
         gt=0,
-        description="Distance from shaft right end face to right wall of blade slot.",
-        json_schema_extra=_spec("§4.2.17"),
-    )
-    end_tap_depth: float = Field(
-        default=5.0,
-        gt=0,
-        description="Depth of grub-screw tap from the right end face. Sets §4.2.14 wall.",
-        json_schema_extra=_spec("§4.2.14 (related)"),
+        description="Distance from shaft right end face to right wall of blade slot. The grub-screw end tap fills this entire distance — there is *no* wall between the tap and the slot, so the grub screw's tip directly contacts the blade stack. (Spec §4.2.14 wall rule does not apply to this tool's design.)",
+        json_schema_extra=_spec("§4.2.17", status="MEASURED"),
     )
     length: float = Field(
-        default=100.0,
+        default=45.0,
         gt=0,
-        description="Total shaft length. Slot + travel + drive-plate clearance.",
-        json_schema_extra=_spec("§4.2.18"),
+        description="Total shaft length (measured on the original).",
+        json_schema_extra=_spec("§4.2.18", status="MEASURED"),
     )
     drive_plate_mount_thread: str = Field(
         default="M2",
-        description="Thread for the two screws mounting the drive plate to the shaft's outboard end face.",
+        description="Thread for the single central screw mounting the drive plate to the shaft's outboard end face. Spec called for two screws; this scale (~7.9 mm shaft) doesn't fit two M2 screws, so we go with one + use the shaft's existing −Z flat as the anti-rotation feature (the drive plate has a matching D-shaped hole that mates with the shaft cross-section).",
         json_schema_extra=_spec("§4.2.19", units=""),
-    )
-    drive_plate_mount_spacing: float = Field(
-        default=4.0,
-        gt=0,
-        description="Centre-to-centre spacing between the two drive-plate mount screws.",
-        json_schema_extra=_spec("§4.2.19"),
     )
 
 
@@ -405,10 +423,10 @@ class ShankParams(BaseModel):
         json_schema_extra=_spec("§4.3.35", status="DERIVED"),
     )
     top_dome_radius: float = Field(
-        default=8.11,
+        default=30.0,
         gt=0,
-        description="Radius of the spherical dome at the +Z end of the shank (next to the drive screw). Rounded in *both* X and Y directions — i.e. a sphere, not a single-axis cylinder like the working face. Similar radius to working_face_radius per the original. Bottom (−Z) face is flat.",
-        json_schema_extra=_spec("§4.3 (top dome — not in spec)", status="MEASURED"),
+        description="Radius of the spherical dome at the +Z end of the shank. Rounded in *both* X and Y directions (sphere, not a single-axis cylinder). Must be large enough that the dome's lowest point (at the +X +Y corner) sits above the top of the tapped bore — empirically requires R ≥ ~15 mm for the current shank/bore proportions. R = 30 mm gives a ~1.5 mm wall above the bore.",
+        json_schema_extra=_spec("§4.3 (top dome — not in spec)"),
     )
     edge_fillet_radius: float = Field(
         default=0.5,
@@ -484,31 +502,49 @@ class ThumbwheelParams(BaseModel):
 
 
 class DrivePlateParams(BaseModel):
-    """§4.5 items 45–49 — drive plate that lets the drive screw pull the shaft."""
+    """
+    §4.5 items 45–49 — drive plate that lets the drive screw pull the shaft.
 
-    height: float = Field(
-        default=12.0,
+    The real plate is **egg-shaped** (NOT the rectangle the spec drafted):
+    two circular bosses, the larger one at the shaft end (10 mm radius)
+    and the smaller one at the thumbwheel end (5 mm radius), connected
+    by a smooth tangent boundary. The plate's plane is YZ (normal = X),
+    standing vertically up from the shaft's outboard −X end face.
+
+    The vertical distance between the two bosses' centres equals the
+    shank's `crossbore_to_tapped_bore_gap` so the plate spans from the
+    shaft axis up to the drive-screw axis.
+    """
+
+    shaft_end_radius: float = Field(
+        default=10.0,
         gt=0,
-        description="Plate height above shaft. Must reach drive-screw axis.",
-        json_schema_extra=_spec("§4.5.45"),
+        description="Radius of the larger boss at the shaft end of the plate.",
+        json_schema_extra=_spec("§4.5.45 (egg shape — not in spec)", status="MEASURED"),
     )
-    width: float = Field(
-        default=8.0,
+    thumb_end_radius: float = Field(
+        default=5.0,
         gt=0,
-        description="Plate Z dimension.",
-        json_schema_extra=_spec("§4.5.46"),
+        description="Radius of the smaller boss at the thumbwheel end (around the silver-screw clearance hole).",
+        json_schema_extra=_spec("§4.5.45 (egg shape — not in spec)", status="MEASURED"),
     )
     thickness: float = Field(
-        default=2.0,
+        default=2.5,
         gt=0,
-        description="Plate X dimension (1.5–2.5 mm typical).",
-        json_schema_extra=_spec("§4.5.47"),
+        description="Plate thickness (X dimension — the plate's normal direction). 2.5 mm = 1 mm slot + 1.5 mm wall on the front face.",
+        json_schema_extra=_spec("§4.5.47", status="MEASURED"),
     )
-    clearance_hole_diameter: float = Field(
+    silver_clearance_hole_diameter: float = Field(
         default=2.4,
         gt=0,
-        description="Clearance hole the silver screw passes through (loose fit).",
+        description="Hole the SILVER screw passes through. 0.2 mm radial clearance on M2 — sufficient for the captive bearing to spin freely without binding.",
         json_schema_extra=_spec("§4.5.48"),
+    )
+    mount_hole_diameter: float = Field(
+        default=2.4,
+        gt=0,
+        description="Hole the MOUNT screw passes through (shaft end of plate). Standard M2 clearance fit (~0.2 mm radial). Doesn't need the sloppy captive-bearing tolerance.",
+        json_schema_extra=_spec("§4.5 (mount hole — distinct from silver hole)"),
     )
 
 
@@ -523,8 +559,8 @@ class SilverScrewParams(BaseModel):
     head_diameter: float = Field(
         default=4.0,
         gt=0,
-        description="Head diameter. Must exceed drive_plate.clearance_hole_diameter.",
-        json_schema_extra=_spec("§4.5.52"),
+        description="Head diameter (measured). Must exceed drive_plate.clearance_hole_diameter.",
+        json_schema_extra=_spec("§4.5.52", status="MEASURED"),
     )
     head_thickness: float = Field(
         default=1.5,
@@ -680,12 +716,6 @@ class PurflingCutterParams(BaseModel):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def shaft_wall_around_end_tap(self) -> float:
-        """§4.2.14 — wall between bottom of grub-screw tap and far wall of slot."""
-        return self.shaft.end_to_slot_distance - self.shaft.end_tap_depth
-
-    @computed_field  # type: ignore[prop-decorator]
-    @property
     def shank_wall_between_bores(self) -> float:
         """§4.3.23 — wall between crossbore and tapped bore in shank."""
         crossbore_radius = self.crossbore_diameter / 2
@@ -745,13 +775,9 @@ class PurflingCutterParams(BaseModel):
                 f"< min {min_slot_wall:.3f} (§4.2.13)."
             )
 
-        # §4.2.14 — wall around shaft end tap
-        min_end_tap_wall = 1.0 * _thread_major_radius(self.grub_screw.thread)
-        if self.shaft_wall_around_end_tap < min_end_tap_wall:
-            raise ValueError(
-                f"shaft_wall_around_end_tap ({self.shaft_wall_around_end_tap:.3f}) "
-                f"< min {min_end_tap_wall:.3f} (§4.2.14)."
-            )
+        # §4.2.14 wall rule removed: in this tool, the grub-screw end tap
+        # opens directly into the slot (no wall). Spec was wrong for this
+        # design.
 
         # §4.3.23 — wall between bores
         min_wall_bb = max(1.2, 1.0 * _thread_major_radius(self.drive_screw.thread))

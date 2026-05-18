@@ -102,11 +102,6 @@ def test_shaft_wall_around_slot() -> None:
     assert PurflingCutterParams().shaft_wall_around_slot == pytest.approx(1.45)
 
 
-def test_shaft_wall_around_end_tap() -> None:
-    # end_to_slot_distance (8.0) − end_tap_depth (5.0) = 3.0
-    assert PurflingCutterParams().shaft_wall_around_end_tap == pytest.approx(3.0)
-
-
 def test_shank_wall_between_bores() -> None:
     # gap (9.5) − crossbore_radius (8.15/2) − tap_drill_radius (2.5/2) = 4.175
     assert PurflingCutterParams().shank_wall_between_bores == pytest.approx(4.175)
@@ -137,13 +132,6 @@ def test_violation_4213_blade_slot_too_wide_for_shaft() -> None:
     with pytest.raises(ValidationError, match=r"§4\.2\.13"):
         # Wall = (7.9 − 6.5)/2 = 0.7; rule = max(0.8, 0.7) = 0.8
         PurflingCutterParams(shaft={"blade_slot_length": 6.5})
-
-
-def test_violation_4214_tap_too_deep_for_end_to_slot() -> None:
-    """§4.2.14 — making the grub-screw tap deep enough to thin the slot wall fails."""
-    with pytest.raises(ValidationError, match=r"§4\.2\.14"):
-        # Wall = 8.0 − 7.0 = 1.0; rule for M3 = 1.0 × 1.5 = 1.5
-        PurflingCutterParams(shaft={"end_tap_depth": 7.0})
 
 
 def test_violation_4323_inter_bore_gap_too_small() -> None:
@@ -180,6 +168,7 @@ def test_blade_thickness_carries_spec_metadata() -> None:
     assert extra["spec_ref"] == "§4.1.1"
     assert extra["status"] == "MEASURED"
     assert extra["units"] == "mm"
+    assert field.description is not None
     assert "wide flat" in field.description
     assert "grub screw" in field.description
 
