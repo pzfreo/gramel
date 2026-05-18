@@ -453,24 +453,36 @@ class DriveScrewParams(BaseModel):
         default=0.5,
         gt=0,
         description="Drive-screw thread pitch. Fine pitch for adjustment resolution.",
-        json_schema_extra=_spec("§4.4.38"),
+        json_schema_extra=_spec("§4.4.38", status="MEASURED"),
     )
     length: float = Field(
-        default=25.0,
+        default=18.0,
         gt=0,
-        description="Threaded length. Must support full X travel + engagement.",
-        json_schema_extra=_spec("§4.4.39"),
+        description="Threaded length of the drive screw — supports full X travel + engagement.",
+        json_schema_extra=_spec("§4.4.39", status="MEASURED"),
     )
     left_face_tap: str = Field(
         default="M2",
         description="Thread of the tap on the thumbwheel's left end face (for silver screw).",
-        json_schema_extra=_spec("§4.4.40", units=""),
+        json_schema_extra=_spec("§4.4.40", status="MEASURED", units=""),
     )
     left_face_tap_depth: float = Field(
-        default=4.0,
+        default=3.0,
         gt=0,
-        description="Depth of the tap. Silver screw bottoms on this — sets bearing geometry.",
-        json_schema_extra=_spec("§4.4.40"),
+        description="Depth of the tap for the silver screw, into the −X face of the silver boss / thumbwheel. Was 4 mm originally; reduced to 3 mm so the tap bottoms a safe distance before reaching the drive screw's M3 thread (preserves ≥1.5 mm of solid material in the unthreaded section).",
+        json_schema_extra=_spec("§4.4.40", status="MEASURED"),
+    )
+    unthreaded_length: float = Field(
+        default=3.0,
+        gt=0,
+        description="Length of the unthreaded section between the thumbwheel disc and the start of the M3 threaded portion of the drive screw. Provides solid material around the silver-screw tap bottom so it doesn't eat into the M3 thread.",
+        json_schema_extra=_spec("§4.4 (unthreaded section — design addition)", status="MEASURED"),
+    )
+    unthreaded_diameter: float = Field(
+        default=5.0,
+        gt=0,
+        description="Outer diameter of the unthreaded section. Larger than M3 major (3 mm) so it provides a positive shoulder against the inboard face of the shank tapped bore at maximum-margin.",
+        json_schema_extra=_spec("§4.4 (unthreaded section — design addition)", status="MEASURED"),
     )
 
 
@@ -478,16 +490,28 @@ class ThumbwheelParams(BaseModel):
     """§4.4 items 41–43 — thumbwheel (integral with drive screw)."""
 
     diameter: float = Field(
-        default=18.0,
+        default=10.0,
         gt=0,
-        description="Thumbwheel knurled disc OD.",
-        json_schema_extra=_spec("§4.4.41"),
+        description="Thumbwheel knurled disc OD. Original measured at 9.5 mm; rounded to 10 mm for the prototype (interchangeable with 9 mm by user choice).",
+        json_schema_extra=_spec("§4.4.41", status="MEASURED"),
     )
     thickness: float = Field(
-        default=5.0,
+        default=2.0,
         gt=0,
-        description="Thumbwheel thickness (X dimension).",
-        json_schema_extra=_spec("§4.4.42"),
+        description="Thumbwheel thickness (X dimension — along the drive-screw axis).",
+        json_schema_extra=_spec("§4.4.42", status="MEASURED"),
+    )
+    silver_boss_diameter: float = Field(
+        default=6.0,
+        gt=0,
+        description="Diameter of the small boss on the outboard (−X, drive-plate side) face of the thumbwheel. The silver-screw tap enters through this boss, giving extra material around the tap so it doesn't eat into the thumbwheel's knurled edge.",
+        json_schema_extra=_spec("§4.4 (silver boss — design addition)", status="MEASURED"),
+    )
+    silver_boss_length: float = Field(
+        default=0.5,
+        gt=0,
+        description="X length of the silver boss. Short — just enough to give a positive seat for the silver-screw tap.",
+        json_schema_extra=_spec("§4.4 (silver boss — design addition)", status="MEASURED"),
     )
     knurl: Literal["straight", "diamond"] = Field(
         default="straight",
@@ -517,21 +541,21 @@ class DrivePlateParams(BaseModel):
     """
 
     shaft_end_radius: float = Field(
-        default=10.0,
+        default=4.5,
         gt=0,
-        description="Radius of the larger boss at the shaft end of the plate.",
+        description="Radius of the larger boss at the shaft end of the plate (9 mm diameter).",
         json_schema_extra=_spec("§4.5.45 (egg shape — not in spec)", status="MEASURED"),
     )
     thumb_end_radius: float = Field(
-        default=5.0,
+        default=3.0,
         gt=0,
-        description="Radius of the smaller boss at the thumbwheel end (around the silver-screw clearance hole).",
+        description="Radius of the smaller boss at the thumbwheel end (6 mm diameter), around the silver-screw clearance hole.",
         json_schema_extra=_spec("§4.5.45 (egg shape — not in spec)", status="MEASURED"),
     )
     thickness: float = Field(
-        default=2.5,
+        default=3.0,
         gt=0,
-        description="Plate thickness (X dimension — the plate's normal direction). 2.5 mm = 1 mm slot + 1.5 mm wall on the front face.",
+        description="Plate thickness (X dimension — the plate's normal direction). 3 mm = 1 mm anti-rotation slot + 2 mm wall on the front face.",
         json_schema_extra=_spec("§4.5.47", status="MEASURED"),
     )
     silver_clearance_hole_diameter: float = Field(
@@ -554,7 +578,7 @@ class SilverScrewParams(BaseModel):
     thread: str = Field(
         default="M2",
         description="Silver-screw thread. Matches drive_screw.left_face_tap (§4.4.40).",
-        json_schema_extra=_spec("§4.5.50", units=""),
+        json_schema_extra=_spec("§4.5.50", status="MEASURED", units=""),
     )
     head_diameter: float = Field(
         default=4.0,
@@ -586,8 +610,8 @@ class CaptiveBearingParams(BaseModel):
         default=0.2,
         gt=0,
         le=0.5,
-        description="Designed axial bearing clearance (0.1–0.3 mm). The non-binding gap.",
-        json_schema_extra=_spec("§4.5.53"),
+        description="Designed axial bearing clearance. Measured 0.2 mm — the non-binding gap that lets the drive plate float between the silver-screw head and the thumbwheel's left face while the drive screw rotates freely.",
+        json_schema_extra=_spec("§4.5.53", status="MEASURED"),
     )
 
 
