@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "build123d-mcp": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "tool",
+        "run",
+        "--python",
+        "3.12",
+        "build123d-mcp",
+        "--allow-imports",
+        "pydantic"
+      ]
+    }
+  }
+}
