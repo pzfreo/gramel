@@ -105,7 +105,7 @@ def build_assembly(params: PurflingCutterParams) -> Compound:
     bolt_local = build_depth_lock_bolt(params)
 
     # Push rod top bears on the shaft's −Z flat
-    rod_top_z = crossbore_z - params.shaft.outer_diameter / 2 + params.shaft.flat_depth
+    rod_top_z = crossbore_z - params.shaft_outer_diameter / 2 + params.shaft.flat_depth
     rod_bottom_z = rod_top_z - params.depth_lock.push_rod_length
     rod = Pos(0, 0, rod_bottom_z) * rod_local
 

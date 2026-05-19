@@ -9,7 +9,8 @@ Coordinate convention (matches the shank — Z-up):
   Z: vertical (depth-of-cut direction). Blades drop down in −Z.
 
 Features:
-  - Round cross-section of diameter ``shaft.outer_diameter``.
+  - Round cross-section of diameter ``params.shaft_outer_diameter``
+    (derived from ``cutting_pair.nominal_diameter``).
   - Flat machined on the underside (−Z) over a central X span — the
     depth-lock push rod registers against this flat.
   - Blade slot near the +X end: open through Z, with X extent =
@@ -39,7 +40,8 @@ def build_shaft(params: PurflingCutterParams) -> Part:
     """Build the shaft as a build123d Part."""
     shaft = params.shaft
     length = shaft.length
-    radius = shaft.outer_diameter / 2
+    od = params.shaft_outer_diameter
+    radius = od / 2
 
     # --- Main cylinder along X --------------------------------------------
     # Default Cylinder is along Z; Rot(0, 90, 0) rotates Z → X.
@@ -94,7 +96,7 @@ def build_shaft(params: PurflingCutterParams) -> Part:
     # plate also runs the full plate width — one mill pass each, no precise
     # positioning needed. Combined with the single central M2 mount screw,
     # the tenon prevents rotation of the plate relative to the shaft.
-    tenon_y = shaft.outer_diameter
+    tenon_y = od
     tenon = Pos(-shaft.tenon_depth / 2, 0, 0) * Box(
         shaft.tenon_depth, tenon_y, shaft.tenon_height
     )

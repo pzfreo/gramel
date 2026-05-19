@@ -80,7 +80,7 @@ def test_shaft_volume_and_bbox(cnc_params: PurflingCutterParams) -> None:
     expected_x = cnc_params.shaft.length + cnc_params.shaft.tenon_depth
     assert pytest.approx(expected_x, abs=0.05) == bb.size.X
     # Y is the full diameter; Z is the diameter minus the flat depth.
-    od = cnc_params.shaft.outer_diameter
+    od = cnc_params.shaft_outer_diameter
     assert pytest.approx(od, rel=0.01) == bb.size.Y
     assert pytest.approx(od - cnc_params.shaft.flat_depth, rel=0.05) == bb.size.Z
 
@@ -226,19 +226,17 @@ def test_shaft_slot_at_outboard_end(cnc_params: PurflingCutterParams) -> None:
     assert expected_slot_x_min > 0, "slot must not poke off the −X end"
     assert expected_slot_x_max < sp.length, "slot must not breach the +X end face"
     # And the slot opening must be smaller than the shaft diameter.
-    assert sp.blade_slot_length < sp.outer_diameter, (
+    assert sp.blade_slot_length < cnc_params.shaft_outer_diameter, (
         "slot Y opening would breach the shaft sides"
     )
 
 
 def test_shaft_flat_does_not_meet_top(cnc_params: PurflingCutterParams) -> None:
     """Flat on the −Z underside should leave wall above it, not slice through."""
-    sp = cnc_params.shaft
-    od = sp.outer_diameter
-    # Flat depth measured from the cylinder's bottom (−Z extreme).
-    # Wall above the flat = od - flat_depth.
-    assert sp.flat_depth < od / 2, (
-        f"flat_depth {sp.flat_depth} ≥ radius {od / 2} — flat would bisect the shaft"
+    od = cnc_params.shaft_outer_diameter
+    flat_depth = cnc_params.shaft.flat_depth
+    assert flat_depth < od / 2, (
+        f"flat_depth {flat_depth} ≥ radius {od / 2} — flat would bisect the shaft"
     )
 
 
@@ -272,23 +270,23 @@ def test_captive_bearing_axial_play(cnc_params: PurflingCutterParams) -> None:
 
 
 def test_shaft_fits_through_crossbore(cnc_params: PurflingCutterParams) -> None:
-    """The CNC-path crossbore is sized for an H7/g6 sliding fit on the shaft."""
+    """The CNC-path crossbore and shaft share the same nominal diameter;
+    the H7/g6 fit pair gives a positive worst-case clearance."""
     p = cnc_params
-    cb_d = p.crossbore_diameter  # = shaft OD + sliding_clearance
-    shaft_od = p.shaft.outer_diameter
-    clearance = cb_d - shaft_od
-    # CNC sliding clearance is 0.03 mm by default.
-    assert clearance == pytest.approx(p.process.sliding_clearance, abs=1e-6)
-    assert 0 < clearance < 0.5, "sliding clearance must be small and positive"
+    # On the CNC path both are modelled at the nominal — fit class carries tol.
+    assert p.crossbore_diameter == pytest.approx(p.shaft_outer_diameter)
+    # The fit class is what guarantees the clearance, not the modelled geometry.
+    assert p.sliding_clearance > 0, "H7/g6 worst-case must be positive"
+    assert p.sliding_clearance < 0.05, "H7/g6 clearance shouldn't exceed 50 µm"
 
 
 def test_blade_tip_projects_below_shaft_slot(cnc_params: PurflingCutterParams) -> None:
     """Blade is longer than the shaft slot's Z opening so the tip can cut."""
     p = cnc_params
     # Slot Z opening = shaft outer diameter (slot goes through fully).
-    slot_z_opening = p.shaft.outer_diameter
+    slot_z_opening = p.shaft_outer_diameter
     assert p.blade.length > slot_z_opening, (
-        "blade.length must exceed shaft.outer_diameter or no tip will project"
+        "blade.length must exceed shaft_outer_diameter or no tip will project"
     )
 
 
