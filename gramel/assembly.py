@@ -61,7 +61,6 @@ def build_assembly(params: PurflingCutterParams) -> Compound:
 
     retainer_local = build_blade_retainer(params)
     blade_local = build_blade(params)
-    spacer_local = build_channel_spacer(params)
 
     stack: list[Compound] = []
     x_c = slot_x_min
@@ -70,8 +69,10 @@ def build_assembly(params: PurflingCutterParams) -> Compound:
         x_c += ret_t
     stack.append(Pos(x_c + blade_t / 2, 0, blade_z) * blade_local)
     x_c += blade_t
-    stack.append(Pos(x_c + spacer_t / 2, 0, blade_z) * spacer_local)
-    x_c += spacer_t
+    if spacer_t > 0:
+        spacer_local = build_channel_spacer(params)
+        stack.append(Pos(x_c + spacer_t / 2, 0, blade_z) * spacer_local)
+        x_c += spacer_t
     stack.append(Pos(x_c + blade_t / 2, 0, blade_z) * blade_local)
     x_c += blade_t
     for _ in range(2):

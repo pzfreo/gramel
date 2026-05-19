@@ -48,9 +48,13 @@ def test_production_mode_swaps_to_cnc_clearance() -> None:
 
 
 def test_stack_thickness() -> None:
-    # Layout in slot's X direction: 2 retainers | blade | spacer | blade | 2 retainers
-    # 4 × 0.75 + 2 × 0.7 + 1.5 = 5.9
-    assert PurflingCutterParams().stack_thickness == pytest.approx(5.9)
+    # Hardware only: 4 × 0.75 + 2 × 0.7 = 4.4 (spacer not included)
+    assert PurflingCutterParams().stack_thickness == pytest.approx(4.4)
+
+
+def test_slot_spare() -> None:
+    # slot(6.0) - hardware(4.4) = 1.6 available for spacer + grub advance
+    assert PurflingCutterParams().slot_spare == pytest.approx(1.6)
 
 
 def test_crossbore_diameter_prototype() -> None:
