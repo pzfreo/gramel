@@ -11,13 +11,14 @@ grub_screw.length. Slot / hex drive head not modelled.
 
 from build123d import Cylinder, Part, Pos, Rot
 
-from gramel.parameters import _THREAD_MAJOR_RADIUS, PurflingCutterParams
+from gramel import threads
+from gramel.parameters import PurflingCutterParams
 
 
 def build_grub_screw(params: PurflingCutterParams) -> Part:
     """Build the grub screw."""
     gs = params.grub_screw
-    radius = _THREAD_MAJOR_RADIUS[gs.thread]
+    radius = threads.major_radius(gs.thread)
     body: Part = Pos(gs.length / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=radius, height=gs.length)
     return body
 

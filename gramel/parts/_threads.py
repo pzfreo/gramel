@@ -18,7 +18,7 @@ Both are built along +Z in their local frame; caller applies placement.
 from bd_warehouse.thread import IsoThread  # type: ignore[import-untyped]
 from build123d import Cylinder, Part, Pos, Solid
 
-from gramel.parameters import _THREAD_MAJOR_RADIUS, _THREAD_PITCH
+from gramel import threads
 
 
 def _fused_isothread(*, major_diameter: float, pitch: float, length: float, external: bool) -> Solid:
@@ -35,9 +35,8 @@ def _fused_isothread(*, major_diameter: float, pitch: float, length: float, exte
 
 
 def _thread_dims(thread: str) -> tuple[float, float]:
-    if thread not in _THREAD_PITCH:
-        raise ValueError(f"No pitch entry for thread {thread!r}; extend _THREAD_PITCH.")
-    return 2 * _THREAD_MAJOR_RADIUS[thread], _THREAD_PITCH[thread]
+    """Return (major_diameter, pitch) for the named thread."""
+    return threads.major_diameter(thread), threads.pitch(thread)
 
 
 def external_thread_section(thread: str, length: float) -> Part:
