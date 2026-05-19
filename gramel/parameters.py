@@ -20,6 +20,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
+from gramel import threads
+
 # ---------------------------------------------------------------------------
 # Metadata helper
 # ---------------------------------------------------------------------------
@@ -30,52 +32,6 @@ Status = Literal["ESTIMATE", "MEASURED", "DERIVED"]
 def _spec(ref: str, status: Status = "ESTIMATE", units: str = "mm") -> dict[str, Any]:
     """Build the json_schema_extra payload tying a field to its spec entry."""
     return {"spec_ref": ref, "status": status, "units": units}
-
-
-# Approximate thread-major radii (mm) — used by wall-thickness validators.
-# bd_warehouse holds the authoritative table; this is a local shortcut so the
-# param model can validate without spinning up build123d.
-_THREAD_MAJOR_RADIUS: dict[str, float] = {
-    "M2": 1.0,
-    "M2.5": 1.25,
-    "M3": 1.5,
-    "M4": 2.0,
-    "M5": 2.5,
-    "M6": 3.0,
-}
-
-# Approximate tap-drill diameters (mm) for internal threads — used to compute
-# the actual drilled hole diameter that the tap cuts. Conservative (coarse).
-_TAP_DRILL_DIAMETER: dict[str, float] = {
-    "M2": 1.6,
-    "M2.5": 2.05,
-    "M3": 2.5,
-    "M4": 3.3,
-    "M5": 4.2,
-    "M6": 5.0,
-}
-
-# ISO metric coarse-thread pitches (mm).
-_THREAD_PITCH: dict[str, float] = {
-    "M2": 0.4,
-    "M2.5": 0.45,
-    "M3": 0.5,
-    "M4": 0.7,
-    "M5": 0.8,
-    "M6": 1.0,
-}
-
-
-def _thread_major_radius(thread: str) -> float:
-    if thread not in _THREAD_MAJOR_RADIUS:
-        raise ValueError(f"Unknown thread spec {thread!r}; extend _THREAD_MAJOR_RADIUS.")
-    return _THREAD_MAJOR_RADIUS[thread]
-
-
-def _tap_drill_radius(thread: str) -> float:
-    if thread not in _TAP_DRILL_DIAMETER:
-        raise ValueError(f"Unknown thread spec {thread!r}; extend _TAP_DRILL_DIAMETER.")
-    return _TAP_DRILL_DIAMETER[thread] / 2
 
 
 # ---------------------------------------------------------------------------
@@ -686,7 +642,7 @@ class PurflingCutterParams(BaseModel):
     @property
     def tapped_bore_drill_diameter(self) -> float:
         """Drill diameter for the shank tapped bore — derived from drive-screw thread."""
-        return _TAP_DRILL_DIAMETER[self.drive_screw.thread]
+        return threads.tap_drill_diameter(self.drive_screw.thread)
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -812,7 +768,7 @@ class PurflingCutterParams(BaseModel):
         # design.
 
         # §4.3.23 — wall between bores
-        min_wall_bb = max(1.2, 1.0 * _thread_major_radius(self.drive_screw.thread))
+        min_wall_bb = max(1.2, 1.0 * threads.major_radius(self.drive_screw.thread))
         if self.shank_wall_between_bores < min_wall_bb:
             raise ValueError(
                 f"shank_wall_between_bores ({self.shank_wall_between_bores:.3f}) "
@@ -828,7 +784,7 @@ class PurflingCutterParams(BaseModel):
             )
 
         # §4.3.25 — wall around tapped bore (perpendicular to bore axis)
-        min_wall_tap = max(1.0, 1.0 * _thread_major_radius(self.drive_screw.thread))
+        min_wall_tap = max(1.0, 1.0 * threads.major_radius(self.drive_screw.thread))
         if self.shank_wall_around_tapped_bore < min_wall_tap:
             raise ValueError(
                 f"shank_wall_around_tapped_bore ({self.shank_wall_around_tapped_bore:.3f}) "

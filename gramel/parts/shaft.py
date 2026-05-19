@@ -31,7 +31,8 @@ from build123d import (
     Rot,
 )
 
-from gramel.parameters import _TAP_DRILL_DIAMETER, PurflingCutterParams
+from gramel import threads
+from gramel.parameters import PurflingCutterParams
 
 
 def build_shaft(params: PurflingCutterParams) -> Part:
@@ -78,7 +79,7 @@ def build_shaft(params: PurflingCutterParams) -> Part:
     # depth equals end_to_slot_distance; the grub screw's tip emerges into
     # the slot and directly contacts the blade stack.
     grub_thread = params.grub_screw.thread
-    grub_drill_radius = _TAP_DRILL_DIAMETER[grub_thread] / 2
+    grub_drill_radius = threads.tap_drill_radius(grub_thread)
     end_tap_depth = shaft.end_to_slot_distance
     end_tap = (
         Pos(length - end_tap_depth / 2, 0, 0)
@@ -103,7 +104,7 @@ def build_shaft(params: PurflingCutterParams) -> Part:
     # Single central tapped hole. Two M2 screws don't fit on a 7.9 mm shaft,
     # so we use one + the tenon for anti-rotation (see above).
     mount_thread = shaft.drive_plate_mount_thread
-    mount_drill_radius = _TAP_DRILL_DIAMETER[mount_thread] / 2
+    mount_drill_radius = threads.tap_drill_radius(mount_thread)
     mount_depth = shaft.drive_plate_mount_depth
     # Drill the mount hole from the −X end face inward (in +X direction).
     # The hole's X range covers a bit of the tenon and the shaft body, so

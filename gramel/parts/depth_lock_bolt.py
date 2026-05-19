@@ -16,7 +16,8 @@ Knurl decoration not modelled.
 
 from build123d import Cylinder, Part, Pos
 
-from gramel.parameters import _THREAD_MAJOR_RADIUS, PurflingCutterParams
+from gramel import threads
+from gramel.parameters import PurflingCutterParams
 from gramel.parts._threads import external_thread_section
 
 
@@ -25,7 +26,7 @@ def build_depth_lock_bolt(params: PurflingCutterParams) -> Part:
     dl = params.depth_lock
     knob_r = dl.knob_diameter / 2
     knob_t = dl.knob_thickness
-    bolt_r = _THREAD_MAJOR_RADIUS[dl.thread]
+    bolt_r = threads.major_radius(dl.thread)
     bolt_len = dl.bolt_thread_length
 
     # Knob from Z = 0 to Z = knob_t

@@ -30,11 +30,8 @@ from build123d import (
     Rot,
 )
 
-from gramel.parameters import (
-    _TAP_DRILL_DIAMETER,
-    _THREAD_MAJOR_RADIUS,
-    PurflingCutterParams,
-)
+from gramel import threads
+from gramel.parameters import PurflingCutterParams
 from gramel.parts._threads import external_thread_section
 
 
@@ -53,7 +50,7 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
     boss_r = tw.silver_boss_diameter / 2
     disc_r = tw.diameter / 2
     unth_r = ds.unthreaded_diameter / 2
-    thread_r = _THREAD_MAJOR_RADIUS[ds.thread]
+    thread_r = threads.major_radius(ds.thread)
 
     # X centres for each section, stacked along +X
     x_boss = boss_len / 2
@@ -86,7 +83,7 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
     body = silver_boss + disc + unthreaded + thread
 
     # --- Silver-screw tap from the −X face inward -------------------------
-    tap_drill_r = _TAP_DRILL_DIAMETER[ds.left_face_tap] / 2
+    tap_drill_r = threads.tap_drill_radius(ds.left_face_tap)
     tap_depth = ds.left_face_tap_depth
     tap = (
         Pos(tap_depth / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=tap_drill_r, height=tap_depth)

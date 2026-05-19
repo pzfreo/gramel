@@ -19,7 +19,8 @@ from build123d import (
     Rot,
 )
 
-from gramel.parameters import _THREAD_MAJOR_RADIUS, PurflingCutterParams
+from gramel import threads
+from gramel.parameters import PurflingCutterParams
 
 
 def build_silver_screw(params: PurflingCutterParams) -> Part:
@@ -31,7 +32,7 @@ def build_silver_screw(params: PurflingCutterParams) -> Part:
 
     head_d = ss.head_diameter
     head_t = ss.head_thickness
-    thread_r = _THREAD_MAJOR_RADIUS[ss.thread]
+    thread_r = threads.major_radius(ss.thread)
     thread_len = dp.thickness + cb.axial_play + ds.left_face_tap_depth
 
     # Head: cylinder along X at X = head_t / 2
