@@ -114,6 +114,18 @@ wheels = [
 ]
 
 [[package]]
+name = "build123d-drafting-helpers"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "build123d" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/43/17/536c1343e78795d75d3c25446778aaefa8b64143e5c3fb620953af692aa7/build123d_drafting_helpers-0.1.1.tar.gz", hash = "sha256:d4ab7139ca303391d36c9d45433fdded3b752f57638583d1f871906d9f1de3b7", size = 19418, upload-time = "2026-05-19T16:57:51.646Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/dd/0da785c38b084598d2be0e4dccccb0a17be4fd7dc6c1cd5b7ccf0fe3fb27/build123d_drafting_helpers-0.1.1-py3-none-any.whl", hash = "sha256:b8d1b62800a0f25ce4ea843eb45808114d2061de4fee9ffe1b792f7c2d333d0e", size = 19780, upload-time = "2026-05-19T16:57:50.072Z" },
+]
+
+[[package]]
 name = "cadquery-ocp"
 version = "7.8.1.1.post1"
 source = { registry = "https://pypi.org/simple" }
@@ -325,6 +337,7 @@ source = { editable = "." }
 dependencies = [
     { name = "bd-warehouse" },
     { name = "build123d" },
+    { name = "build123d-drafting-helpers" },
     { name = "cairosvg" },
     { name = "pydantic" },
 ]
@@ -341,6 +354,7 @@ dev = [
 requires-dist = [
     { name = "bd-warehouse" },
     { name = "build123d" },
+    { name = "build123d-drafting-helpers", specifier = ">=0.1.1" },
     { name = "cairosvg" },
     { name = "pydantic", specifier = ">=2.10" },
 ]

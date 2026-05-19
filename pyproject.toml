@@ -9,6 +9,7 @@ dependencies = [
     "pydantic>=2.10",
     "build123d",
     "bd-warehouse",
+    "build123d-drafting-helpers>=0.1.1",
     "cairosvg",
 ]
 

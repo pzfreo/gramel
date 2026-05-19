@@ -16,6 +16,12 @@ Geometry is built with process.prototype=False so threaded features are
 plain reference cylinders at major (external) / tap-drill (internal)
 diameter — the shop reads the thread spec off the drawing, not the
 helical geometry.
+
+Dimension lines and leader callouts come from `build123d_drafting`
+(`dim_linear`, `leader`) so the offset-sign and leader-strikethrough
+classes of bug are handled by the library, not by hand. The custom page
+frame, title block, and notes block stay local — they're sheet-specific
+layout that the library's `iso_title_block` (170 × 16 mm) doesn't cover.
 """
 
 from __future__ import annotations
@@ -26,16 +32,16 @@ from datetime import date
 from build123d import (
     Color,
     Compound,
-    DimensionLine,
     Draft,
     Edge,
     ExportSVG,
-    ExtensionLine,
     LineType,
     Part,
+    Shape,
     Text,
     Wire,
 )
+from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped]
 
 from gramel.parameters import PurflingCutterParams
 from gramel.parts.shank import build_shank
@@ -79,22 +85,14 @@ class ViewPlacement:
     view with a wide gap to host its RHS dim and the bore callouts.
     """
 
-    # Face view far left — limited only by the LHS length dim fitting inside
-    # the frame (X ≥ -138.5 with distance=9 + label width ~5).
     face: tuple[float, float] = (-118.0, 0.0)
-    # Side view 53 mm to the right of the face view — leaves a ~40 mm clear
-    # gap for the face's RHS crossbore-Y dim + bore-callout leaders.
     side: tuple[float, float] = (-65.0, 0.0)
-    # Bottom view directly below the side view (same X centre), aligned so
-    # world-X (width) reads off the same vertical on the page.
     bottom: tuple[float, float] = (-65.0, -65.0)
-    # Iso view in the upper-right area, clear of the orthographic views and
-    # the notes/title column. Centred at Y=48 so its 92 mm height fits.
     iso: tuple[float, float] = (12.0, 48.0)
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Local helpers (page frame + title/notes blocks stay sheet-specific)
 # ---------------------------------------------------------------------------
 
 
@@ -112,21 +110,8 @@ def _project(
     )
 
 
-def _ext(p1: tuple[float, float], p2: tuple[float, float], offset: float, draft: Draft, label: str) -> ExtensionLine:
-    return ExtensionLine(
-        border=[(p1[0], p1[1], 0), (p2[0], p2[1], 0)],
-        offset=offset,
-        draft=draft,
-        label=label,
-    )
-
-
-def _dim(p1: tuple[float, float], p2: tuple[float, float], draft: Draft, label: str) -> DimensionLine:
-    return DimensionLine(path=[(p1[0], p1[1], 0), (p2[0], p2[1], 0)], draft=draft, label=label)
-
-
 def _placed_text(text: str, size: float, x: float, y: float, left_align: bool = True) -> Compound:
-    """Position text by its bounding-box left edge (or its centre if left_align=False)."""
+    """Position text by its bounding-box left edge (or centre if left_align=False)."""
     txt = Text(txt=text, font_size=size)
     bb = txt.bounding_box()
     dx = x - bb.min.X if left_align else x - (bb.min.X + bb.max.X) / 2
@@ -155,8 +140,7 @@ def _page_frame() -> Compound:
 
 
 def _title_block_lines() -> Compound:
-    """Box and internal grid lines for the title block (rendered as thin
-    strokes on the frame layer)."""
+    """Box and internal grid lines for the title block."""
     box = Wire.make_polygon(
         [
             (TB_X_MIN, TB_Y_MIN, 0),
@@ -184,7 +168,7 @@ def _title_block_text(
     drawn_by: str,
     drawn_date: str,
 ) -> Compound:
-    """Filled text content for the title block (rendered with fill=black)."""
+    """Filled text content for the title block."""
     label_size = 2.0
     value_size = 2.8
     title_size = 5.0
@@ -194,22 +178,22 @@ def _title_block_text(
     txt_x_value = mid_x + 2
 
     title_y_centre = TB_Y_MIN + 45
-    texts = [
-        _placed_text(part_name, title_size, (TB_X_MIN + TB_X_MAX) / 2, title_y_centre, left_align=False),
-        _placed_text("DRAWING NO.", label_size, txt_x_label, TB_Y_MIN + 35),
-        _placed_text(drawing_no, value_size, txt_x_value, TB_Y_MIN + 35),
-        _placed_text("SCALE", label_size, txt_x_label, TB_Y_MIN + 25),
-        _placed_text(f"{scale}   SHEET {sheet}", value_size, txt_x_value, TB_Y_MIN + 25),
-        _placed_text("MATERIAL", label_size, txt_x_label, TB_Y_MIN + 15),
-        _placed_text(material, value_size, txt_x_value, TB_Y_MIN + 15),
-        _placed_text("DRAWN", label_size, txt_x_label, TB_Y_MIN + 5),
-        _placed_text(f"{drawn_by}   {drawn_date}", value_size, txt_x_value, TB_Y_MIN + 5),
-    ]
-    return Compound(children=texts)
+    return Compound(
+        children=[
+            _placed_text(part_name, title_size, (TB_X_MIN + TB_X_MAX) / 2, title_y_centre, left_align=False),
+            _placed_text("DRAWING NO.", label_size, txt_x_label, TB_Y_MIN + 35),
+            _placed_text(drawing_no, value_size, txt_x_value, TB_Y_MIN + 35),
+            _placed_text("SCALE", label_size, txt_x_label, TB_Y_MIN + 25),
+            _placed_text(f"{scale}   SHEET {sheet}", value_size, txt_x_value, TB_Y_MIN + 25),
+            _placed_text("MATERIAL", label_size, txt_x_label, TB_Y_MIN + 15),
+            _placed_text(material, value_size, txt_x_value, TB_Y_MIN + 15),
+            _placed_text("DRAWN", label_size, txt_x_label, TB_Y_MIN + 5),
+            _placed_text(f"{drawn_by}   {drawn_date}", value_size, txt_x_value, TB_Y_MIN + 5),
+        ]
+    )
 
 
 def _notes_block_lines() -> Compound:
-    """Notes block border (thin stroke on frame layer)."""
     box = Wire.make_polygon(
         [
             (NB_X_MIN, NB_Y_MIN, 0),
@@ -223,95 +207,15 @@ def _notes_block_lines() -> Compound:
 
 
 def _notes_block_text(notes: list[str]) -> Compound:
-    """Notes block filled text content."""
     size = 2.4
     line_step = 4.5
     y_top = NB_Y_MAX - 4
-    text_shapes = [
-        _placed_text(line, size, NB_X_MIN + 2, y_top - i * line_step, left_align=True)
-        for i, line in enumerate(notes)
-    ]
-    return Compound(children=text_shapes)
-
-
-def _leader(
-    feature_xy: tuple[float, float],
-    direction: str,  # 'right' or 'left' — which way the leader exits
-    elbow_offset: float,
-    label_anchor_xy: tuple[float, float],
-    label: str,
-    label_size: float,
-) -> tuple[Compound, Compound]:
-    """A diameter-callout leader: line from the feature out to an elbow,
-    then horizontal toward the label, stopping just before the label so
-    the line does not strike through the text. Returns (lines, text).
-
-    The label is left-aligned (when direction='right') or right-aligned
-    (when direction='left') at `label_anchor_xy`, with a 1 mm gap between
-    the leader endpoint and the first character.
-    """
-    fx, fy = feature_xy
-    lx, ly = label_anchor_xy
-    text_gap = 1.0
-    if direction == "right":
-        # Elbow goes right of the feature
-        elbow_xy = (fx + elbow_offset, fy)
-        # Line continues to just before label's left edge
-        line_end = (lx - text_gap, ly)
-        txt = _placed_text(label, label_size, lx, ly, left_align=True)
-    elif direction == "left":
-        elbow_xy = (fx - elbow_offset, fy)
-        # Right-align the label so its right edge sits at lx; line stops 1mm right of that
-        line_end = (lx + text_gap, ly)
-        txt_obj = Text(txt=label, font_size=label_size)
-        bb = txt_obj.bounding_box()
-        # Right-align: shift so the right edge lands at lx
-        dx = lx - bb.max.X
-        dy = ly - (bb.min.Y + bb.max.Y) / 2
-        txt = txt_obj.translate((dx, dy, 0))
-    else:
-        raise ValueError(f"direction must be 'right' or 'left', got {direction!r}")
-
-    seg1 = _line(fx, fy, elbow_xy[0], elbow_xy[1])
-    seg2 = _line(elbow_xy[0], elbow_xy[1], line_end[0], line_end[1])
-    return Compound(children=[seg1, seg2]), Compound(children=[txt])
-
-
-def _dim_outside(
-    p1: tuple[float, float],
-    p2: tuple[float, float],
-    side: str,  # 'left', 'right', 'above', 'below'
-    distance: float,
-    draft: Draft,
-    label: str,
-) -> ExtensionLine:
-    """Place a dim at `distance` mm on the given side of the line p1→p2,
-    computing the correct offset sign from the side (no manual sign-juggling).
-
-    For vertical borders use side='left' or 'right'; for horizontal borders
-    use side='above' or 'below'.
-    """
-    is_vertical = abs(p1[0] - p2[0]) < 1e-6
-    is_horizontal = abs(p1[1] - p2[1]) < 1e-6
-    if is_vertical:
-        going_up = p2[1] > p1[1]
-        if side == "right":
-            offset = +distance if going_up else -distance
-        elif side == "left":
-            offset = -distance if going_up else +distance
-        else:
-            raise ValueError(f"side {side!r} not valid for vertical border")
-    elif is_horizontal:
-        going_right = p2[0] > p1[0]
-        if side == "below":
-            offset = +distance if going_right else -distance
-        elif side == "above":
-            offset = -distance if going_right else +distance
-        else:
-            raise ValueError(f"side {side!r} not valid for horizontal border")
-    else:
-        raise ValueError("Only orthogonal borders (horizontal/vertical) are supported")
-    return _ext(p1, p2, offset=offset, draft=draft, label=label)
+    return Compound(
+        children=[
+            _placed_text(line, size, NB_X_MIN + 2, y_top - i * line_step, left_align=True)
+            for i, line in enumerate(notes)
+        ]
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -321,14 +225,16 @@ def _dim_outside(
 
 def build_shank_drawing(
     params: PurflingCutterParams,
-) -> tuple[Compound, Compound, Compound, list[ExtensionLine | DimensionLine], Compound, Compound]:
+) -> tuple[Compound, Compound, Compound, list[Shape[object]], Compound, Compound]:
     """
     Compose the drawing.
 
-    Returns (parts_visible, parts_hidden, frame, dims, text, annotations)
-    where `frame` is all thin-stroke linework (page frame + title block
-    grid + notes box) and `text` is all filled glyphs (title block text +
-    notes text + view labels). Caller routes each to its own SVG layer.
+    Returns (parts_visible, parts_hidden, frame, dim_shapes, text,
+    annotations) where `frame` is all thin-stroke linework (page frame +
+    title block grid + notes box) and `text` is all filled glyphs (title
+    block text + notes text + view labels + leader labels). `dim_shapes`
+    is a list of build123d shapes (the underlying `ExtensionLine`s from
+    each `dim_linear` call); caller routes them to the dims layer.
     """
     # Force CNC representation: clean reference cylinders for threaded features.
     params = params.model_copy(update={"process": params.process.model_copy(update={"prototype": False})})
@@ -386,19 +292,55 @@ def build_shank_drawing(
         arrow_length=1.0,
         line_width=0.1,
     )
-    dims: list[ExtensionLine | DimensionLine] = []
-    annotation_lines: list[Compound | Edge] = []  # routed to "part" layer (strokes, no fill)
-    annotation_text: list[Compound] = []  # routed to "text" layer (fill=black, tiny stroke)
+    leader_draft = Draft(
+        font_size=2.4,
+        decimal_precision=1,
+        arrow_length=1.0,
+        line_width=0.1,
+    )
 
-    def add_leader(**kwargs: object) -> None:
-        lines_c, text_c = _leader(**kwargs)  # type: ignore[arg-type]
-        annotation_lines.append(lines_c)
-        annotation_text.append(text_c)
+    dim_shapes: list[Shape[object]] = []
+    annotation_lines: list[Shape[object]] = []  # routed to "part" layer (strokes, no fill)
+    annotation_text: list[Shape[object]] = []   # routed to "text" layer (fill=black)
 
-    # Dim placement uses side-aware _dim_outside() so the offset sign is
-    # computed automatically from the side ("left", "right", "above",
-    # "below"). The view bounding box is computed first; dims are placed
-    # at progressive distances from the relevant edge so they don't pile up.
+    def add_dim(
+        p1: tuple[float, float],
+        p2: tuple[float, float],
+        side: str,
+        distance: float,
+        label: str,
+    ) -> None:
+        """dim_linear wrapper — takes 2-tuples and matches the local label style."""
+        result = dim_linear(
+            (p1[0], p1[1], 0),
+            (p2[0], p2[1], 0),
+            side,
+            distance,
+            draft,
+            label=label,
+        )
+        dim_shapes.append(result.shape)
+
+    def add_leader(
+        feature_xy: tuple[float, float],
+        label_anchor_xy: tuple[float, float],
+        label: str,
+    ) -> None:
+        """leader() wrapper — splits result into lines (part layer) and text (text layer).
+
+        Workaround: the helper's `lines` shape extends past the elbow and
+        strikes through the label, so we use only the helper's `text` and
+        draw our own tip→elbow segment that stops cleanly at the elbow.
+        Tracked upstream in build123d-mcp issue (leader-line-strikethrough).
+        """
+        result = leader(
+            tip=(feature_xy[0], feature_xy[1], 0),
+            elbow=(label_anchor_xy[0], label_anchor_xy[1], 0),
+            label=label,
+            draft=leader_draft,
+        )
+        annotation_lines.append(_line(feature_xy[0], feature_xy[1], label_anchor_xy[0], label_anchor_xy[1]))
+        annotation_text.append(result.text)
 
     # Working-face view: page X = world Y (depth), page Y = world Z (length).
     fx, fy = layout.face
@@ -406,33 +348,19 @@ def build_shank_drawing(
     f_right = fx + depth / 2
     f_bot = fy - length / 2
     f_top = fy + length / 2
-    dims.append(_dim_outside((f_left, f_bot), (f_left, f_top), side="left", distance=9, draft=draft, label=f"{length:.1f}"))
-    dims.append(_dim_outside((f_left, f_bot), (f_right, f_bot), side="below", distance=6, draft=draft, label=f"{depth:.1f}"))
+    add_dim((f_left, f_bot), (f_left, f_top), "left", 9, f"{length:.1f}")
+    add_dim((f_left, f_bot), (f_right, f_bot), "below", 6, f"{depth:.1f}")
     cb_face_y = f_top - cb_x_from_top
-    dims.append(_dim_outside((f_right, f_top), (f_right, cb_face_y), side="right", distance=8, draft=draft, label=f"{cb_x_from_top:.1f}"))
-    dims.append(_dim_outside((fx - slot_w / 2, f_top), (fx + slot_w / 2, f_top), side="above", distance=10, draft=draft, label=f"{slot_w:.0f}"))
+    add_dim((f_right, f_top), (f_right, cb_face_y), "right", 8, f"{cb_x_from_top:.1f}")
+    add_dim((fx - slot_w / 2, f_top), (fx + slot_w / 2, f_top), "above", 10, f"{slot_w:.0f}")
 
     # Bore callouts pointing RIGHT into the gap between face view and side view.
     sx_for_face = layout.side[0]
     s_left_for_face = sx_for_face - width / 2
     leader_label_x = (f_right + s_left_for_face) / 2
     tap_face_y = f_top - tap_x_from_top
-    add_leader(
-        feature_xy=(fx, cb_face_y),
-        direction="right",
-        elbow_offset=(leader_label_x - fx) * 0.5,
-        label_anchor_xy=(leader_label_x, cb_face_y - 4),
-        label=f"⌀{cb_d:.2f} H7",
-        label_size=2.4,
-    )
-    add_leader(
-        feature_xy=(fx, tap_face_y),
-        direction="right",
-        elbow_offset=(leader_label_x - fx) * 0.5,
-        label_anchor_xy=(leader_label_x, tap_face_y + 3),
-        label=f"{ds_thread}×{ds_pitch} thru",
-        label_size=2.4,
-    )
+    add_leader((fx, cb_face_y), (leader_label_x, cb_face_y - 4), f"⌀{cb_d:.2f} H7")
+    add_leader((fx, tap_face_y), (leader_label_x, tap_face_y + 3), f"{ds_thread}×{ds_pitch} thru")
 
     # Side view: page X = world X (width), page Y = world Z (length).
     sx, sy = layout.side
@@ -440,36 +368,22 @@ def build_shank_drawing(
     s_right = sx + width / 2
     s_bot = sy - length / 2
     s_top = sy + length / 2
-    dims.append(_dim_outside((s_left, s_bot), (s_right, s_bot), side="below", distance=6, draft=draft, label=f"{width:.1f}"))
+    add_dim((s_left, s_bot), (s_right, s_bot), "below", 6, f"{width:.1f}")
     cb_side_y = s_top - cb_x_from_top
     tap_side_y = s_top - tap_x_from_top
-    dims.append(_dim_outside((s_right, cb_side_y), (s_right, tap_side_y), side="right", distance=8, draft=draft, label=f"{inter_gap:.1f}"))
+    add_dim((s_right, cb_side_y), (s_right, tap_side_y), "right", 8, f"{inter_gap:.1f}")
     s_thread_top = s_bot + dl_thread_len
-    dims.append(_dim_outside((s_right, s_bot), (s_right, s_thread_top), side="right", distance=14, draft=draft, label=f"{dl_thread_len:.0f}"))
-    dims.append(_dim_outside((s_right, s_thread_top), (s_right, cb_side_y), side="right", distance=20, draft=draft, label=f"{dl_depth - dl_thread_len:.0f}"))
+    add_dim((s_right, s_bot), (s_right, s_thread_top), "right", 14, f"{dl_thread_len:.0f}")
+    add_dim((s_right, s_thread_top), (s_right, cb_side_y), "right", 20, f"{dl_depth - dl_thread_len:.0f}")
     # Thread-end indicator line across the bore at s_thread_top.
     bore_half = dl_d / 2
     annotation_lines.append(_line(sx - bore_half, s_thread_top, sx + bore_half, s_thread_top))
 
     # Depth-lock thread + push-rod bore callouts — leaders pointing RIGHT.
     side_label_x = s_right + 28
-    add_leader(
-        feature_xy=(sx, (s_bot + s_thread_top) / 2),
-        direction="right",
-        elbow_offset=(s_right - sx) + 8,
-        label_anchor_xy=(side_label_x, (s_bot + s_thread_top) / 2),
-        label=f"{dl_thread}×1",
-        label_size=2.4,
-    )
+    add_leader((sx, (s_bot + s_thread_top) / 2), (side_label_x, (s_bot + s_thread_top) / 2), f"{dl_thread}×1")
     push_rod_mid_y = (s_thread_top + cb_side_y) / 2
-    add_leader(
-        feature_xy=(sx, push_rod_mid_y),
-        direction="right",
-        elbow_offset=(s_right - sx) + 8,
-        label_anchor_xy=(side_label_x, push_rod_mid_y),
-        label=f"⌀{dl_d:.1f} H8",
-        label_size=2.4,
-    )
+    add_leader((sx, push_rod_mid_y), (side_label_x, push_rod_mid_y), f"⌀{dl_d:.1f} H8")
 
     # Bottom view: width (page X, working-face direction) × depth (page Y).
     bx, by = layout.bottom
@@ -477,8 +391,8 @@ def build_shank_drawing(
     b_right = bx + width / 2
     b_bot = by - depth / 2
     b_top = by + depth / 2
-    dims.append(_dim_outside((b_left, b_bot), (b_right, b_bot), side="below", distance=6, draft=draft, label=f"{width:.1f}"))
-    dims.append(_dim_outside((b_right, b_bot), (b_right, b_top), side="right", distance=6, draft=draft, label=f"{depth:.1f}"))
+    add_dim((b_left, b_bot), (b_right, b_bot), "below", 6, f"{width:.1f}")
+    add_dim((b_right, b_bot), (b_right, b_top), "right", 6, f"{depth:.1f}")
 
     # Iso view label.
     iso_label_y = layout.iso[1] - 40
@@ -512,7 +426,7 @@ def build_shank_drawing(
     text_compound = Compound(children=[title_text, notes_text, *annotation_text])
     annotations_compound = Compound(children=annotation_lines)
 
-    return parts_visible, parts_hidden, frame_compound, dims, text_compound, annotations_compound
+    return parts_visible, parts_hidden, frame_compound, dim_shapes, text_compound, annotations_compound
 
 
 # ---------------------------------------------------------------------------
@@ -522,14 +436,13 @@ def build_shank_drawing(
 
 def main() -> None:
     params = PurflingCutterParams()
-    parts_visible, parts_hidden, frame, dims, text, annotations = build_shank_drawing(params)
+    parts_visible, parts_hidden, frame, dim_shapes, text, annotations = build_shank_drawing(params)
 
     part_color = Color(0, 0, 0)
     hidden_color = Color(0.45, 0.45, 0.45)
     dim_color = Color(0, 0.25, 0.75)
 
     exporter = ExportSVG(margin=5)
-    # Frame layer: thin strokes only, no fill (so Wires render as lines, not blobs).
     exporter.add_layer("frame", line_color=part_color, line_weight=0.35, line_type=LineType.CONTINUOUS)
     exporter.add_layer("part", line_color=part_color, line_weight=0.5, line_type=LineType.CONTINUOUS)
     exporter.add_layer(
@@ -542,8 +455,6 @@ def main() -> None:
         line_weight=0.2,
         line_type=LineType.CONTINUOUS,
     )
-    # Text layer: fill=black so glyph faces render solid (readable),
-    # tiny stroke weight so the outline doesn't bloat the characters.
     exporter.add_layer(
         "text",
         line_color=part_color,
@@ -556,14 +467,13 @@ def main() -> None:
     exporter.add_shape(parts_visible, layer="part")
     exporter.add_shape(parts_hidden, layer="hidden")
     exporter.add_shape(annotations, layer="part")
-    for dim in dims:
+    for dim in dim_shapes:
         exporter.add_shape(dim, layer="dims")
     exporter.add_shape(text, layer="text")
 
     exporter.write("/tmp/shank_drawing.svg")
     print("Exported /tmp/shank_drawing.svg")
 
-    # Convert SVG → PDF (cairosvg handles vector to vector, no rasterisation).
     try:
         import cairosvg  # type: ignore[import-untyped]
 
