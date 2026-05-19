@@ -24,16 +24,20 @@ from gramel.parameters import PurflingCutterParams
 
 
 def build_silver_screw(params: PurflingCutterParams) -> Part:
-    """Build the silver screw."""
+    """Build the silver screw.
+
+    Thread length now comes directly from the SilverScrewParams field (the
+    stock-screw dimension). The PurflingCutterParams model validator enforces
+    that thread_length == drive_plate.thickness + axial_play + tap_depth,
+    so the captive-bearing axial play is preserved by adjusting the tap
+    depth rather than the screw length.
+    """
     ss = params.silver_screw
-    dp = params.drive_plate
-    ds = params.drive_screw
-    cb = params.captive_bearing
 
     head_d = ss.head_diameter
     head_t = ss.head_thickness
     thread_r = threads.major_radius(ss.thread)
-    thread_len = dp.thickness + cb.axial_play + ds.left_face_tap_depth
+    thread_len = ss.thread_length
 
     # Head: cylinder along X at X = head_t / 2
     head = Pos(head_t / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=head_d / 2, height=head_t)

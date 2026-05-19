@@ -457,10 +457,10 @@ class DriveScrewParams(BaseModel):
         json_schema_extra=_spec("§4.4.40", status="MEASURED", units=""),
     )
     left_face_tap_depth: float = Field(
-        default=3.0,
+        default=2.8,
         gt=0,
-        description="Depth of the tap for the silver screw, into the −X face of the silver boss / thumbwheel. Was 4 mm originally; reduced to 3 mm so the tap bottoms a safe distance before reaching the drive screw's M3 thread (preserves ≥1.5 mm of solid material in the unthreaded section).",
-        json_schema_extra=_spec("§4.4.40", status="MEASURED"),
+        description="Depth of the tap for the silver screw, into the −X face of the silver boss / thumbwheel. Set to match a stock M2 × 6 silver screw: thread_len (6) − drive_plate.thickness (3) − captive_bearing.axial_play (0.2) = 2.8 mm. Was 4 mm originally, then 3 mm; now derived from the screw's stock thread length so the captive bearing axial play comes out right.",
+        json_schema_extra=_spec("§4.4.40", status="DERIVED"),
     )
     unthreaded_length: float = Field(
         default=3.0,
@@ -563,12 +563,23 @@ class DrivePlateParams(BaseModel):
 
 
 class SilverScrewParams(BaseModel):
-    """§4.5 items 50, 52 — silver screw. Its length is owned by captive_bearing (§4.5.51)."""
+    """§4.5 items 50, 52 — silver screw.
+
+    Length is a stock dimension (default M2 × 6 mm). The drive-screw left-face
+    tap depth is what bends to maintain the captive-bearing axial play —
+    not the screw length, which is what you can buy off the shelf.
+    """
 
     thread: str = Field(
         default="M2",
         description="Silver-screw thread. Matches drive_screw.left_face_tap (§4.4.40).",
         json_schema_extra=_spec("§4.5.50", status="MEASURED", units=""),
+    )
+    thread_length: float = Field(
+        default=6.0,
+        gt=0,
+        description="Length of the threaded portion (head excluded), in mm. Default 6 mm = stock M2 × 6 brass screw. The drive-screw left-face tap depth derives from this so the captive-bearing axial play (0.2 mm) stays right.",
+        json_schema_extra=_spec("§4.5.51", status="MEASURED"),
     )
     head_diameter: float = Field(
         default=4.0,
@@ -591,9 +602,17 @@ class CaptiveBearingParams(BaseModel):
     The silver screw is deliberately over-length. It bottoms on the thumbwheel's
     left-face tap *before* its head clamps the drive plate, leaving the plate
     captive in axial play between the silver-screw head (outboard) and the
-    thumbwheel left face (inboard). The mate class `CaptiveBearing` (Layer 2,
-    see code-spec §6) consumes this together with drive_plate.thickness and
-    drive_screw.left_face_tap_depth to emit the required silver-screw length.
+    thumbwheel left face (inboard).
+
+    Geometric relationship (enforced by PurflingCutterParams model validator):
+
+        silver_screw.thread_length
+            = drive_plate.thickness
+            + captive_bearing.axial_play
+            + drive_screw.left_face_tap_depth
+
+    The screw length is the *given* (stock part); the tap depth is the dial we
+    twist to keep axial_play at its design value.
     """
 
     axial_play: float = Field(
@@ -802,6 +821,31 @@ class PurflingCutterParams(BaseModel):
         wall_z_up = self.tapped_bore_position_from_top - tapped_radius
         wall_y = self.shank.depth / 2 - tapped_radius
         return min(wall_z_up, wall_y)
+
+    # --- Cross-component invariant validators -------------------------------
+
+    @model_validator(mode="after")
+    def _validate_captive_bearing(self) -> "PurflingCutterParams":
+        """The silver-screw length, drive-plate thickness, axial play, and tap
+        depth must satisfy the captive-bearing relationship — otherwise the
+        plate either gets clamped (axial_play < design) or floats free
+        (axial_play > design).
+        """
+        expected_thread_len = (
+            self.drive_plate.thickness
+            + self.captive_bearing.axial_play
+            + self.drive_screw.left_face_tap_depth
+        )
+        if abs(self.silver_screw.thread_length - expected_thread_len) > 1e-6:
+            raise ValueError(
+                f"Captive-bearing relationship violated: silver_screw.thread_length "
+                f"({self.silver_screw.thread_length:.3f}) ≠ drive_plate.thickness "
+                f"({self.drive_plate.thickness}) + axial_play ({self.captive_bearing.axial_play}) "
+                f"+ left_face_tap_depth ({self.drive_screw.left_face_tap_depth}) "
+                f"= {expected_thread_len:.3f}. Adjust left_face_tap_depth to "
+                f"{self.silver_screw.thread_length - self.drive_plate.thickness - self.captive_bearing.axial_play:.3f}."
+            )
+        return self
 
     # --- Wall-thickness validators ------------------------------------------
 
