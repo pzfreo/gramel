@@ -166,9 +166,9 @@ class SpacerParams(BaseModel):
     """
 
     thickness: float = Field(
-        default=1.5,
-        gt=0,
-        description="X dimension of the user-supplied shim between blades. Sets the purfling channel width. ESTIMATE — user choice.",
+        default=0.0,
+        ge=0,
+        description="X dimension of the user-supplied shim between blades. Sets the purfling channel width. Default 0 = no spacer installed (bare tool state).",
         json_schema_extra=_spec("§4.1.5"),
     )
 
@@ -286,7 +286,7 @@ class ShaftParams(BaseModel):
     blade_slot_width: float = Field(
         default=6.0,
         gt=0,
-        description="X dimension of blade slot (along the shaft). Fits 4 retainers + 2 blades + channel spacer + ~1.6 mm grub-screw advance.",
+        description="X dimension of blade slot (along the shaft). Hardware stack (4 retainers + 2 blades) = ~4.4 mm; remaining ~1.6 mm is shared between the channel spacer and grub-screw advance.",
         json_schema_extra=_spec("§4.2.8", status="MEASURED"),
     )
     blade_slot_length: float = Field(
@@ -660,23 +660,21 @@ class PurflingCutterParams(BaseModel):
     @property
     def stack_thickness(self) -> float:
         """
-        §4.1.7 — total clamped stack thickness in X direction (along shaft).
+        §4.1.7 — permanent hardware stack in X direction (along shaft).
 
-        Layout in the slot's X direction: retainer | retainer | blade |
-        channel-spacer | blade | retainer | retainer | grub-screw slack.
-        4 × retainer.thickness + 2 × blade.thickness + spacer.thickness.
-
-        The original spec defined this as just 2 × blade + spacer; the real
-        tool's 4 retainers also stack in this direction. With the default
-        1.5 mm channel spacer this gives 5.9 mm, leaving only 0.1 mm of
-        grub-screw advance in a 6 mm slot — measured "spare at the end"
-        is 1.6 mm with no channel spacer, dropping as the user adds one.
+        Layout: retainer | retainer | blade | blade | retainer | retainer.
+        The channel spacer sits in the remaining spare space between the two
+        blades; it is NOT part of this fixed stack. Spare space for spacer +
+        grub-screw advance = blade_slot_width − stack_thickness (~1.6 mm with
+        defaults).
         """
-        return (
-            4 * self.blade_retainer.thickness
-            + 2 * self.blade.thickness
-            + self.spacer.thickness
-        )
+        return 4 * self.blade_retainer.thickness + 2 * self.blade.thickness
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def slot_spare(self) -> float:
+        """X space available for channel spacer + grub-screw advance (hardware stack only)."""
+        return self.shaft.blade_slot_width - self.stack_thickness
 
     @computed_field  # type: ignore[prop-decorator]
     @property
