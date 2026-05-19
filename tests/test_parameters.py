@@ -34,12 +34,15 @@ def test_prototype_flag_default_is_true() -> None:
 
 def test_prototype_sliding_clearance_is_fdm_value() -> None:
     p = PurflingCutterParams()
-    assert p.process.sliding_clearance == 0.25
+    assert p.sliding_clearance == 0.25
 
 
-def test_production_mode_swaps_to_cnc_clearance() -> None:
+def test_production_mode_uses_iso286_worst_case() -> None:
+    """CNC clearance comes from the H7/g6 fit on the cutting pair, not a manual number.
+    At ⌀8 the worst-case H7/g6 clearance is 0.029 mm.
+    """
     p = PurflingCutterParams(process={"prototype": False})
-    assert p.process.sliding_clearance == 0.03
+    assert p.sliding_clearance == pytest.approx(0.029)
 
 
 # ---------------------------------------------------------------------------
@@ -58,14 +61,19 @@ def test_slot_spare() -> None:
 
 
 def test_crossbore_diameter_prototype() -> None:
-    # shaft.outer_diameter (7.9) + sliding_clearance (0.25) = 8.15
-    assert PurflingCutterParams().crossbore_diameter == pytest.approx(8.15)
+    # FDM: nominal (8.0) + printed gap (0.25) = 8.25 — bore enlarged for the print.
+    assert PurflingCutterParams().crossbore_diameter == pytest.approx(8.25)
 
 
 def test_crossbore_diameter_production() -> None:
-    # 7.9 + 0.03 = 7.93
+    # CNC: bore nominal = shaft nominal = 8.0 (H7 callout carries the tolerance).
     p = PurflingCutterParams(process={"prototype": False})
-    assert p.crossbore_diameter == pytest.approx(7.93)
+    assert p.crossbore_diameter == pytest.approx(8.0)
+
+
+def test_shaft_outer_diameter_matches_cutting_pair_nominal() -> None:
+    p = PurflingCutterParams()
+    assert p.shaft_outer_diameter == p.cutting_pair.nominal_diameter == 8.0
 
 
 def test_tapped_bore_drill_diameter() -> None:
@@ -102,26 +110,26 @@ def test_contact_corner_width() -> None:
 
 def test_shaft_wall_around_slot() -> None:
     # Only the X-direction wall matters (slot is open in Y, end walls are §4.2.14).
-    # (7.9 − blade_slot_length=5) / 2 = 1.45
-    assert PurflingCutterParams().shaft_wall_around_slot == pytest.approx(1.45)
+    # (8.0 − blade_slot_length=5) / 2 = 1.5
+    assert PurflingCutterParams().shaft_wall_around_slot == pytest.approx(1.5)
 
 
 def test_shank_wall_between_bores() -> None:
-    # gap (9.5) − crossbore_radius (8.15/2) − tap_drill_radius (2.5/2) = 4.175
-    assert PurflingCutterParams().shank_wall_between_bores == pytest.approx(4.175)
+    # gap (9.5) − crossbore_radius (8.25/2 = 4.125) − tap_drill_radius (1.25) = 4.125
+    assert PurflingCutterParams().shank_wall_between_bores == pytest.approx(4.125)
 
 
 def test_shank_wall_around_crossbore_is_min_of_x_down_and_z() -> None:
-    # Bore axis along X. Walls perpendicular to X, excluding +Z (toward tapped bore):
-    #   X-down: crossbore_x (66) − crossbore_radius (4.075) = 61.925
-    #   Y either side: depth/2 (5.5) − crossbore_radius (4.075) = 1.425
-    # min = 1.425
-    assert PurflingCutterParams().shank_wall_around_crossbore == pytest.approx(1.425)
+    # Crossbore at FDM diameter 8.25 → radius 4.125.
+    #   Z-down: 66 − 4.125 = 61.875
+    #   Y either side: 5.5 − 4.125 = 1.375
+    # min = 1.375
+    assert PurflingCutterParams().shank_wall_around_crossbore == pytest.approx(1.375)
 
 
 def test_shank_wall_around_tapped_bore_is_min_of_x_up_and_z() -> None:
-    #   X-up: tapped_bore_position_from_top (4.5) − tap_drill_radius (1.25) = 3.25
-    #   Y either side: depth/2 (5.5) − tap_drill_radius (1.25) = 4.25
+    #   Z-up: tapped_bore_position_from_top (4.5) − tap_drill_radius (1.25) = 3.25
+    #   Y either side: 5.5 − 1.25 = 4.25
     # min = 3.25
     assert PurflingCutterParams().shank_wall_around_tapped_bore == pytest.approx(3.25)
 
@@ -134,21 +142,21 @@ def test_shank_wall_around_tapped_bore_is_min_of_x_up_and_z() -> None:
 def test_violation_4213_blade_slot_too_wide_for_shaft() -> None:
     """§4.2.13 — widening the slot in Z until the side wall drops below the rule fails."""
     with pytest.raises(ValidationError, match=r"§4\.2\.13"):
-        # Wall = (7.9 − 6.5)/2 = 0.7; rule = max(0.8, 0.7) = 0.8
-        PurflingCutterParams(shaft={"blade_slot_length": 6.5})
+        # Wall = (8.0 − 6.6)/2 = 0.7; rule = max(0.8, 0.7) = 0.8
+        PurflingCutterParams(shaft={"blade_slot_length": 6.6})
 
 
 def test_violation_4323_inter_bore_gap_too_small() -> None:
     """§4.3.23 — shrinking the inter-bore gap below the rule fails."""
     with pytest.raises(ValidationError, match=r"§4\.3\.23"):
-        # Wall = 6.0 − 4.075 − 1.25 = 0.675; rule = max(1.2, 1.5) = 1.5
+        # Wall = 6.0 − 4.125 − 1.25 = 0.625; rule = max(1.2, 1.5) = 1.5
         PurflingCutterParams(shank={"crossbore_to_tapped_bore_gap": 6.0})
 
 
 def test_violation_4324_shank_too_shallow_around_crossbore() -> None:
-    """§4.3.24 — shrinking shank.depth until the Z-walls drop below the rule fails."""
+    """§4.3.24 — shrinking shank.depth until the Y-walls drop below the rule fails."""
     with pytest.raises(ValidationError, match=r"§4\.3\.24"):
-        # Z-wall = 10/2 − 4.075 = 0.925; rule = max(1.0, 0.15 × 8.15) = 1.222
+        # Y-wall = 10/2 − 4.125 = 0.875; rule = max(1.0, 0.15 × 8.25) = 1.2375
         PurflingCutterParams(shank={"depth": 10.0})
 
 

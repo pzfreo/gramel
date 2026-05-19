@@ -40,7 +40,13 @@ def _spec(ref: str, status: Status = "ESTIMATE", units: str = "mm") -> dict[str,
 
 
 class ProcessConfig(BaseModel):
-    """Manufacturing-process flags. Owns prototype/production fit clearances."""
+    """Manufacturing-process flags. Owns the FDM printed-gap clearance.
+
+    The CNC sliding clearance is NOT a parameter here — it falls out of the
+    ISO 286 fit classes (bore_fit + shaft_fit on CuttingPairParams). For a
+    given nominal diameter the worst-case clearance is computed by
+    `gramel.tolerances.worst_case_clearance(...)`.
+    """
 
     model_config = ConfigDict(validate_assignment=True)
 
@@ -52,21 +58,40 @@ class ProcessConfig(BaseModel):
     fdm_sliding_clearance: float = Field(
         default=0.25,
         gt=0,
-        description="Radial sliding-fit clearance for FDM print. Used in place of H7/g6.",
+        description="Radial sliding-fit clearance for FDM print. Real printed gap — bore is enlarged by this much over the shaft nominal so the print mates.",
         json_schema_extra=_spec("§8 — Critical fits (prototype override)"),
     )
-    cnc_sliding_clearance: float = Field(
-        default=0.03,
-        gt=0,
-        description="H7/g6 sliding-fit clearance for machined brass production.",
-        json_schema_extra=_spec("§8 — Critical fits"),
-    )
 
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def sliding_clearance(self) -> float:
-        """Active sliding-fit clearance for the current process."""
-        return self.fdm_sliding_clearance if self.prototype else self.cnc_sliding_clearance
+
+class CuttingPairParams(BaseModel):
+    """The shaft + crossbore mating pair — single nominal diameter with
+    ISO 286 fit classes on each side.
+
+    On the CNC path, both shaft and crossbore are nominally the same
+    diameter; the bore is reamed at `bore_fit` (typically H7) and the
+    shaft is lathed at `shaft_fit` (typically g6), and the clearance
+    falls out of the standard tolerance bands.
+
+    On the FDM path, the bore is enlarged by `process.fdm_sliding_clearance`
+    to leave room for the printed surfaces; the shaft stays at nominal.
+    """
+
+    nominal_diameter: float = Field(
+        default=8.0,
+        gt=0,
+        description="Nominal diameter of the shaft and the crossbore. Picked to match a standard H7 reamer size (8 mm here); the original tool measured 7.9 mm but was rounded up for production simplicity.",
+        json_schema_extra=_spec("§4.2.12", status="DERIVED"),
+    )
+    bore_fit: str = Field(
+        default="H7",
+        description="ISO 286 fit class for the shank crossbore. H7 = standard reamed-hole sliding fit.",
+        json_schema_extra=_spec("§8 — Critical fits", units=""),
+    )
+    shaft_fit: str = Field(
+        default="g6",
+        description="ISO 286 fit class for the shaft OD. g6 mates with an H7 hole to give a clearance running fit.",
+        json_schema_extra=_spec("§8 — Critical fits", units=""),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -233,12 +258,11 @@ class ShaftParams(BaseModel):
         description="X projection of the tenon outboard from the shaft's −X end face.",
         json_schema_extra=_spec("§4.2.19 (tenon — design addition)"),
     )
-    outer_diameter: float = Field(
-        default=7.9,
-        gt=0,
-        description="Shaft OD (measured on the original tool).",
-        json_schema_extra=_spec("§4.2.12", status="MEASURED"),
-    )
+    # Note: shaft OD is no longer a field on ShaftParams — it now derives
+    # from PurflingCutterParams.cutting_pair.nominal_diameter. The shaft's
+    # OD is one half of a mating pair and must stay in lockstep with the
+    # crossbore. Access via params.shaft_outer_diameter at the top level.
+
     blade_slot_width: float = Field(
         default=6.0,
         gt=0,
@@ -597,6 +621,7 @@ class PurflingCutterParams(BaseModel):
     """
 
     process: ProcessConfig = Field(default_factory=ProcessConfig)
+    cutting_pair: CuttingPairParams = Field(default_factory=CuttingPairParams)
     blade: BladeParams = Field(default_factory=BladeParams)
     spacer: SpacerParams = Field(default_factory=SpacerParams)
     blade_retainer: BladeRetainerParams = Field(default_factory=BladeRetainerParams)
@@ -609,6 +634,34 @@ class PurflingCutterParams(BaseModel):
     drive_plate: DrivePlateParams = Field(default_factory=DrivePlateParams)
     silver_screw: SilverScrewParams = Field(default_factory=SilverScrewParams)
     captive_bearing: CaptiveBearingParams = Field(default_factory=CaptiveBearingParams)
+
+    # --- Mating-pair derivations (cutting_pair + process) ------------------
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def shaft_outer_diameter(self) -> float:
+        """Nominal shaft OD — the cutting-pair nominal. Tolerance class
+        (e.g. g6) lives on cutting_pair.shaft_fit and is rendered on the
+        drawing, not numerically expanded here."""
+        return self.cutting_pair.nominal_diameter
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def sliding_clearance(self) -> float:
+        """Active sliding-fit clearance for the current process.
+
+        FDM: a real printed gap (process.fdm_sliding_clearance).
+        CNC: the ISO 286 worst-case clearance for the bore/shaft fit pair.
+        """
+        if self.process.prototype:
+            return self.process.fdm_sliding_clearance
+        from gramel import tolerances
+
+        return tolerances.worst_case_clearance(
+            self.cutting_pair.nominal_diameter,
+            hole_fit=self.cutting_pair.bore_fit,
+            shaft_fit=self.cutting_pair.shaft_fit,
+        )
 
     # --- Cross-part derived values (§4 derivations) -------------------------
 
@@ -635,8 +688,16 @@ class PurflingCutterParams(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def crossbore_diameter(self) -> float:
-        """§4.3.20 — shaft OD plus process-appropriate sliding clearance."""
-        return self.shaft.outer_diameter + self.process.sliding_clearance
+        """§4.3.20 — modelled crossbore diameter for boolean geometry.
+
+        FDM: shaft nominal + printed gap (the geometry literally needs the
+        bore enlarged so the printed shaft will fit).
+        CNC: the same nominal as the shaft — the fit class on the drawing
+        (e.g. H7) carries the tolerance, not the modelled geometry.
+        """
+        if self.process.prototype:
+            return self.cutting_pair.nominal_diameter + self.process.fdm_sliding_clearance
+        return self.cutting_pair.nominal_diameter
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -697,10 +758,10 @@ class PurflingCutterParams(BaseModel):
         through). The slot extends along X inside the shaft body, with
         end walls handled separately by §4.2.14 (`shaft_wall_around_end_tap`).
         The remaining relevant wall is in the Y direction, taking
-        (shaft.outer_diameter − blade_slot_length) / 2 (where
+        (shaft_outer_diameter − blade_slot_length) / 2 (where
         blade_slot_length is the slot's Y cross-section dim).
         """
-        return (self.shaft.outer_diameter - self.shaft.blade_slot_length) / 2
+        return (self.shaft_outer_diameter - self.shaft.blade_slot_length) / 2
 
     @computed_field  # type: ignore[prop-decorator]
     @property
