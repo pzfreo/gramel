@@ -135,6 +135,36 @@ def test_shank_wall_around_tapped_bore_is_min_of_x_up_and_z() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Captive-bearing relationship (silver screw / drive plate / tap depth)
+# ---------------------------------------------------------------------------
+
+
+def test_silver_screw_defaults_to_M2x6_stock() -> None:
+    p = PurflingCutterParams()
+    assert p.silver_screw.thread == "M2"
+    assert p.silver_screw.thread_length == 6.0
+
+
+def test_default_tap_depth_satisfies_captive_bearing() -> None:
+    """thread_length (6.0) = dp.thickness (3.0) + axial_play (0.2) + tap_depth (2.8)."""
+    p = PurflingCutterParams()
+    assert p.drive_screw.left_face_tap_depth == pytest.approx(2.8)
+    expected = (
+        p.drive_plate.thickness
+        + p.captive_bearing.axial_play
+        + p.drive_screw.left_face_tap_depth
+    )
+    assert p.silver_screw.thread_length == pytest.approx(expected)
+
+
+def test_violation_captive_bearing_mismatch() -> None:
+    """Changing one of (thread_length, plate thickness, axial play, tap depth) without
+    the others must trip the model validator."""
+    with pytest.raises(ValidationError, match="Captive-bearing relationship"):
+        PurflingCutterParams(silver_screw={"thread_length": 8.0})
+
+
+# ---------------------------------------------------------------------------
 # Wall validators fire on violations (one test per rule)
 # ---------------------------------------------------------------------------
 
