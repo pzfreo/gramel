@@ -17,3 +17,6 @@ dist/
 # IDE
 .vscode/
 .idea/
+
+# Claude Code harness state
+.claude/
