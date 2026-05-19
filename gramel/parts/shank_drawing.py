@@ -129,12 +129,9 @@ def _placed_text(text: str, size: float, x: float, y: float, left_align: bool = 
     """Position text by its bounding-box left edge (or its centre if left_align=False)."""
     txt = Text(txt=text, font_size=size)
     bb = txt.bounding_box()
-    if left_align:
-        dx = x - bb.min.X
-    else:
-        dx = x - (bb.min.X + bb.max.X) / 2
+    dx = x - bb.min.X if left_align else x - (bb.min.X + bb.max.X) / 2
     dy = y - (bb.min.Y + bb.max.Y) / 2
-    return txt.translate((dx, dy, 0))  # type: ignore[return-value]
+    return txt.translate((dx, dy, 0))
 
 
 def _line(x1: float, y1: float, x2: float, y2: float) -> Edge:
@@ -271,7 +268,7 @@ def _leader(
         # Right-align: shift so the right edge lands at lx
         dx = lx - bb.max.X
         dy = ly - (bb.min.Y + bb.max.Y) / 2
-        txt = txt_obj.translate((dx, dy, 0))  # type: ignore[assignment]
+        txt = txt_obj.translate((dx, dy, 0))
     else:
         raise ValueError(f"direction must be 'right' or 'left', got {direction!r}")
 
@@ -341,7 +338,6 @@ def build_shank_drawing(
     length, width, depth = sp.length, sp.width, sp.depth
 
     cb_d = params.crossbore_diameter
-    tap_d = params.tapped_bore_drill_diameter
     cb_x_from_top = sp.crossbore_position_from_top
     tap_x_from_top = params.tapped_bore_position_from_top
     inter_gap = sp.crossbore_to_tapped_bore_gap
@@ -391,8 +387,8 @@ def build_shank_drawing(
         line_width=0.1,
     )
     dims: list[ExtensionLine | DimensionLine] = []
-    annotation_lines: list = []  # routed to "part" layer (strokes, no fill)
-    annotation_text: list = []  # routed to "text" layer (fill=black, tiny stroke)
+    annotation_lines: list[Compound | Edge] = []  # routed to "part" layer (strokes, no fill)
+    annotation_text: list[Compound] = []  # routed to "text" layer (fill=black, tiny stroke)
 
     def add_leader(**kwargs: object) -> None:
         lines_c, text_c = _leader(**kwargs)  # type: ignore[arg-type]
@@ -569,7 +565,7 @@ def main() -> None:
 
     # Convert SVG → PDF (cairosvg handles vector to vector, no rasterisation).
     try:
-        import cairosvg
+        import cairosvg  # type: ignore[import-untyped]
 
         cairosvg.svg2pdf(url="/tmp/shank_drawing.svg", write_to="/tmp/shank_drawing.pdf")
         print("Exported /tmp/shank_drawing.pdf")
