@@ -9,6 +9,7 @@ dependencies = [
     "pydantic>=2.10",
     "build123d",
     "bd-warehouse",
+    "cairosvg",
 ]
 
 [dependency-groups]
