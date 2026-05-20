@@ -76,6 +76,8 @@ def build_shank_drawing(
     tap_x_from_top = params.tapped_bore_position_from_top
     inter_gap = sp.crossbore_to_tapped_bore_gap
     dl_d = sp.depth_lock_bore_diameter
+    dl_collar_d = sp.depth_lock_collar_bore_diameter
+    dl_collar_len = sp.depth_lock_collar_bore_length
     dl_thread_len = sp.depth_lock_threaded_length
     dl_depth = params.depth_lock_bore_depth
     slot_w = sp.relief_slot_width
@@ -178,18 +180,23 @@ def build_shank_drawing(
     cb_side_y = s_top - cb_x_from_top
     tap_side_y = s_top - tap_x_from_top
     add_dim((s_right, cb_side_y), (s_right, tap_side_y), "right", 8, f"{inter_gap:.1f}")
-    s_thread_top = s_bot + dl_thread_len
-    # Threaded + smooth section dims sit FURTHER OUT than the leader callouts
-    # below — so the leader lines don't cross through the dim lines.
-    add_dim((s_right, s_bot), (s_right, s_thread_top), "right", 32, f"{dl_thread_len:.0f}")
-    add_dim((s_right, s_thread_top), (s_right, cb_side_y), "right", 38, f"{dl_depth - dl_thread_len:.0f}")
-    # Thread-end indicator line across the bore at s_thread_top.
+    s_collar_top = s_bot + dl_collar_len
+    s_thread_top = s_collar_top + dl_thread_len
+    # Collar + threaded + smooth section dims sit FURTHER OUT than the leader
+    # callouts below — so the leader lines don't cross through the dim lines.
+    add_dim((s_right, s_bot), (s_right, s_collar_top), "right", 26, f"{dl_collar_len:.0f}")
+    add_dim((s_right, s_collar_top), (s_right, s_thread_top), "right", 32, f"{dl_thread_len:.0f}")
+    add_dim((s_right, s_thread_top), (s_right, cb_side_y), "right", 38, f"{dl_depth - dl_collar_len - dl_thread_len:.0f}")
+    # Section-boundary indicator lines across the bore.
     bore_half = dl_d / 2
+    collar_half = dl_collar_d / 2
+    annotation_lines.append(line_segment(sx - collar_half, s_collar_top, sx + collar_half, s_collar_top))
     annotation_lines.append(line_segment(sx - bore_half, s_thread_top, sx + bore_half, s_thread_top))
 
-    # Depth-lock thread + push-rod bore callouts — leaders pointing RIGHT.
+    # Depth-lock bore-section callouts — leaders pointing RIGHT.
     side_label_x = s_right + 16
-    add_leader((sx, (s_bot + s_thread_top) / 2), (side_label_x, (s_bot + s_thread_top) / 2), f"{dl_thread}×1")
+    add_leader((sx, (s_bot + s_collar_top) / 2), (side_label_x, (s_bot + s_collar_top) / 2), f"⌀{dl_collar_d:.2f}")
+    add_leader((sx, (s_collar_top + s_thread_top) / 2), (side_label_x, (s_collar_top + s_thread_top) / 2), f"{dl_thread}×1")
     push_rod_mid_y = (s_thread_top + cb_side_y) / 2
     add_leader((sx, push_rod_mid_y), (side_label_x, push_rod_mid_y), f"⌀{dl_d:.1f} H8")
 

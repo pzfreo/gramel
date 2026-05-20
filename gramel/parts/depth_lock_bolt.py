@@ -9,12 +9,17 @@ Local frame:
 
 Stack from bottom (−Z) to top (+Z):
   Knob (knurled disc, knob_diameter × knob_thickness)
+   → Collar (smooth, bolt_collar_diameter × bolt_collar_length)
    → M6 threaded portion (thread major diameter × bolt_thread_length)
+   → Chamfered tip (bolt_tip_chamfer, 45°)
 
-Knurl decoration not modelled.
+The collar mates with an enlarged section at the bottom of the shank's
+depth-lock bore as an anti-cocking guide. The chamfer is a thread lead-in
+to avoid cross-threading. Knurl decoration not modelled.
 """
 
-from build123d import Cylinder, Part, Pos
+from build123d import Axis, Cylinder, Part, Pos
+from build123d.topology import Solid
 
 from gramel import threads
 from gramel.parameters import PurflingCutterParams
@@ -26,18 +31,40 @@ def build_depth_lock_bolt(params: PurflingCutterParams) -> Part:
     dl = params.depth_lock
     knob_r = dl.knob_diameter / 2
     knob_t = dl.knob_thickness
+    collar_r = dl.bolt_collar_diameter / 2
+    collar_len = dl.bolt_collar_length
     bolt_r = threads.major_radius(dl.thread)
     bolt_len = dl.bolt_thread_length
+    chamfer = dl.bolt_tip_chamfer
 
-    # Knob from Z = 0 to Z = knob_t
+    z_collar_start = knob_t
+    z_thread_start = knob_t + collar_len
+    z_thread_end = z_thread_start + bolt_len
+
     knob = Pos(0, 0, knob_t / 2) * Cylinder(radius=knob_r, height=knob_t)
-    # Bolt from Z = knob_t to Z = knob_t + bolt_len. Real helix on the FDM
-    # prototype path; plain major-diameter cylinder on the CNC path.
+    collar = Pos(0, 0, z_collar_start + collar_len / 2) * Cylinder(
+        radius=collar_r, height=collar_len
+    )
+
     if params.process.prototype:
-        bolt = Pos(0, 0, knob_t) * external_thread_section(dl.thread, bolt_len)
+        bolt = Pos(0, 0, z_thread_start) * external_thread_section(dl.thread, bolt_len)
     else:
-        bolt = Pos(0, 0, knob_t + bolt_len / 2) * Cylinder(radius=bolt_r, height=bolt_len)
-    body = knob + bolt
+        bolt = Pos(0, 0, z_thread_start + bolt_len / 2) * Cylinder(
+            radius=bolt_r, height=bolt_len
+        )
+
+    body = knob + collar + bolt
+
+    # Lead-in chamfer on the +Z thread tip (CNC path only — real-thread
+    # geometry on the prototype path already has tapered top turns).
+    if chamfer > 0 and not params.process.prototype:
+        try:
+            top_face = body.faces().sort_by(Axis.Z).last
+            top_edges = list(top_face.edges())
+            body = body.chamfer(chamfer, None, top_edges)  # type: ignore[assignment]
+        except Exception:
+            pass  # leave un-chamfered if the boolean fails
+
     return body  # type: ignore[return-value]
 
 

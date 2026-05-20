@@ -110,26 +110,36 @@ def build_shank(params: PurflingCutterParams) -> Part:
         body = body - tapped
 
     # --- Depth-lock blind bore (along Z, from Z = 0 up) -------------------
-    # Bore extends from the bottom face up to the crossbore. The bottom
-    # `depth_lock_threaded_length` is tapped for the M6 bolt; the rest is
-    # a smooth sliding fit for the 5 mm push rod.
+    # Stack from bottom: collar bore (smooth, slightly larger than the bolt
+    # thread OD) → M6-tapped section → smooth bore for the push rod.
     dl_depth = params.depth_lock_bore_depth
     dl_radius = shank.depth_lock_bore_diameter / 2
+    dl_collar_r = shank.depth_lock_collar_bore_diameter / 2
+    dl_collar_len = shank.depth_lock_collar_bore_length
     dl_thread_len = shank.depth_lock_threaded_length
-    dl_upper_len = dl_depth - dl_thread_len
+    dl_upper_z_start = dl_collar_len + dl_thread_len
+    dl_upper_len = dl_depth - dl_upper_z_start
+
+    collar_bore = Pos(0, 0, dl_collar_len / 2) * Cylinder(
+        radius=dl_collar_r, height=dl_collar_len
+    )
+    body = body - collar_bore
 
     if params.process.prototype:
-        # Upper smooth section (push-rod sliding fit).
-        upper_bore = Pos(0, 0, dl_thread_len + dl_upper_len / 2) * Cylinder(
+        # Push-rod sliding fit, above the tapped section.
+        upper_bore = Pos(0, 0, dl_upper_z_start + dl_upper_len / 2) * Cylinder(
             radius=dl_radius, height=dl_upper_len
         )
         body = body - upper_bore
-        # Lower threaded section: void = bore-at-major minus thread ribs.
-        thread_cutout = internal_thread_cutout(params.depth_lock.thread, dl_thread_len)
+        # Tapped section between collar bore and push-rod bore.
+        thread_cutout = Pos(0, 0, dl_collar_len) * internal_thread_cutout(
+            params.depth_lock.thread, dl_thread_len
+        )
         body = body - thread_cutout
     else:
-        depth_lock_bore = Pos(0, 0, dl_depth / 2) * Cylinder(
-            radius=dl_radius, height=dl_depth
+        # CNC path: clean cylinder through the tap + push-rod sections.
+        depth_lock_bore = Pos(0, 0, dl_collar_len + (dl_depth - dl_collar_len) / 2) * Cylinder(
+            radius=dl_radius, height=dl_depth - dl_collar_len
         )
         body = body - depth_lock_bore
 

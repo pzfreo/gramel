@@ -109,8 +109,12 @@ def build_assembly(params: PurflingCutterParams) -> Compound:
     rod_bottom_z = rod_top_z - params.depth_lock.push_rod_length
     rod = Pos(0, 0, rod_bottom_z) * rod_local
 
-    # Bolt tip at rod bottom; bolt's local Z=knob+thread is at the tip
-    bolt_tip_local_z = params.depth_lock.knob_thickness + params.depth_lock.bolt_thread_length
+    # Bolt tip at rod bottom; bolt's local Z=knob+collar+thread is at the tip
+    bolt_tip_local_z = (
+        params.depth_lock.knob_thickness
+        + params.depth_lock.bolt_collar_length
+        + params.depth_lock.bolt_thread_length
+    )
     bolt = Pos(0, 0, rod_bottom_z - bolt_tip_local_z) * bolt_local
 
     return Compound(
