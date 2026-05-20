@@ -20,3 +20,4 @@ dist/
 
 # Claude Code harness state
 .claude/
+gramel-*.zip

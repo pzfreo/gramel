@@ -27,6 +27,8 @@ Run with::
 
 from __future__ import annotations
 
+import subprocess
+import zipfile
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -34,6 +36,7 @@ from typing import Any
 from build123d import Part, export_step
 from pypdf import PdfWriter
 
+from gramel.assembly import build_assembly
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import export_drawing
 from gramel.parts.assembly_drawing import build_assembly_drawing
@@ -84,6 +87,12 @@ def build_steps(params: PurflingCutterParams) -> None:
         export_step(part, str(path))
         print(f"  {path.relative_to(DIST.parent)}  (volume = {part.volume:.1f} mm³)")
 
+    # Full assembly STEP — for the shop to visualise how the parts mate.
+    asm = build_assembly(params)
+    asm_path = DIST / "gramel_assembly.step"
+    export_step(asm, str(asm_path))
+    print(f"  {asm_path.relative_to(DIST.parent)}  (volume = {asm.volume:.1f} mm³)")
+
 
 def build_drawings(params: PurflingCutterParams) -> list[Path]:
     out = DIST / "drawings"
@@ -116,6 +125,45 @@ def combine_pdfs(pdfs: list[Path]) -> Path:
     return out_path
 
 
+def release_version() -> str:
+    """Resolve the release version from `git describe`, falling back to 'dev'.
+
+    Format examples:
+      - 'v0.1.0'                  — clean tag
+      - 'v0.1.0-3-gabc1234'       — 3 commits past v0.1.0
+      - 'v0.1.0-3-gabc1234-dirty' — uncommitted changes
+      - 'dev'                     — no git, or git command unavailable
+    """
+    try:
+        out = subprocess.run(
+            ["git", "describe", "--tags", "--always", "--dirty"],
+            capture_output=True, text=True, check=True,
+        )
+        return out.stdout.strip() or "dev"
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "dev"
+
+
+def bundle_zip(version: str) -> Path:
+    """Pack the shop-handoff bundle: STEP files, drawings PDF, RFQ, spec.
+
+    Filename includes the release version so it's clear which build the
+    zip came from. The zip is written next to dist/, not inside it.
+    """
+    archive = DIST.parent / f"gramel-{version}.zip"
+    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
+        # Per-part STEPs + assembly STEP + per-drawing files + combined PDF
+        for path in sorted(DIST.rglob("*")):
+            if path.is_file():
+                zf.write(path, path.relative_to(DIST))
+        # Quotation request and spec as top-level cover documents
+        for extra in ("quotation-request.md", "specification.md"):
+            src = DIST.parent / extra
+            if src.exists():
+                zf.write(src, extra)
+    return archive
+
+
 def main() -> None:
     params = cnc_params()
     DIST.mkdir(parents=True, exist_ok=True)
@@ -129,6 +177,10 @@ def main() -> None:
     print()
     combined = combine_pdfs(pdfs)
     print(f"Combined PDF: {combined.relative_to(DIST.parent)}")
+    print()
+    version = release_version()
+    archive = bundle_zip(version)
+    print(f"Bundle:       {archive.relative_to(DIST.parent)}  (version: {version})")
     print()
     print("Done.")
 
