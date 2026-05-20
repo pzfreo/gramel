@@ -53,18 +53,18 @@ See accompanying diagram. These names are canonical — please use them in the C
 | **Shaft cross-bore** | Plain horizontal through-hole near the top of the shank. Sliding fit on the shaft. |
 | **Shank tapped bore** | Tapped horizontal through-hole, directly above and parallel to the shaft cross-bore. Carries the drive screw. Tapped along the full X length of the shank. |
 | **Depth-lock blind bore** | Long vertical bore running up inside the shank from the bottom, opening into the shaft cross-bore at the top. **Only the lower portion is tapped** (for the depth-lock bolt); above the tapped section is a smooth bore that holds the push rod. |
-| **Depth-lock push rod** | Steel rod sitting in the smooth (upper) section of the depth-lock blind bore. Its lower end is pushed up by the depth-lock bolt; its upper end bears on the underside of the shaft to lock it. **Missing from earlier drafts of this spec.** |
+| **Depth-lock push rod** | Steel rod (⌀4.5 in a ⌀5 smooth bore — sliding fit with ~0.25 mm radial clearance) sitting in the smooth (upper) section of the depth-lock blind bore. Its lower end is pushed up by the depth-lock bolt; its upper end bears on the underside of the shaft to lock it. **Missing from earlier drafts of this spec.** |
 | **Shaft** | Brass bar passing horizontally through the shaft cross-bore. Carries the blades at its right end. Translates in X to set edge margin. |
 | **Blade slot** | Vertical through-slot in the right end of the shaft. Open top and bottom (blades drop through). Wide enough to hold two blades plus a spacer side by side. |
 | **Shaft end tap** | Tapped hole in the right end face of the shaft, along the shaft axis. Receives the grub screw. |
 | **Grub screw** | Steel screw threaded into the shaft end tap from the right. Its inner end pushes the blade stack horizontally against the left wall of the blade slot, clamping blades and spacer together. |
 | **Blades** | Two flat tool-steel blades. Replaceable. See §5 on blade strategy. |
 | **Spacer** | Thin brass or steel shim between the two blades, setting the purfling channel width. Replaceable; different spacers give different channel widths. |
-| **Drive plate** | Brass plate standing vertically up from the **outboard (left) end** of the shaft, fixed to it (originally soldered; in this build screwed). Has a clearance hole near its top through which the captive screw passes. **Sits outboard of the thumbwheel.** |
+| **Drive plate** | Brass **egg-shaped** plate standing vertically up from the **outboard (left) end** of the shaft. Two circular bosses (larger at the shaft end, smaller at the thumbwheel end) joined by external tangent lines. The plate is fixed to the shaft by **a single central mount screw** plus an **anti-rotation tenon** on the back face that engages a matching slot in the shaft's −X end face. Has a captive-screw clearance hole near its thumb end. **Sits outboard of the thumbwheel.** |
 | **Thumbwheel** | Knurled disc **sitting between the drive plate (outboard) and the shank (inboard)**, on the left end of the drive screw. **Integral with the drive screw** — turned from one piece (or permanently joined). |
 | **Drive screw** | Threaded shaft extending right (inboard) from the thumbwheel into the shank tapped bore. The thumbwheel's left end face carries a tapped hole along the drive-screw axis for the captive screw. |
 | **Captive screw** | Small screw passing rightward from outboard through the drive plate's clearance hole, across a small axial-play gap, and threading into the tap on the thumbwheel's left end face. **Deliberately over-length** so it bottoms on the tap, leaving the drive plate floating in axial play between its head (outboard) and the thumbwheel's left face (inboard). |
-| **Depth-lock bolt** | M6 bolt threaded into the lower (tapped) section of the depth-lock blind bore. Knurled knob at the bottom. Its upper end pushes the depth-lock push rod; the rod (not the bolt) is what bears on the underside of the shaft. |
+| **Depth-lock bolt** | M6 bolt threaded into the depth-lock blind bore's tapped section. Stack from the bottom up: knurled knob → unthreaded ⌀6.25 **anti-cocking collar** (mates with an enlarged section at the bottom of the bore) → M6 thread → 0.5 × 45° lead-in chamfer at the tip. Its upper end pushes the depth-lock push rod; the rod (not the bolt) is what bears on the underside of the shaft. |
 | **Depth-lock knob** | Knurled knob at the bottom of the shank, integral with the depth-lock bolt. |
 
 ---
@@ -117,7 +117,7 @@ Each tier table below names the dimension by its full **field path** (`blade.thi
 | 16 | Grub screw nose protrusion (max) | `grub_screw.max_nose_advance` | `≥ shaft.blade_slot_width − min(stack_thickness)` | Grub screw must be able to reach the thinnest stack and clamp it. |
 | 17 | Distance from shaft right-end face to blade slot | `shaft.end_to_slot_distance` | `[TBM]` | Determines how much wall is between shaft end tap and blade slot. See item 14. |
 | 18 | Shaft total length | `shaft.length` | `[TBM]` | Must support: blade slot at right end + protrusion through shank during full X travel + length to clear thumbwheel + axial gap + drive plate at outboard (left) end. |
-| 19 | Drive plate mounting on shaft | `shaft.drive_plate_mount` | Two tapped holes, M2 or M2.5 `[TBM]`, on the **outboard end face of the shaft** | Replaces the original soldered joint. The two screws also stop the drive plate (and the shaft) from rotating. |
+| 19 | Drive plate mounting on shaft | `shaft.drive_plate_mount_thread` + `shaft.end_slot` | **Single** central tapped hole (M2) on the outboard end face + a **slot** across the same face that receives the drive plate's tenon | Replaces the original soldered joint. The central screw holds axially; the slot–tenon pair prevents rotation. The slot is milled across the full diameter (one mill pass); its dimensions match the plate tenon. |
 
 ### 4.3 Tier 3 — Shank (driven by Tier 2 + wall-thickness rules)
 
@@ -133,10 +133,18 @@ Each tier table below names the dimension by its full **field path** (`blade.thi
 | 27 | Shank length (Z) | `shank.length` | `[TBM]` (likely 90–110 mm) | Affects balance, reach, and the length of the depth-lock blind bore. |
 | 28 | Shank cross-bore position (from top of shank) | `shank.crossbore_position_from_top` | `[TBM]` | Near the top. Sets how high the mechanism sits relative to the working face. |
 | 29 | Shank tapped bore position | `shank.tapped_bore_position_from_top` | `= shank.crossbore_position_from_top − shank.crossbore_to_tapped_bore_gap` | Derived; sits above the shaft cross-bore. |
-| 30 | Depth-lock blind bore diameter | `shank.depth_lock_bore_diameter` | Per depth-lock thread tap-drill, also accepts the push rod (sliding fit) | M6 tap drill is 5.0 mm; same diameter also accepts the 5 mm steel push rod in the upper (untapped) section of the bore. |
-| 30a | Depth-lock bore threaded length | `shank.depth_lock_threaded_length` | `[TBM]` (ESTIMATE: 12 mm) | Only the *lower* section of the bore is tapped — typically just enough to engage the bolt fully. Above the tapped section the bore is smooth and contains the push rod. |
+| 30 | Depth-lock blind bore diameter (tap + push-rod section) | `shank.depth_lock_bore_diameter` | 5.0 mm (M6 tap drill) | Same drill is used for both the M6-tapped section and the smooth section above it. The ⌀4.5 push rod (item 32a) slides in the smooth section with ~0.25 mm radial clearance. |
+| 30a | Depth-lock collar bore diameter | `shank.depth_lock_collar_bore_diameter` | 6.35 mm | Enlarged section at the **bottom** of the depth-lock bore that receives the bolt's ⌀6.25 anti-cocking collar (item 32c). 0.05 mm radial clearance — light sliding fit. |
+| 30b | Depth-lock collar bore length | `shank.depth_lock_collar_bore_length` | 5.5 mm (= bolt collar length + 0.5) | Slightly longer than the bolt collar so manufacturing tolerance can't land the collar's top against the tap shoulder. |
+| 30c | Depth-lock bore threaded length | `shank.depth_lock_threaded_length` | `[TBM]` (ESTIMATE: 12 mm) | M6-tapped section sits between the collar bore (bottom) and the smooth push-rod section (top). |
 | 31 | Depth-lock blind bore depth | `shank.depth_lock_bore_depth` (derived) | `= shank.length − shank.crossbore_position_from_top` | Bore extends from the bottom of the shank up to and into the shaft cross-bore — the push rod must reach the cross-bore region to bear on the shaft. (Earlier draft of this spec called for a `small_clearance` below the cross-bore; that was wrong.) |
 | 32 | Depth-lock thread | `depth_lock.thread` | M6 measured | Hand-clamped, not metered. |
+| 32a | Push-rod diameter | `depth_lock.push_rod_diameter` | 4.5 mm | ⌀4.5 in ⌀5 bore = 0.25 mm radial sliding clearance. Validator enforces rod < bore. |
+| 32b | Push-rod length | `depth_lock.push_rod_length` | 45 mm | Reaches from the bolt tip (at the top of the tap, lock position) up to the shaft underside. |
+| 32c | Bolt collar diameter | `depth_lock.bolt_collar_diameter` | 6.25 mm | Unthreaded section between the knob and the M6 thread. Acts as an anti-cocking guide when seated in the collar bore (item 30a). |
+| 32d | Bolt collar length | `depth_lock.bolt_collar_length` | 5 mm | Bore (item 30b) is 0.5 mm longer for tolerance. |
+| 32e | Bolt thread length | `depth_lock.bolt_thread_length` | 13 mm | Sized so the system has 1 mm of preload margin at the rod-lock position (knob clears the shank bottom by 1 mm). |
+| 32f | Bolt tip lead-in chamfer | `depth_lock.bolt_tip_chamfer` | 0.5 × 45° | Standard M6 lead-in — keeps the bolt from cross-threading on start. |
 | 33 | Relief slot width (Y) | `shank.relief_slot_width` | `[TBM]` (likely 2–8 mm) | Wide enough to clear edge irregularities; narrow enough to keep contact corners close. Measured *across* the working face, perpendicular to slot length. |
 | 34 | Relief slot depth (X) | `shank.relief_slot_depth` | ~1 mm | Depth into the body from the working face. Just enough to guarantee no contact in slot region. |
 | 34a | Relief slot length (Z) | `relief_slot_length` (derived) | `= shank.length − shank.crossbore_position_from_top` | Slot runs from the bottom of the shank up to the shaft cross-bore. Does *not* extend above the shaft (corrected from earlier drafts that said "full length of the shank"). |
@@ -164,11 +172,15 @@ Geometry, outboard → inboard along X: captive-screw head → drive plate → a
 
 | # | Parameter | Code field | Value rule | Notes |
 |---|---|---|---|---|
-| 45 | Drive plate height (Y) above shaft | `drive_plate.height` | `shank.crossbore_to_tapped_bore_gap + clearance_above_screw` | Plate must rise from shaft top to drive-screw axis, with enough material above and below the clearance hole. |
-| 46 | Drive plate width (Z) | `drive_plate.width` | `[TBM]` | |
-| 47 | Drive plate thickness (X) | `drive_plate.thickness` | `[TBM]` (likely 1.5–2.5 mm) | |
-| 48 | Drive plate clearance hole | `drive_plate.clearance_hole_diameter` | `≥ captive_screw.thread.major × 1.1` | Light radial clearance — does not need precision (per user; see §8). |
-| 49 | Drive plate position on shaft (Z) | `drive_plate.shaft_mount_position` | Mounted on the outboard end face of the shaft | The shaft must be long enough on its outboard side that the drive plate sits clear of the thumbwheel. The axial-play gap (item 53) sits between them. |
+| 45 | Drive plate outline | — | **Egg shape**: larger circle at the shaft end, smaller circle at the thumbwheel end, joined by external tangent lines. | The plate is not a rectangle. |
+| 45a | Drive plate shaft-end boss radius | `drive_plate.shaft_end_radius` | 4 mm (⌀8 — matches shaft OD) | Sized to match the shaft so the plate's bottom edge is flush with the shaft cylinder and the tenon (item 49a) goes edge-to-edge with no overhang. |
+| 45b | Drive plate thumb-end boss radius | `drive_plate.thumb_end_radius` | 3 mm (⌀6) | Sized to encircle the captive-screw clearance hole with adequate wall. |
+| 45c | Centre-to-centre vertical distance | derived | `= shank.crossbore_to_tapped_bore_gap` | Plate spans from shaft axis up to drive-screw axis. |
+| 46 | Drive plate thickness (X) | `drive_plate.thickness` | 3 mm (measured) | Thickness in the axial direction. The plate keeps full thickness through the load-bearing region — the anti-rotation feature is a *tenon* on the back face (item 49a), not a slot through the plate. |
+| 47 | Drive plate captive-bearing clearance hole | `drive_plate.captive_clearance_hole_diameter` | 2.6 mm (M2 + ~0.3 mm radial — deliberately sloppy) | At the thumb-end boss. The drive plate rides on the captive screw as a *bearing*, so it needs more clearance than a normal screw hole. |
+| 48 | Drive plate mount clearance hole | `drive_plate.mount_hole_diameter` | 2.4 mm (M2 standard clearance) | At the shaft-end boss. The mount screw passes through here into the shaft's central tap (item 19). The hole drills *through* the tenon. |
+| 49 | Drive plate position on shaft (Z) | derived | Mounted on the outboard −X end face of the shaft | The shaft must be long enough on its outboard side that the plate sits clear of the thumbwheel. The axial-play gap (item 53) sits between the plate's inboard face and the thumbwheel's outboard end face. |
+| 49a | Anti-rotation tenon (plate side) | `drive_plate.tenon_depth` / `tenon_height` | 1.5 mm projection × 3 mm tall × full plate width at Z = 0 | Rectangular boss on the plate's +X back face, centred at the shaft-end boss. Y outline follows the plate's egg perimeter at the tenon's Z range (no protruding corners). Mates with the matching slot in the shaft (item 19). The tenon is on the plate (not the shaft) so the plate keeps full thickness in the load-bearing region. |
 | 50 | Captive screw thread | `captive_screw.thread` | Per item 40 | M2 or M2.5 `[TBM]`. |
 | 51 | Captive screw useful length (head underside to tip) | `captive_screw.length` *(owned by `captive_bearing`)* | `= drive_plate.thickness + captive_bearing.axial_play + drive_screw.left_face_tap_depth` | **Critical:** the screw must bottom on the tap with `captive_bearing.axial_play` mm of axial clearance remaining between its head and the drive plate. |
 | 52 | Captive screw head | `captive_screw.head` | Pan or cheese; larger than `drive_plate.clearance_hole_diameter` | Acts as the retainer. |
@@ -186,7 +198,7 @@ In priority order.
 
 2. **Wall between shaft end tap and blade slot.** How much material is there between the end of the blade slot and the bottom of the shaft end tap? Determines how deep the grub screw can be tapped without breaking through.
 
-3. **Shaft rotation prevention.** Does the original rely solely on the drive plate's two screws to prevent shaft rotation in the shaft cross-bore, or is there also a flat machined along the shaft for the depth-lock bolt to bear on? Likely just the drive plate, but worth checking. (If there's no flat, the depth-lock bolt bears on the shaft's curved underside, which is fine — point contact is more than adequate clamping for this application.)
+3. **Shaft rotation prevention.** Does the original rely solely on the drive plate (single central screw + tenon–slot anti-rotation between plate and shaft) to prevent shaft rotation in the cross-bore, or is there also a flat machined along the shaft for the depth-lock bolt to bear on? Likely just the drive plate, but worth checking. (If there's no flat, the depth-lock push rod bears on the shaft's flat-machined underside, which is what this build models — see `shaft.flat_depth`.)
 
 4. **Drive screw end at the shank tapped bore.** When the tool is at minimum edge margin (shaft pushed all the way toward the work), does the drive screw exit the shank tapped bore on the far side, or just bottom out internally?
 
@@ -205,7 +217,7 @@ In priority order.
 | Depth-lock knob + bolt | Brass for knob; steel bolt OR brass throughout | Original is likely brass throughout. Steel bolt with a brass knob silver-soldered on is an alternative. |
 | Captive screw | Stainless steel | Any stock M2 pan-head — the role is purely to retain the drive plate. |
 | Grub screw | Stainless or hardened steel | Standard part — slotted, socket, or knurled head per original. |
-| Drive plate mounting screws | Stainless steel | M2 / M2.5; flat or pan head, countersunk into drive plate if possible. |
+| Drive plate mount screw | Stainless steel | Single M2 pan-head, central. Anti-rotation is via the plate-to-shaft tenon/slot (item 19), not a second screw. |
 | Blades | O1 tool steel, hardened and tempered, OR commercial Ibex/Herdim blades | See §7. |
 | Spacers | Brass or steel shim stock | Set of sizes. |
 
