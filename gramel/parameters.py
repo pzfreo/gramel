@@ -342,9 +342,9 @@ class DepthLockParams(BaseModel):
         json_schema_extra=_spec("§4.3 (knob — not numbered)", status="MEASURED"),
     )
     push_rod_diameter: float = Field(
-        default=5.0,
+        default=4.5,
         gt=0,
-        description="Steel push-rod diameter. Slides freely in the upper (untapped) section of the depth-lock bore.",
+        description="Steel push-rod diameter. ⌀4.5 in a ⌀5 bore (M6 tap drill = 5.0, so the smooth section above the tap is also 5.0) gives 0.25 mm radial clearance — comfortable sliding fit.",
         json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="MEASURED"),
     )
     push_rod_length: float = Field(
@@ -401,9 +401,9 @@ class ShankParams(BaseModel):
         json_schema_extra=_spec("§4.3 (collar bore — design addition)", status="MEASURED"),
     )
     depth_lock_collar_bore_length: float = Field(
-        default=5.0,
+        default=5.5,
         gt=0,
-        description="Length of the enlarged collar-bore section. Matches the bolt's collar length so the collar fully engages the bore at lock position.",
+        description="Length of the enlarged collar-bore section. 0.5 mm longer than the bolt's collar so manufacturing tolerance on either feature can't cause the collar to bottom against the tap shoulder.",
         json_schema_extra=_spec("§4.3 (collar bore — design addition)", status="MEASURED"),
     )
     depth_lock_threaded_length: float = Field(
@@ -878,6 +878,67 @@ class PurflingCutterParams(BaseModel):
                 f"+ left_face_tap_depth ({self.drive_screw.left_face_tap_depth}) "
                 f"= {expected_thread_len:.3f}. Adjust left_face_tap_depth to "
                 f"{self.captive_screw.thread_length - self.drive_plate.thickness - self.captive_bearing.axial_play:.3f}."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _validate_depth_lock_sliding_fits(self) -> "PurflingCutterParams":
+        """Two sliding-fit clearances inside the depth-lock bore must remain
+        positive — otherwise the moving part binds against the bore wall.
+
+        1. **Push rod ↔ smooth bore**. The smooth section of the bore is
+           sized at the M6 tap-drill diameter (5.0 mm) because the same
+           drill is used for the tapped section below. The rod has to be
+           smaller than that to slide.
+
+        2. **Bolt collar ↔ collar bore**. The unthreaded collar between
+           the knob and the thread acts as an anti-cocking guide. It needs
+           clearance over the matching enlarged section at the bottom of
+           the bore.
+
+        Required minimum diametric clearance for both: 0.05 mm (a very
+        tight sliding fit). 0 or negative clearance = interference, the
+        bolt won't go in.
+        """
+        min_clearance = 0.05  # diametric
+
+        rod_clearance = self.shank.depth_lock_bore_diameter - self.depth_lock.push_rod_diameter
+        if rod_clearance < min_clearance:
+            raise ValueError(
+                f"Push-rod sliding-fit violated: depth_lock_bore_diameter "
+                f"({self.shank.depth_lock_bore_diameter:.3f}) − push_rod_diameter "
+                f"({self.depth_lock.push_rod_diameter:.3f}) = {rod_clearance:.3f} mm "
+                f"diametric clearance, < min {min_clearance:.3f}. The rod needs to "
+                f"be smaller than the bore so it can slide."
+            )
+
+        collar_clearance = (
+            self.shank.depth_lock_collar_bore_diameter
+            - self.depth_lock.bolt_collar_diameter
+        )
+        if collar_clearance < min_clearance:
+            raise ValueError(
+                f"Bolt-collar sliding-fit violated: depth_lock_collar_bore_diameter "
+                f"({self.shank.depth_lock_collar_bore_diameter:.3f}) − bolt_collar_diameter "
+                f"({self.depth_lock.bolt_collar_diameter:.3f}) = {collar_clearance:.3f} mm "
+                f"diametric clearance, < min {min_clearance:.3f}. The collar needs to "
+                f"be smaller than the matching enlarged bore section."
+            )
+
+        # Length margin: bore should be slightly longer than the collar so
+        # manufacturing tolerance can't cause the collar's top to land on the
+        # tap shoulder.
+        min_length_margin = 0.3  # mm — 0.5 design margin, 0.3 floor for tolerance
+        length_margin = (
+            self.shank.depth_lock_collar_bore_length - self.depth_lock.bolt_collar_length
+        )
+        if length_margin < min_length_margin:
+            raise ValueError(
+                f"Collar-bore length margin violated: depth_lock_collar_bore_length "
+                f"({self.shank.depth_lock_collar_bore_length:.3f}) − bolt_collar_length "
+                f"({self.depth_lock.bolt_collar_length:.3f}) = {length_margin:.3f} mm, "
+                f"< min {min_length_margin:.3f}. The bore must be slightly longer than "
+                f"the collar."
             )
         return self
 

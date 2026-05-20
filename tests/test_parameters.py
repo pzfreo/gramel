@@ -165,6 +165,48 @@ def test_violation_captive_bearing_mismatch() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Depth-lock sliding fits (push rod / collar must fit inside their bores)
+# ---------------------------------------------------------------------------
+
+
+def test_push_rod_smaller_than_smooth_bore() -> None:
+    p = PurflingCutterParams()
+    assert p.depth_lock.push_rod_diameter < p.shank.depth_lock_bore_diameter
+
+
+def test_bolt_collar_smaller_than_collar_bore() -> None:
+    p = PurflingCutterParams()
+    assert p.depth_lock.bolt_collar_diameter < p.shank.depth_lock_collar_bore_diameter
+
+
+def test_violation_push_rod_too_large() -> None:
+    """A ⌀5 push rod in a ⌀5 bore won't slide — must trip the validator."""
+    with pytest.raises(ValidationError, match="Push-rod sliding-fit"):
+        PurflingCutterParams(depth_lock={"push_rod_diameter": 5.0})
+
+
+def test_violation_bolt_collar_too_large() -> None:
+    """A ⌀6.35 collar in a ⌀6.35 bore won't slide — must trip the validator."""
+    with pytest.raises(ValidationError, match="Bolt-collar sliding-fit"):
+        PurflingCutterParams(depth_lock={"bolt_collar_diameter": 6.35})
+
+
+def test_collar_bore_longer_than_collar() -> None:
+    p = PurflingCutterParams()
+    assert (
+        p.shank.depth_lock_collar_bore_length
+        > p.depth_lock.bolt_collar_length
+    )
+
+
+def test_violation_collar_bore_too_short() -> None:
+    """If bore length matches collar length exactly, manufacturing tolerance
+    could land the collar's top against the tap shoulder — validator catches it."""
+    with pytest.raises(ValidationError, match="Collar-bore length margin"):
+        PurflingCutterParams(shank={"depth_lock_collar_bore_length": 5.0})
+
+
+# ---------------------------------------------------------------------------
 # Wall validators fire on violations (one test per rule)
 # ---------------------------------------------------------------------------
 
