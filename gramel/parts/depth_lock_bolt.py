@@ -65,6 +65,17 @@ def build_depth_lock_bolt(params: PurflingCutterParams) -> Part:
         except Exception:
             pass  # leave un-chamfered if the boolean fails
 
+    # Large chamfer on the knob's bottom edge (the hand-facing end of the
+    # knurled wheel). Selected as the circular edge at the knob radius on
+    # the −Z face.
+    knob_chamfer = dl.knob_bottom_chamfer
+    if knob_chamfer > 0:
+        try:
+            bottom_face = body.faces().sort_by(Axis.Z).first
+            body = body.chamfer(knob_chamfer, None, list(bottom_face.edges()))  # type: ignore[assignment]
+        except Exception:
+            pass
+
     return body  # type: ignore[return-value]
 
 

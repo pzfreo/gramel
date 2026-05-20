@@ -33,6 +33,7 @@ from gramel.parts.push_rod import build_push_rod
 from gramel.parts.shaft import build_shaft
 from gramel.parts.shank import build_shank
 from gramel.parts.captive_screw import build_captive_screw
+from gramel.parts.mount_screw import build_mount_screw
 from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
 
 
@@ -134,6 +135,12 @@ def build_assembly(params: PurflingCutterParams, explode: float = 0.0) -> Compou
     ex_captive = ex(EX_CAPTIVE)
     captive = Pos(captive_x + ex_captive[0], ex_captive[1], tapped_z + ex_captive[2]) * captive_local
 
+    # --- Mount screw: through the plate centre into the shaft end tap -----
+    mount_local = build_mount_screw(params)
+    mount_head_t = params.mount_screw.head_thickness
+    mount_x = plate_x - plate_thick / 2 - mount_head_t  # head −X face
+    mount = Pos(mount_x + ex_captive[0], ex_captive[1], crossbore_z + ex_captive[2]) * mount_local
+
     tw_local = build_thumbwheel_drive_screw(params)
     # Boss −X face sits axial_play inboard of the plate's back face
     tw_x = shaft_x_off + params.captive_bearing.axial_play
@@ -167,6 +174,7 @@ def build_assembly(params: PurflingCutterParams, explode: float = 0.0) -> Compou
             grub,
             plate,
             captive,
+            mount,
             tw,
             bolt,
             rod,

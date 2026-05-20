@@ -341,6 +341,12 @@ class DepthLockParams(BaseModel):
         description="Thumbwheel length along the bolt axis (Z).",
         json_schema_extra=_spec("§4.3 (knob — not numbered)", status="MEASURED"),
     )
+    knob_bottom_chamfer: float = Field(
+        default=1.5,
+        ge=0,
+        description="Large chamfer on the bottom (−Z) edge of the knurled knob. The bottom is the hand-facing end; the chamfer bevels the otherwise-sharp circumference so the knob is comfortable to grip and visually finished.",
+        json_schema_extra=_spec("§4.3 (chamfer — design addition)", status="MEASURED"),
+    )
     push_rod_diameter: float = Field(
         default=4.5,
         gt=0,
@@ -647,6 +653,39 @@ class CaptiveScrewParams(BaseModel):
     )
 
 
+class MountScrewParams(BaseModel):
+    """The drive-plate mount screw — any stock M2 pan-head will do.
+
+    Passes through the drive plate's central clearance hole, through the
+    tenon (which sits in the shaft's end slot), and into the M2 tap on
+    the shaft's −X end face.
+    """
+
+    thread: str = Field(
+        default="M2",
+        description="Mount-screw thread. Matches shaft.drive_plate_mount_thread.",
+        json_schema_extra=_spec("§4.2.19 (mount screw)", status="MEASURED", units=""),
+    )
+    thread_length: float = Field(
+        default=10.0,
+        gt=0,
+        description="Stock M2 × 10 mm screw. Passes through plate (3) + tenon (1.5) and engages the shaft tap (5 mm) with a bit of margin.",
+        json_schema_extra=_spec("§4.2.19 (mount screw)", status="MEASURED"),
+    )
+    head_diameter: float = Field(
+        default=4.0,
+        gt=0,
+        description="Head diameter (measured). Must exceed drive_plate.mount_hole_diameter.",
+        json_schema_extra=_spec("§4.2.19 (mount screw)", status="MEASURED"),
+    )
+    head_thickness: float = Field(
+        default=1.5,
+        gt=0,
+        description="Head thickness.",
+        json_schema_extra=_spec("§4.2.19 (mount screw)"),
+    )
+
+
 class CaptiveBearingParams(BaseModel):
     """
     §4.5 item 53 — the signature mechanism of this tool.
@@ -704,6 +743,7 @@ class PurflingCutterParams(BaseModel):
     thumbwheel: ThumbwheelParams = Field(default_factory=ThumbwheelParams)
     drive_plate: DrivePlateParams = Field(default_factory=DrivePlateParams)
     captive_screw: CaptiveScrewParams = Field(default_factory=CaptiveScrewParams)
+    mount_screw: MountScrewParams = Field(default_factory=MountScrewParams)
     captive_bearing: CaptiveBearingParams = Field(default_factory=CaptiveBearingParams)
 
     # --- Mating-pair derivations (cutting_pair + process) ------------------
@@ -1024,6 +1064,7 @@ __all__ = [
     "ShaftParams",
     "ShankParams",
     "CaptiveScrewParams",
+    "MountScrewParams",
     "SpacerParams",
     "Status",
     "ThumbwheelParams",

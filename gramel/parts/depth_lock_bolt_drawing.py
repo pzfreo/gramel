@@ -71,7 +71,8 @@ def build_depth_lock_bolt_drawing(
     thread_d = 2 * threads.major_radius(thread)
     thread_pitch = threads.pitch(thread)
     thread_len = dl.bolt_thread_length   # 13
-    chamfer = dl.bolt_tip_chamfer        # 0.5
+    chamfer = dl.bolt_tip_chamfer        # 1.0 (one full thread pitch for M6)
+    knob_chamfer = dl.knob_bottom_chamfer  # 1.5
     overall_len = knob_t + collar_len + thread_len   # 32
 
     # Step boundaries along the bolt's local +Z axis (Z=0 at knob bottom)
@@ -176,6 +177,12 @@ def build_depth_lock_bolt_drawing(
         (x_knob_mid, f_top),
         (x_knob_mid - 6, f_top + 24),
         "straight knurl, 0.5 pitch",
+    )
+    # Knob bottom chamfer — leader pointing at the −X (knob) end face
+    add_leader(
+        (f_left, f_bot),
+        (f_left - 12, f_bot - 12),
+        f"{knob_chamfer:.1f} × 45° chamfer",
     )
     # Collar diameter (⌀6.25)
     add_leader(
