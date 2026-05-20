@@ -251,6 +251,7 @@ def build_shank_drawing(
     dl_thread_len = sp.depth_lock_threaded_length
     dl_depth = params.depth_lock_bore_depth
     slot_w = sp.relief_slot_width
+    slot_d = sp.relief_slot_depth
     ds_thread = params.drive_screw.thread
     ds_pitch = params.drive_screw.thread_pitch
     dl_thread = params.depth_lock.thread
@@ -344,10 +345,12 @@ def build_shank_drawing(
     f_bot = fy - length / 2
     f_top = fy + length / 2
     add_dim((f_left, f_bot), (f_left, f_top), "left", 9, f"{length:.1f}")
-    add_dim((f_left, f_bot), (f_right, f_bot), "below", 6, f"{depth:.1f}")
     cb_face_y = f_top - cb_x_from_top
     add_dim((f_right, f_top), (f_right, cb_face_y), "right", 8, f"{cb_x_from_top:.1f}")
-    add_dim((fx - slot_w / 2, f_top), (fx + slot_w / 2, f_top), "above", 10, f"{slot_w:.0f}")
+    # Below the face view: feature dim (slot width) closest to the view,
+    # overall dim (depth) stacked further out — ISO drafting order.
+    add_dim((fx - slot_w / 2, f_bot), (fx + slot_w / 2, f_bot), "below", 6, f"{slot_w:.1f}")
+    add_dim((f_left, f_bot), (f_right, f_bot), "below", 14, f"{depth:.1f}")
 
     # Bore callouts pointing RIGHT into the gap between face view and side view.
     sx_for_face = layout.side[0]
@@ -368,17 +371,30 @@ def build_shank_drawing(
     tap_side_y = s_top - tap_x_from_top
     add_dim((s_right, cb_side_y), (s_right, tap_side_y), "right", 8, f"{inter_gap:.1f}")
     s_thread_top = s_bot + dl_thread_len
-    add_dim((s_right, s_bot), (s_right, s_thread_top), "right", 14, f"{dl_thread_len:.0f}")
-    add_dim((s_right, s_thread_top), (s_right, cb_side_y), "right", 20, f"{dl_depth - dl_thread_len:.0f}")
+    # Threaded + smooth section dims sit FURTHER OUT than the leader callouts
+    # below — so the leader lines don't cross through the dim lines.
+    add_dim((s_right, s_bot), (s_right, s_thread_top), "right", 32, f"{dl_thread_len:.0f}")
+    add_dim((s_right, s_thread_top), (s_right, cb_side_y), "right", 38, f"{dl_depth - dl_thread_len:.0f}")
     # Thread-end indicator line across the bore at s_thread_top.
     bore_half = dl_d / 2
     annotation_lines.append(_line(sx - bore_half, s_thread_top, sx + bore_half, s_thread_top))
 
     # Depth-lock thread + push-rod bore callouts — leaders pointing RIGHT.
-    side_label_x = s_right + 28
+    # Anchored close to the side view so the leader's path ends well INSIDE
+    # the dim distance (32/38), avoiding any line-vs-dim-line crossing.
+    side_label_x = s_right + 16
     add_leader((sx, (s_bot + s_thread_top) / 2), (side_label_x, (s_bot + s_thread_top) / 2), f"{dl_thread}×1")
     push_rod_mid_y = (s_thread_top + cb_side_y) / 2
     add_leader((sx, push_rod_mid_y), (side_label_x, push_rod_mid_y), f"⌀{dl_d:.1f} H8")
+
+    # Relief slot depth callout — leader pointing LEFT from the slot's
+    # inner edge in the side view to a label in the empty gap below the
+    # face-view bore callouts (which sit at Y ≈ 27, 43). The slot itself
+    # is visible in the side view as a 1 mm notch on the working-face
+    # side of the lower 66 mm of the shank.
+    slot_inner_x = s_left + slot_d  # 1 mm in from the working face on side view
+    slot_mid_y = s_bot + (s_thread_top - s_bot) * 0.7  # within the slot's Z range
+    add_leader((slot_inner_x, slot_mid_y), (s_left - 20, slot_mid_y), f"slot {slot_d:.0f} deep")
 
     # Bottom view: width (page X, working-face direction) × depth (page Y).
     bx, by = layout.bottom
