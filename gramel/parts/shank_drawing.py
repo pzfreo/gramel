@@ -18,10 +18,10 @@ diameter — the shop reads the thread spec off the drawing, not the
 helical geometry.
 
 Dimension lines and leader callouts come from `build123d_drafting`
-(`dim_linear`, `leader`) so the offset-sign and leader-strikethrough
-classes of bug are handled by the library, not by hand. The custom page
-frame, title block, and notes block stay local — they're sheet-specific
-layout that the library's `iso_title_block` (170 × 16 mm) doesn't cover.
+(`dim_linear`, `leader`); the helpers handle offset-sign, gap-before-
+label, and leader-line termination internally. The custom page frame,
+title block, and notes block stay local — they're sheet-specific layout
+that the library's `iso_title_block` (170 × 16 mm) doesn't cover.
 """
 
 from __future__ import annotations
@@ -326,20 +326,15 @@ def build_shank_drawing(
         label_anchor_xy: tuple[float, float],
         label: str,
     ) -> None:
-        """leader() wrapper — splits result into lines (part layer) and text (text layer).
-
-        Workaround: the helper's `lines` shape extends past the elbow and
-        strikes through the label, so we use only the helper's `text` and
-        draw our own tip→elbow segment that stops cleanly at the elbow.
-        Tracked upstream in build123d-mcp issue (leader-line-strikethrough).
-        """
+        """leader() wrapper — splits result into lines (part layer) and text
+        (text layer) so each routes to the correct SVG layer."""
         result = leader(
             tip=(feature_xy[0], feature_xy[1], 0),
             elbow=(label_anchor_xy[0], label_anchor_xy[1], 0),
             label=label,
             draft=leader_draft,
         )
-        annotation_lines.append(_line(feature_xy[0], feature_xy[1], label_anchor_xy[0], label_anchor_xy[1]))
+        annotation_lines.append(result.lines)
         annotation_text.append(result.text)
 
     # Working-face view: page X = world Y (depth), page Y = world Z (length).
