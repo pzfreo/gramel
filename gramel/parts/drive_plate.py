@@ -83,8 +83,19 @@ def build_drive_plate(params: PurflingCutterParams) -> Part:
 
     plate = big + small + quad
 
+    # --- Anti-rotation tenon on the back face (+X face) -------------------
+    # Rectangular boss projecting outboard from the back face at Z = 0,
+    # going across the full width to engage the matching slot in the shaft's
+    # −X end face. Added BEFORE drilling the mount hole so the hole passes
+    # cleanly through the tenon.
+    tenon_x_centre = thickness / 2 + dp.tenon_depth / 2
+    tenon = Pos(tenon_x_centre, 0, 0) * Box(dp.tenon_depth, dp.tenon_width, dp.tenon_height)
+    plate = plate + tenon
+
     # --- Holes ------------------------------------------------------------
-    # Mount hole at shaft end: standard M2 clearance (~0.2 mm radial).
+    # Mount hole at shaft end: standard M2 clearance (~0.2 mm radial). Goes
+    # through the plate AND the tenon — the mount screw must reach the tap
+    # in the shaft's end face past the tenon engagement.
     # Captive hole at thumb end: deliberately sloppy (~0.3 mm radial) so the
     # captive bearing doesn't bind.
     mount_r = dp.mount_hole_diameter / 2
@@ -96,13 +107,6 @@ def build_drive_plate(params: PurflingCutterParams) -> Part:
         Pos(0, 0, gap) * Rot(0, 90, 0) * Cylinder(radius=captive_r, height=thickness * 3)
     )
     plate = plate - mount_hole - captive_hole
-
-    # --- Anti-rotation tenon on the back face (+X face) -------------------
-    # Small rectangular boss projecting outboard from the back face at Z = 0,
-    # to engage the matching slot in the shaft's −X end face.
-    tenon_x_centre = thickness / 2 + dp.tenon_depth / 2
-    tenon = Pos(tenon_x_centre, 0, 0) * Box(dp.tenon_depth, dp.tenon_width, dp.tenon_height)
-    plate = plate + tenon
 
     return plate  # type: ignore[return-value]
 

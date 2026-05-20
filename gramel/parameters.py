@@ -591,9 +591,9 @@ class DrivePlateParams(BaseModel):
         json_schema_extra=_spec("§4.5 (tenon — design addition)", status="MEASURED"),
     )
     tenon_width: float = Field(
-        default=6.0,
+        default=8.0,
         gt=0,
-        description="Y dimension of the anti-rotation tenon. Smaller than the shaft diameter (8 mm) so the tenon fits in the matching shaft slot with comfortable clearance for assembly.",
+        description="Y dimension of the anti-rotation tenon. Matches the shaft diameter so the tenon goes across the full width of the matching slot — one mill pass on each part. The mount-screw clearance hole passes through the tenon.",
         json_schema_extra=_spec("§4.5 (tenon — design addition)", status="MEASURED"),
     )
 
