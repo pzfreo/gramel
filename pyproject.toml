@@ -11,6 +11,7 @@ dependencies = [
     "bd-warehouse",
     "build123d-drafting-helpers>=0.1.1",
     "cairosvg",
+    "pypdf>=5.0",
 ]
 
 [dependency-groups]

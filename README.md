@@ -31,6 +31,13 @@ uv run python -m gramel.parts.shank
 uv run python -m gramel.parts.shank_drawing
 # → /tmp/shank_drawing.pdf
 
+# Build the full production manufacturing package: STEP files for each
+# brass part + per-drawing SVG/PDF + a single combined-drawings PDF
+uv run python scripts/build_production.py
+# → dist/step/GRM-0*_*.step
+# → dist/drawings/GRM-0*_*.svg / .pdf
+# → dist/gramel_drawings.pdf
+
 # Lint, type-check, test
 uv run ruff check gramel/
 uv run mypy gramel/
