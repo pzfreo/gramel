@@ -191,6 +191,21 @@ def test_violation_bolt_collar_too_large() -> None:
         PurflingCutterParams(depth_lock={"bolt_collar_diameter": 6.35})
 
 
+def test_collar_bore_longer_than_collar() -> None:
+    p = PurflingCutterParams()
+    assert (
+        p.shank.depth_lock_collar_bore_length
+        > p.depth_lock.bolt_collar_length
+    )
+
+
+def test_violation_collar_bore_too_short() -> None:
+    """If bore length matches collar length exactly, manufacturing tolerance
+    could land the collar's top against the tap shoulder — validator catches it."""
+    with pytest.raises(ValidationError, match="Collar-bore length margin"):
+        PurflingCutterParams(shank={"depth_lock_collar_bore_length": 5.0})
+
+
 # ---------------------------------------------------------------------------
 # Wall validators fire on violations (one test per rule)
 # ---------------------------------------------------------------------------

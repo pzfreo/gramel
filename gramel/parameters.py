@@ -401,9 +401,9 @@ class ShankParams(BaseModel):
         json_schema_extra=_spec("§4.3 (collar bore — design addition)", status="MEASURED"),
     )
     depth_lock_collar_bore_length: float = Field(
-        default=5.0,
+        default=5.5,
         gt=0,
-        description="Length of the enlarged collar-bore section. Matches the bolt's collar length so the collar fully engages the bore at lock position.",
+        description="Length of the enlarged collar-bore section. 0.5 mm longer than the bolt's collar so manufacturing tolerance on either feature can't cause the collar to bottom against the tap shoulder.",
         json_schema_extra=_spec("§4.3 (collar bore — design addition)", status="MEASURED"),
     )
     depth_lock_threaded_length: float = Field(
@@ -923,6 +923,22 @@ class PurflingCutterParams(BaseModel):
                 f"({self.depth_lock.bolt_collar_diameter:.3f}) = {collar_clearance:.3f} mm "
                 f"diametric clearance, < min {min_clearance:.3f}. The collar needs to "
                 f"be smaller than the matching enlarged bore section."
+            )
+
+        # Length margin: bore should be slightly longer than the collar so
+        # manufacturing tolerance can't cause the collar's top to land on the
+        # tap shoulder.
+        min_length_margin = 0.3  # mm — 0.5 design margin, 0.3 floor for tolerance
+        length_margin = (
+            self.shank.depth_lock_collar_bore_length - self.depth_lock.bolt_collar_length
+        )
+        if length_margin < min_length_margin:
+            raise ValueError(
+                f"Collar-bore length margin violated: depth_lock_collar_bore_length "
+                f"({self.shank.depth_lock_collar_bore_length:.3f}) − bolt_collar_length "
+                f"({self.depth_lock.bolt_collar_length:.3f}) = {length_margin:.3f} mm, "
+                f"< min {min_length_margin:.3f}. The bore must be slightly longer than "
+                f"the collar."
             )
         return self
 
