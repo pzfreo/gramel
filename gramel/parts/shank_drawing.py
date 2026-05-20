@@ -251,6 +251,7 @@ def build_shank_drawing(
     dl_thread_len = sp.depth_lock_threaded_length
     dl_depth = params.depth_lock_bore_depth
     slot_w = sp.relief_slot_width
+    slot_d = sp.relief_slot_depth
     ds_thread = params.drive_screw.thread
     ds_pitch = params.drive_screw.thread_pitch
     dl_thread = params.depth_lock.thread
@@ -347,7 +348,11 @@ def build_shank_drawing(
     add_dim((f_left, f_bot), (f_right, f_bot), "below", 6, f"{depth:.1f}")
     cb_face_y = f_top - cb_x_from_top
     add_dim((f_right, f_top), (f_right, cb_face_y), "right", 8, f"{cb_x_from_top:.1f}")
-    add_dim((fx - slot_w / 2, f_top), (fx + slot_w / 2, f_top), "above", 10, f"{slot_w:.0f}")
+    # Slot width dim — stacked below the depth dim. The slot opens at the
+    # shank's bottom face (Z=0), so witness lines drop from the slot's two
+    # X edges straight down to the dim line. (Old version placed the dim at
+    # the top of the view, where the slot doesn't actually reach.)
+    add_dim((fx - slot_w / 2, f_bot), (fx + slot_w / 2, f_bot), "below", 12, f"{slot_w:.1f}")
 
     # Bore callouts pointing RIGHT into the gap between face view and side view.
     sx_for_face = layout.side[0]
@@ -379,6 +384,15 @@ def build_shank_drawing(
     add_leader((sx, (s_bot + s_thread_top) / 2), (side_label_x, (s_bot + s_thread_top) / 2), f"{dl_thread}×1")
     push_rod_mid_y = (s_thread_top + cb_side_y) / 2
     add_leader((sx, push_rod_mid_y), (side_label_x, push_rod_mid_y), f"⌀{dl_d:.1f} H8")
+
+    # Relief slot depth callout — leader pointing LEFT from the slot's
+    # inner edge in the side view to a label in the empty gap below the
+    # face-view bore callouts (which sit at Y ≈ 27, 43). The slot itself
+    # is visible in the side view as a 1 mm notch on the working-face
+    # side of the lower 66 mm of the shank.
+    slot_inner_x = s_left + slot_d  # 1 mm in from the working face on side view
+    slot_mid_y = s_bot + (s_thread_top - s_bot) * 0.7  # within the slot's Z range
+    add_leader((slot_inner_x, slot_mid_y), (s_left - 20, slot_mid_y), f"slot {slot_d:.0f} deep")
 
     # Bottom view: width (page X, working-face direction) × depth (page Y).
     bx, by = layout.bottom
