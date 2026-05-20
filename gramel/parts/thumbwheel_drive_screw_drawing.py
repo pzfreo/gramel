@@ -210,6 +210,13 @@ def build_thumbwheel_drawing(
         f"{ds.thread}×{ds.thread_pitch}",
     )
 
+    # Drive-screw tip chamfer (lead-in for the shank tap)
+    add_leader(
+        (f_right, fy),
+        (f_right + 10, f_bot - 12),
+        f"{ds.tip_chamfer:.1f} × 45° chamfer",
+    )
+
     # --- Left end view: boss + M2 tap visible -----------------------
     ex, ey = layout.left_end
     # Tap callout points up-left so the label sits between the front and end views,

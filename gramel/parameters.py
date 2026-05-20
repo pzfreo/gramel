@@ -174,9 +174,15 @@ class BladeRetainerParams(BaseModel):
     """
 
     length: float = Field(
-        default=10.0,
+        default=11.0,
         gt=0,
         description="Z length of the retainer (long axis = slot's open Z direction). Wider Y ends stick out at the top and bottom of the slot.",
+        json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
+    )
+    middle_length: float = Field(
+        default=8.0,
+        gt=0,
+        description="Z extent of the narrower waist between the two wider end blocks. Must exceed the slot's Z extent at the cylinder boundary (2·√(r²−(W/2)²) = 6.24 mm for r=4, W=5) so the wider ends sit clear of the shaft surface and lock against it.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     end_width: float = Field(
@@ -324,9 +330,9 @@ class DepthLockParams(BaseModel):
         json_schema_extra=_spec("§4.3 (collar — design addition)", status="MEASURED"),
     )
     bolt_tip_chamfer: float = Field(
-        default=0.5,
+        default=1.0,
         ge=0,
-        description="Lead-in chamfer height on the bolt's thread tip. Helps the bolt start threading without cross-threading; 0.5 mm is standard for M6.",
+        description="Lead-in chamfer height on the bolt's thread tip. 1 mm = one full thread pitch for M6 × 1; visible lead-in that helps the bolt start threading without cross-threading.",
         json_schema_extra=_spec("§4.3 (chamfer — design addition)", status="MEASURED"),
     )
     knob_diameter: float = Field(
@@ -340,6 +346,12 @@ class DepthLockParams(BaseModel):
         gt=0,
         description="Thumbwheel length along the bolt axis (Z).",
         json_schema_extra=_spec("§4.3 (knob — not numbered)", status="MEASURED"),
+    )
+    knob_bottom_chamfer: float = Field(
+        default=1.5,
+        ge=0,
+        description="Large chamfer on the bottom (−Z) edge of the knurled knob. The bottom is the hand-facing end; the chamfer bevels the otherwise-sharp circumference so the knob is comfortable to grip and visually finished.",
+        json_schema_extra=_spec("§4.3 (chamfer — design addition)", status="MEASURED"),
     )
     push_rod_diameter: float = Field(
         default=4.5,
@@ -437,7 +449,7 @@ class ShankParams(BaseModel):
         json_schema_extra=_spec("§4.3 (top dome — not in spec)"),
     )
     edge_fillet_radius: float = Field(
-        default=0.5,
+        default=1.0,
         ge=0,
         description="Radius of fillet applied to every external edge of the shank.",
         json_schema_extra=_spec("§8 (finishing — not in §4)", status="MEASURED"),
@@ -464,10 +476,16 @@ class DriveScrewParams(BaseModel):
         json_schema_extra=_spec("§4.4.38", status="MEASURED"),
     )
     length: float = Field(
-        default=18.0,
+        default=28.0,
         gt=0,
-        description="Threaded length of the drive screw — supports full X travel + engagement.",
+        description="Threaded length of the drive screw. Sized for ≥5 mm thread engagement in the shank tapped bore across the practical edge-margin range (1–8 mm). With shaft.length=45 and a centred neutral position, 18 mm would disengage entirely at small edge margins; 28 mm gives ~10 mm engagement at edge margin = 1 mm and fills the bore at the neutral 8.7 mm.",
         json_schema_extra=_spec("§4.4.39", status="MEASURED"),
+    )
+    tip_chamfer: float = Field(
+        default=0.5,
+        ge=0,
+        description="Lead-in chamfer height on the drive screw's +X thread tip. Helps the drive screw enter and start threading in the shank tapped bore.",
+        json_schema_extra=_spec("§4.4 (chamfer — design addition)", status="MEASURED"),
     )
     left_face_tap: str = Field(
         default="M2",
@@ -531,6 +549,12 @@ class ThumbwheelParams(BaseModel):
         default="straight",
         description="Knurl pattern style.",
         json_schema_extra=_spec("§4.4.43", units=""),
+    )
+    disc_edge_chamfer: float = Field(
+        default=0.3,
+        ge=0,
+        description="Small chamfer on the two circular edges of the knurled disc (where the OD meets the −X and +X flat faces). Breaks the sharp edges so the user doesn't catch a fingertip when spinning the wheel.",
+        json_schema_extra=_spec("§4.4 (chamfer — design addition)", status="MEASURED"),
     )
 
 
@@ -635,6 +659,39 @@ class CaptiveScrewParams(BaseModel):
     )
 
 
+class MountScrewParams(BaseModel):
+    """The drive-plate mount screw — any stock M2 pan-head will do.
+
+    Passes through the drive plate's central clearance hole, through the
+    tenon (which sits in the shaft's end slot), and into the M2 tap on
+    the shaft's −X end face.
+    """
+
+    thread: str = Field(
+        default="M2",
+        description="Mount-screw thread. Matches shaft.drive_plate_mount_thread.",
+        json_schema_extra=_spec("§4.2.19 (mount screw)", status="MEASURED", units=""),
+    )
+    thread_length: float = Field(
+        default=10.0,
+        gt=0,
+        description="Stock M2 × 10 mm screw. Passes through plate (3) + tenon (1.5) and engages the shaft tap (5 mm) with a bit of margin.",
+        json_schema_extra=_spec("§4.2.19 (mount screw)", status="MEASURED"),
+    )
+    head_diameter: float = Field(
+        default=4.0,
+        gt=0,
+        description="Head diameter (measured). Must exceed drive_plate.mount_hole_diameter.",
+        json_schema_extra=_spec("§4.2.19 (mount screw)", status="MEASURED"),
+    )
+    head_thickness: float = Field(
+        default=1.5,
+        gt=0,
+        description="Head thickness.",
+        json_schema_extra=_spec("§4.2.19 (mount screw)"),
+    )
+
+
 class CaptiveBearingParams(BaseModel):
     """
     §4.5 item 53 — the signature mechanism of this tool.
@@ -692,6 +749,7 @@ class PurflingCutterParams(BaseModel):
     thumbwheel: ThumbwheelParams = Field(default_factory=ThumbwheelParams)
     drive_plate: DrivePlateParams = Field(default_factory=DrivePlateParams)
     captive_screw: CaptiveScrewParams = Field(default_factory=CaptiveScrewParams)
+    mount_screw: MountScrewParams = Field(default_factory=MountScrewParams)
     captive_bearing: CaptiveBearingParams = Field(default_factory=CaptiveBearingParams)
 
     # --- Mating-pair derivations (cutting_pair + process) ------------------
@@ -1012,6 +1070,7 @@ __all__ = [
     "ShaftParams",
     "ShankParams",
     "CaptiveScrewParams",
+    "MountScrewParams",
     "SpacerParams",
     "Status",
     "ThumbwheelParams",

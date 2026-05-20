@@ -76,3 +76,40 @@ Please provide:
 ## Notes
 
 If any feature appears unnecessarily expensive to manufacture, I would welcome suggestions for simplifying the design before production.
+
+---
+
+## Appendix: Optional consumables (blades and channel spacers)
+
+Two consumable items are **out of scope for the main quote** but, if your shop handles them or can recommend a supplier, an optional quote would be very welcome. If neither is something you typically supply, please simply skip this section — no need to respond on these items.
+
+### Blades
+
+| Item | Spec |
+|---|---|
+| Material | O1 tool steel (or equivalent high-carbon), hardened and tempered to ~60 HRC |
+| Quantity per tool | 2 |
+| Thickness | 0.7 mm |
+| Width | 4.0 mm |
+| Length | 23 mm |
+| Bevel | Single, 25°, ground and honed |
+| Tip | Round, polished |
+| Quantity at scale | 1 set/tool × the quote tier (i.e. 40 blades for 20 tools, 100 for 50) + an allowance for spares if you can supply them |
+
+### Bone-shaped copper blade retainers
+
+Four small bone-shaped copper pieces per tool. They fit in the shaft's blade slot, two on each side of the blade-stack, and lock the stack against the open ±Z direction of the slot. Custom shape; not a stock item.
+
+| Item | Spec |
+|---|---|
+| Material | Copper (annealed sheet stock) |
+| Quantity per tool | 4 (all identical) |
+| Outline | Bone shape: 11 mm long (Z) — 8 mm waist between 1.5 mm end blocks — 0.75 mm thick (X), Y width 5.5 mm at the ends tapering to 4.5 mm in the middle |
+| Tolerance | ±0.05 mm on thickness; outline ±0.1 mm |
+| Finish | Deburred. As-received sheet finish is fine. |
+| Quantity at scale | 4 × the quote tier (i.e. 80 for 20 tools, 200 for 50) + an allowance for spares if you can supply them |
+| Process suggestion | Laser cut or stamp from copper sheet — both work; whichever is cheaper at your volumes. |
+
+(Note: the *user-supplied channel-width shim* that sits between the two blades is **not** in this scope — that's an off-the-shelf shim-stock item the user picks per cut.)
+
+Drawings for the blade and the retainer are not yet prepared — the dimensions above are sufficient for a feasibility-and-pricing check. If you'd quote and need formal drawings I'll produce them.

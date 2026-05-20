@@ -64,7 +64,7 @@ See accompanying diagram. These names are canonical — please use them in the C
 | **Thumbwheel** | Knurled disc **sitting between the drive plate (outboard) and the shank (inboard)**, on the left end of the drive screw. **Integral with the drive screw** — turned from one piece (or permanently joined). |
 | **Drive screw** | Threaded shaft extending right (inboard) from the thumbwheel into the shank tapped bore. The thumbwheel's left end face carries a tapped hole along the drive-screw axis for the captive screw. |
 | **Captive screw** | Small screw passing rightward from outboard through the drive plate's clearance hole, across a small axial-play gap, and threading into the tap on the thumbwheel's left end face. **Deliberately over-length** so it bottoms on the tap, leaving the drive plate floating in axial play between its head (outboard) and the thumbwheel's left face (inboard). |
-| **Depth-lock bolt** | M6 bolt threaded into the depth-lock blind bore's tapped section. Stack from the bottom up: knurled knob → unthreaded ⌀6.25 **anti-cocking collar** (mates with an enlarged section at the bottom of the bore) → M6 thread → 0.5 × 45° lead-in chamfer at the tip. Its upper end pushes the depth-lock push rod; the rod (not the bolt) is what bears on the underside of the shaft. |
+| **Depth-lock bolt** | M6 bolt threaded into the depth-lock blind bore's tapped section. Stack from the bottom up: knurled knob (with 1.5 mm chamfer on its bottom edge for hand feel) → unthreaded ⌀6.25 **anti-cocking collar** (mates with an enlarged section at the bottom of the bore) → M6 thread → 1.0 × 45° lead-in chamfer at the tip. Its upper end pushes the depth-lock push rod; the rod (not the bolt) is what bears on the underside of the shaft. |
 | **Depth-lock knob** | Knurled knob at the bottom of the shank, integral with the depth-lock bolt. |
 
 ---
@@ -143,7 +143,8 @@ Each tier table below names the dimension by its full **field path** (`blade.thi
 | 32c | Bolt collar diameter | `depth_lock.bolt_collar_diameter` | 6.25 mm | Unthreaded section between the knob and the M6 thread. Acts as an anti-cocking guide when seated in the collar bore (item 30a). |
 | 32d | Bolt collar length | `depth_lock.bolt_collar_length` | 5 mm | Bore (item 30b) is 0.5 mm longer for tolerance. |
 | 32e | Bolt thread length | `depth_lock.bolt_thread_length` | 13 mm | Sized so the system has 1 mm of preload margin at the rod-lock position (knob clears the shank bottom by 1 mm). |
-| 32f | Bolt tip lead-in chamfer | `depth_lock.bolt_tip_chamfer` | 0.5 × 45° | Standard M6 lead-in — keeps the bolt from cross-threading on start. |
+| 32f | Bolt tip lead-in chamfer | `depth_lock.bolt_tip_chamfer` | 1.0 × 45° | One full M6 thread pitch — visible lead-in that prevents cross-threading. |
+| 32g | Knob bottom chamfer | `depth_lock.knob_bottom_chamfer` | 1.5 × 45° | Hand-facing edge; bevels the otherwise-sharp circumference for grip comfort. |
 | 33 | Relief slot width (Y) | `shank.relief_slot_width` | `[TBM]` (likely 2–8 mm) | Wide enough to clear edge irregularities; narrow enough to keep contact corners close. Measured *across* the working face, perpendicular to slot length. |
 | 34 | Relief slot depth (X) | `shank.relief_slot_depth` | ~1 mm | Depth into the body from the working face. Just enough to guarantee no contact in slot region. |
 | 34a | Relief slot length (Z) | `relief_slot_length` (derived) | `= shank.length − shank.crossbore_position_from_top` | Slot runs from the bottom of the shank up to the shaft cross-bore. Does *not* extend above the shaft (corrected from earlier drafts that said "full length of the shank"). |

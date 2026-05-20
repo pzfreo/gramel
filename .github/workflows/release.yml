@@ -30,19 +30,15 @@ jobs:
         run: uv run pytest
 
       - name: Build production package
+        # Produces the per-part STEPs, assembly STEP, per-drawing SVG+PDF,
+        # combined drawings PDF, and the version-stamped release zip.
         run: uv run python scripts/build_production.py
 
-      - name: Bundle artifacts
+      - name: Find release archive
         run: |
-          # Copy the quotation request alongside the drawings so the zip
-          # is a self-contained "send to the shop" package.
-          cp quotation-request.md dist/
-          cp specification.md dist/
-          # Tag name (without leading v) for nice filenames; fall back to "dev".
-          TAG=${GITHUB_REF_NAME:-dev}
-          ARCHIVE="gramel-${TAG}.zip"
-          (cd dist && zip -r "../${ARCHIVE}" .)
-          echo "ARCHIVE=${ARCHIVE}" >> $GITHUB_ENV
+          ARCHIVE=$(ls gramel-*.zip | head -1)
+          echo "ARCHIVE=${ARCHIVE}" >> "$GITHUB_ENV"
+          echo "Built bundle: ${ARCHIVE}"
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -50,8 +46,9 @@ jobs:
         with:
           generate_release_notes: true
           files: |
-            dist/gramel_drawings.pdf
             ${{ env.ARCHIVE }}
+            dist/gramel_drawings.pdf
+            dist/gramel_assembly.step
             quotation-request.md
 
       - name: Upload artifacts (manual run only — no release created)
@@ -60,6 +57,7 @@ jobs:
         with:
           name: gramel-production-package
           path: |
-            dist/gramel_drawings.pdf
             ${{ env.ARCHIVE }}
+            dist/gramel_drawings.pdf
+            dist/gramel_assembly.step
             quotation-request.md
