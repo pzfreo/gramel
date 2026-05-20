@@ -52,7 +52,7 @@ class ViewPlacement:
     # occupied so we tolerate a little nominal overlap with the side view.
     side: tuple[float, float] = (-95.0, 20.0)
     front: tuple[float, float] = (-57.0, 20.0)
-    iso: tuple[float, float] = (5.0, -10.0)
+    iso: tuple[float, float] = (10.0, -10.0)
 
 
 # ---------------------------------------------------------------------------
@@ -145,9 +145,11 @@ def build_assembly_drawing(
     assembly = build_assembly(params)
     bb = assembly.bounding_box()
 
-    # Separate "exploded" version for the iso view — each part translated
-    # outward along its natural disassembly direction.
-    exploded = build_assembly(params, explode=1.0)
+    # Separate "exploded" version for the iso view. explode=0.5 keeps the
+    # parts visually separated but tighter than full explosion, so the iso
+    # bbox shrinks and gives the orthographics room to live more centrally
+    # on the page.
+    exploded = build_assembly(params, explode=0.5)
     centroid = (
         (bb.min.X + bb.max.X) / 2,
         (bb.min.Y + bb.max.Y) / 2,
