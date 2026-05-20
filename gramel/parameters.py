@@ -247,15 +247,15 @@ class ShaftParams(BaseModel):
         json_schema_extra=_spec("§4.2.19 (mount depth — not numbered)"),
     )
     tenon_height: float = Field(
-        default=2.0,
+        default=3.0,
         gt=0,
-        description="Z dimension of the anti-rotation tenon — a horizontal rib across the shaft's −X end face. The tenon's Y extent is the full shaft diameter (one mill pass instead of a small rectangle).",
+        description="Z dimension of the anti-rotation tenon — a horizontal rib across the shaft's −X end face. The tenon's Y extent is the full shaft diameter (one mill pass instead of a small rectangle). Sized so the matching slot in the drive plate is a forgiving milling op rather than a fiddly micro-feature.",
         json_schema_extra=_spec("§4.2.19 (tenon — design addition)"),
     )
     tenon_depth: float = Field(
-        default=1.0,
+        default=1.5,
         gt=0,
-        description="X projection of the tenon outboard from the shaft's −X end face.",
+        description="X projection of the tenon outboard from the shaft's −X end face. Leaves 1.5 mm of wall on the drive plate's front face (plate is 3 mm thick).",
         json_schema_extra=_spec("§4.2.19 (tenon — design addition)"),
     )
     # Note: shaft OD is no longer a field on ShaftParams — it now derives

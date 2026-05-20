@@ -176,7 +176,7 @@ def build_shaft_drawing(
     add_leader(
         (t_tenon_x + tenon_depth / 2, t_bot),
         (t_tenon_x - 10, t_bot - 14),
-        f"tenon {tenon_depth:.0f} proj.",
+        f"tenon {tenon_depth:.1f} proj.",
     )
 
     # --- Front view dims ----------------------------------------------------
@@ -197,10 +197,12 @@ def build_shaft_drawing(
         (f_tenon_x - 18, fy - 16),
         f"{mount_thread}×{mount_pitch} × {mount_depth:.0f} deep",
     )
-    # Tenon Z height (2 mm) dim — fits inline.
+    # Tenon Z height dim — fits inline. Use .1f format ("3.0") to avoid a
+    # build123d dim_linear bug that crashes when path length and label width
+    # land in a specific narrow ratio (single-char label "3" + 3 mm path).
     f_tenon_top = fy + tenon_height / 2
     f_tenon_bot = fy - tenon_height / 2
-    add_dim((f_tenon_x, f_tenon_bot), (f_tenon_x, f_tenon_top), "left", 6, f"{tenon_height:.0f}")
+    add_dim((f_tenon_x, f_tenon_bot), (f_tenon_x, f_tenon_top), "left", 6, f"{tenon_height:.1f}")
 
     # --- Right end view -----------------------------------------------------
     ex, ey = layout.end
