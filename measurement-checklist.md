@@ -21,7 +21,7 @@
 Take these with a ruler in frame for scale.
 
 - [ ] **P0.1** End view from the blade side, showing the blade slot and how the blades/spacer sit in it. Particularly how the blades are oriented and how the spacer sits relative to them.
-- [ ] **P0.2** End view from the thumbwheel side, showing the drive plate, the silver screw head, and the gap (if any) between silver-screw head and drive plate.
+- [ ] **P0.2** End view from the thumbwheel side, showing the drive plate, the captive screw head, and the gap (if any) between captive-screw head and drive plate.
 - [ ] **P0.3** Top view of the whole assembly.
 - [ ] **P0.4** Looking straight down the shaft from the blade end.
 - [ ] **P0.5** Working face straight-on, showing the relief slot.
@@ -87,11 +87,11 @@ Best done with the shaft removed if it comes out cleanly without forcing.
 
 ## Phase 4 — Drive train (Tier 4)
 
-Remove the silver screw (carefully — it's small) and the drive screw assembly comes free.
+Remove the captive screw (carefully — it's small) and the drive screw assembly comes free.
 
 - [ ] **M4.1** Drive screw thread — pitch and major diameter. **Critical:** the pitch is the edge-margin resolution.
 - [ ] **M4.2** Drive screw total length.
-- [ ] **M4.3** Tap on the **left end face of the thumbwheel** — diameter and depth of the tap that the silver screw goes into. Use the silver screw itself to identify thread.
+- [ ] **M4.3** Tap on the **left end face of the thumbwheel** — diameter and depth of the tap that the captive screw goes into. Use the captive screw itself to identify thread.
 - [ ] **M4.4** Thumbwheel left end-face geometry — flat? Stepped boss with a recessed area for the drive plate to bear on? This is the surface the drive plate floats against on its inboard side.
 - [ ] **M4.5** Sanity check on pitch — reassemble enough to turn the thumbwheel 10 full turns, measure shaft translation, divide by 10. Compare to M4.1.
 - [ ] **M4.6** Thumbwheel OD and thickness.
@@ -100,15 +100,15 @@ Remove the silver screw (carefully — it's small) and the drive screw assembly 
 
 ---
 
-## Phase 5 — Drive plate and silver-screw bearing (Tier 5)
+## Phase 5 — Drive plate and captive-screw bearing (Tier 5)
 
 - [ ] **M5.1** Drive plate dimensions — height (Z), width (X), thickness (Y).
 - [ ] **M5.2** Drive plate clearance hole diameter.
 - [ ] **M5.3** Drive plate clearance-hole position — distance from the bottom of the plate (the shaft) to the centre of the clearance hole. **Must equal `gap_bores` from M3.6.** A useful sanity check.
 - [ ] **M5.4** Position of drive plate along shaft — the drive plate is mounted on the **outboard (left) end face of the shaft**. Confirm this and measure the distance from the shank's left face to the drive plate's inboard face when the shaft is at its mid-Y-travel position.
-- [ ] **M5.5** Silver screw — overall length, thread length, head diameter and thickness, drive type (slotted, etc.).
-- [ ] **M5.6** Silver screw tap engagement length when fully home — back the silver screw out a couple of turns, measure the screw's protrusion change. The "bottomed" position is when the screw stops turning before its head clamps.
-- [ ] **M5.7** Axial play in the bearing — with the silver screw fully home, gently push and pull on the drive plate along the shaft axis; measure the total movement. Or use feeler gauges to find the larger of the two gaps (between drive plate and silver-screw head; between drive plate and thumbwheel left face). Should be small but non-zero. **This is the design feature.**
+- [ ] **M5.5** Captive screw — overall length, thread length, head diameter and thickness, drive type (slotted, etc.).
+- [ ] **M5.6** Captive screw tap engagement length when fully home — back the captive screw out a couple of turns, measure the screw's protrusion change. The "bottomed" position is when the screw stops turning before its head clamps.
+- [ ] **M5.7** Axial play in the bearing — with the captive screw fully home, gently push and pull on the drive plate along the shaft axis; measure the total movement. Or use feeler gauges to find the larger of the two gaps (between drive plate and captive-screw head; between drive plate and thumbwheel left face). Should be small but non-zero. **This is the design feature.**
 
 ---
 

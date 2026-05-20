@@ -23,7 +23,7 @@ The tool offers **three independent adjustments**:
 
 1. **Fine-feed edge margin via integral thumbwheel + drive screw.** Turning the thumbwheel rotates a screw that runs in a tapped bore in the shank, parallel to and just above the shaft. The screw pulls the shaft along via a vertical drive plate. This gives smooth, repeatable adjustment instead of slide-and-clamp.
 
-2. **Captive bearing made from two pieces only.** Reading from outboard inward, the order at the top of the shank is: silver-screw head → drive plate → small axial-play gap → thumbwheel → drive screw → shank. The silver screw threads rightward through a clearance hole in the drive plate and into a tapped hole on the left end face of the thumbwheel. It is deliberately over-length: it bottoms on the tap *before* its head clamps the drive plate. The plate therefore floats free in axial play between the silver-screw head (on its outboard face) and the thumbwheel's left end face (on its inboard face). No thrust washer, no shoulder, no circlip — just a deliberately over-length screw and a clearance hole.
+2. **Captive bearing made from two pieces only.** Reading from outboard inward, the order at the top of the shank is: captive-screw head → drive plate → small axial-play gap → thumbwheel → drive screw → shank. The captive screw threads rightward through a clearance hole in the drive plate and into a tapped hole on the left end face of the thumbwheel. It is deliberately over-length: it bottoms on the tap *before* its head clamps the drive plate. The plate therefore floats free in axial play between the captive-screw head (on its outboard face) and the thumbwheel's left end face (on its inboard face). No thrust washer, no shoulder, no circlip — just a deliberately over-length screw and a clearance hole.
 
 3. **Convex working face with relief slot.** The face that bears on the plate edge is not flat. It carries a vertical relief slot down its full length, leaving two narrow contact corners that act as a two-point fence. This self-corrects against the violin's irregular edge and resists rocking.
 
@@ -60,10 +60,10 @@ See accompanying diagram. These names are canonical — please use them in the C
 | **Grub screw** | Steel screw threaded into the shaft end tap from the right. Its inner end pushes the blade stack horizontally against the left wall of the blade slot, clamping blades and spacer together. |
 | **Blades** | Two flat tool-steel blades. Replaceable. See §5 on blade strategy. |
 | **Spacer** | Thin brass or steel shim between the two blades, setting the purfling channel width. Replaceable; different spacers give different channel widths. |
-| **Drive plate** | Brass plate standing vertically up from the **outboard (left) end** of the shaft, fixed to it (originally soldered; in this build screwed). Has a clearance hole near its top through which the silver screw passes. **Sits outboard of the thumbwheel.** |
+| **Drive plate** | Brass plate standing vertically up from the **outboard (left) end** of the shaft, fixed to it (originally soldered; in this build screwed). Has a clearance hole near its top through which the captive screw passes. **Sits outboard of the thumbwheel.** |
 | **Thumbwheel** | Knurled disc **sitting between the drive plate (outboard) and the shank (inboard)**, on the left end of the drive screw. **Integral with the drive screw** — turned from one piece (or permanently joined). |
-| **Drive screw** | Threaded shaft extending right (inboard) from the thumbwheel into the shank tapped bore. The thumbwheel's left end face carries a tapped hole along the drive-screw axis for the silver screw. |
-| **Silver screw** | Small screw passing rightward from outboard through the drive plate's clearance hole, across a small axial-play gap, and threading into the tap on the thumbwheel's left end face. **Deliberately over-length** so it bottoms on the tap, leaving the drive plate floating in axial play between its head (outboard) and the thumbwheel's left face (inboard). |
+| **Drive screw** | Threaded shaft extending right (inboard) from the thumbwheel into the shank tapped bore. The thumbwheel's left end face carries a tapped hole along the drive-screw axis for the captive screw. |
+| **Captive screw** | Small screw passing rightward from outboard through the drive plate's clearance hole, across a small axial-play gap, and threading into the tap on the thumbwheel's left end face. **Deliberately over-length** so it bottoms on the tap, leaving the drive plate floating in axial play between its head (outboard) and the thumbwheel's left face (inboard). |
 | **Depth-lock bolt** | M6 bolt threaded into the lower (tapped) section of the depth-lock blind bore. Knurled knob at the bottom. Its upper end pushes the depth-lock push rod; the rod (not the bolt) is what bears on the underside of the shaft. |
 | **Depth-lock knob** | Knurled knob at the bottom of the shank, integral with the depth-lock bolt. |
 
@@ -73,7 +73,7 @@ See accompanying diagram. These names are canonical — please use them in the C
 
 For the draftsman, so the CAD assembly mates are physically correct.
 
-**Setting edge margin.** Turning the thumbwheel rotates the integral thumbwheel + drive screw assembly. The drive screw runs in the shank tapped bore, so its rotation translates it in X relative to the shank. The thumbwheel translates with it. The drive plate (mounted to the outboard end of the shaft) is captured on the silver screw between the screw's head (outboard side of plate) and the thumbwheel's left end face (inboard side of plate), with a deliberate tiny axial play so the plate doesn't bind. As the thumbwheel-and-drive-screw assembly translates in X, the drive plate is dragged along with it, and the shaft follows. The thumbwheel, drive screw, and silver screw all rotate together; the drive plate and shaft translate without rotating.
+**Setting edge margin.** Turning the thumbwheel rotates the integral thumbwheel + drive screw assembly. The drive screw runs in the shank tapped bore, so its rotation translates it in X relative to the shank. The thumbwheel translates with it. The drive plate (mounted to the outboard end of the shaft) is captured on the captive screw between the screw's head (outboard side of plate) and the thumbwheel's left end face (inboard side of plate), with a deliberate tiny axial play so the plate doesn't bind. As the thumbwheel-and-drive-screw assembly translates in X, the drive plate is dragged along with it, and the shaft follows. The thumbwheel, drive screw, and captive screw all rotate together; the drive plate and shaft translate without rotating.
 
 **Locking the setting.** The depth-lock knob, at the bottom of the shank, is on the end of an M6 bolt that engages the **lower (tapped) section** of the depth-lock blind bore. Above the tapped section the bore is smooth and contains a steel push rod. Tightening the knob advances the bolt up; the bolt's tip pushes the push rod; the push rod's upper end bears on the underside of the shaft (which crosses through the upper part of the shank). This pinches the shaft against the upper wall of the shaft cross-bore and locks it in X. The push rod is a separate intermediary part — earlier drafts of this spec incorrectly described the bolt itself as bearing on the shaft.
 
@@ -152,29 +152,29 @@ Each tier table below names the dimension by its full **field path** (`blade.thi
 | 37 | Drive screw thread | `drive_screw.thread` | Matches item 21 | |
 | 38 | Drive screw thread pitch | `drive_screw.thread_pitch` | ≈ 0.5 mm (user estimates 2 turns/mm) | Sets adjustment resolution. |
 | 39 | Drive screw length | `drive_screw.length` | `[TBM]` | Must support full X travel of shaft + adequate engagement at minimum-margin setting. |
-| 40 | Drive screw left-end tap | `drive_screw.left_face_tap` | For silver screw; M2 or M2.5 `[TBM]` | Bottomed by the silver screw — see Tier 5. Depth: `drive_screw.left_face_tap_depth`. |
+| 40 | Drive screw left-end tap | `drive_screw.left_face_tap` | For captive screw; M2 or M2.5 `[TBM]` | Bottomed by the captive screw — see Tier 5. Depth: `drive_screw.left_face_tap_depth`. |
 | 41 | Thumbwheel diameter | `thumbwheel.diameter` | `[TBM]` (likely 15–22 mm) | Big enough for fingertip torque; small enough not to foul the work. |
 | 42 | Thumbwheel thickness | `thumbwheel.thickness` | `[TBM]` | |
 | 43 | Thumbwheel knurl | `thumbwheel.knurl` | Straight (axial) `[TBM]` | |
 | 44 | Drive screw and thumbwheel join | — | **Integral** — one piece, or permanently joined | Must rotate as a unit. |
 
-### 4.5 Tier 5 — Drive plate and silver-screw bearing
+### 4.5 Tier 5 — Drive plate and captive-screw bearing
 
-Geometry, outboard → inboard along X: silver-screw head → drive plate → axial-play gap → thumbwheel left face → (silver-screw thread engagement inside thumbwheel).
+Geometry, outboard → inboard along X: captive-screw head → drive plate → axial-play gap → thumbwheel left face → (captive-screw thread engagement inside thumbwheel).
 
 | # | Parameter | Code field | Value rule | Notes |
 |---|---|---|---|---|
 | 45 | Drive plate height (Y) above shaft | `drive_plate.height` | `shank.crossbore_to_tapped_bore_gap + clearance_above_screw` | Plate must rise from shaft top to drive-screw axis, with enough material above and below the clearance hole. |
 | 46 | Drive plate width (Z) | `drive_plate.width` | `[TBM]` | |
 | 47 | Drive plate thickness (X) | `drive_plate.thickness` | `[TBM]` (likely 1.5–2.5 mm) | |
-| 48 | Drive plate clearance hole | `drive_plate.clearance_hole_diameter` | `≥ silver_screw.thread.major × 1.1` | Light radial clearance — does not need precision (per user; see §8). |
+| 48 | Drive plate clearance hole | `drive_plate.clearance_hole_diameter` | `≥ captive_screw.thread.major × 1.1` | Light radial clearance — does not need precision (per user; see §8). |
 | 49 | Drive plate position on shaft (Z) | `drive_plate.shaft_mount_position` | Mounted on the outboard end face of the shaft | The shaft must be long enough on its outboard side that the drive plate sits clear of the thumbwheel. The axial-play gap (item 53) sits between them. |
-| 50 | Silver screw thread | `silver_screw.thread` | Per item 40 | M2 or M2.5 `[TBM]`. |
-| 51 | Silver screw useful length (head underside to tip) | `silver_screw.length` *(owned by `captive_bearing`)* | `= drive_plate.thickness + captive_bearing.axial_play + drive_screw.left_face_tap_depth` | **Critical:** the screw must bottom on the tap with `captive_bearing.axial_play` mm of axial clearance remaining between its head and the drive plate. |
-| 52 | Silver screw head | `silver_screw.head` | Pan or cheese; larger than `drive_plate.clearance_hole_diameter` | Acts as the retainer. |
+| 50 | Captive screw thread | `captive_screw.thread` | Per item 40 | M2 or M2.5 `[TBM]`. |
+| 51 | Captive screw useful length (head underside to tip) | `captive_screw.length` *(owned by `captive_bearing`)* | `= drive_plate.thickness + captive_bearing.axial_play + drive_screw.left_face_tap_depth` | **Critical:** the screw must bottom on the tap with `captive_bearing.axial_play` mm of axial clearance remaining between its head and the drive plate. |
+| 52 | Captive screw head | `captive_screw.head` | Pan or cheese; larger than `drive_plate.clearance_hole_diameter` | Acts as the retainer. |
 | 53 | Axial play | `captive_bearing.axial_play` *(owned by `captive_bearing`)* | 0.1–0.3 mm | The designed bearing clearance. Verify after assembly with feeler gauges. |
 
-This is the *bearing*: silver-screw head + drive plate + thumbwheel left end face form a captive but non-binding interface. The drive plate floats in the axial-play gap; the thumbwheel rotates freely.
+This is the *bearing*: captive-screw head + drive plate + thumbwheel left end face form a captive but non-binding interface. The drive plate floats in the axial-play gap; the thumbwheel rotates freely.
 
 ---
 
@@ -203,7 +203,7 @@ In priority order.
 | Drive plate | Brass | Small cosmetic part. |
 | Thumbwheel + drive screw (integral) | Brass | Knurl finish on thumbwheel. |
 | Depth-lock knob + bolt | Brass for knob; steel bolt OR brass throughout | Original is likely brass throughout. Steel bolt with a brass knob silver-soldered on is an alternative. |
-| Silver screw | Stainless steel | Small standard fastener; "silver" refers to its visible appearance versus the brass around it. |
+| Captive screw | Stainless steel | Any stock M2 pan-head — the role is purely to retain the drive plate. |
 | Grub screw | Stainless or hardened steel | Standard part — slotted, socket, or knurled head per original. |
 | Drive plate mounting screws | Stainless steel | M2 / M2.5; flat or pan head, countersunk into drive plate if possible. |
 | Blades | O1 tool steel, hardened and tempered, OR commercial Ibex/Herdim blades | See §7. |
@@ -237,8 +237,8 @@ No convenient commercial supply of loose purfling blades exists. Three options:
 
 | Interface | Recommended |
 |---|---|
-| Silver screw in drive plate clearance hole | Generous (0.1–0.3 mm radial) — sloppy is fine |
-| Drive plate against thumbwheel end face | Light sliding contact when stationary; rotational clearance via the axial play of the silver screw |
+| Captive screw in drive plate clearance hole | Generous (0.1–0.3 mm radial) — sloppy is fine |
+| Drive plate against thumbwheel end face | Light sliding contact when stationary; rotational clearance via the axial play of the captive screw |
 | Drive plate position on shaft | Fixed location, no movement intended |
 | Depth-lock bolt in blind bore | Standard thread fit |
 
@@ -266,7 +266,7 @@ After manufacture, the tool must:
 2. Allow continuous, smooth X travel of the shaft through the full range with the depth-lock knob loose.
 3. Allow the depth lock to clamp the shaft firmly with no perceptible X movement under reasonable hand force.
 4. Allow the edge-margin thumbwheel to be turned by fingertip force, with one full rotation producing approximately `[TBM]` mm of shaft translation (matching the drive-screw pitch), repeatable to within ±0.05 mm.
-5. Drive plate to spin freely on the silver-screw bearing — no binding when the thumbwheel is rotated; no axial slop greater than `[TBM]` mm (target ≤ 0.3 mm).
+5. Drive plate to spin freely on the captive-screw bearing — no binding when the thumbwheel is rotated; no axial slop greater than `[TBM]` mm (target ≤ 0.3 mm).
 6. Hold blades square to the shaft axis and parallel to each other to within ±0.1° after grub-screw clamping.
 7. Hold blade spacing to within ±0.05 mm of the spacer thickness over a representative cut (full perimeter of a violin top).
 8. Cut two clean, parallel lines in figured maple ≥ 0.5 mm deep without blade deflection.

@@ -1,5 +1,5 @@
 """
-Silver screw — the small fastener that captures the drive plate against
+Captive screw — the small M2 fastener that captures the drive plate against
 the thumbwheel's left face. The deliberately-over-length screw bottoms
 on the thumbwheel tap *before* its head clamps the drive plate,
 leaving the captive-bearing axial play.
@@ -23,21 +23,21 @@ from gramel import threads
 from gramel.parameters import PurflingCutterParams
 
 
-def build_silver_screw(params: PurflingCutterParams) -> Part:
-    """Build the silver screw.
+def build_captive_screw(params: PurflingCutterParams) -> Part:
+    """Build the captive screw.
 
-    Thread length now comes directly from the SilverScrewParams field (the
+    Thread length now comes directly from the CaptiveScrewParams field (the
     stock-screw dimension). The PurflingCutterParams model validator enforces
     that thread_length == drive_plate.thickness + axial_play + tap_depth,
     so the captive-bearing axial play is preserved by adjusting the tap
     depth rather than the screw length.
     """
-    ss = params.silver_screw
+    cs = params.captive_screw
 
-    head_d = ss.head_diameter
-    head_t = ss.head_thickness
-    thread_r = threads.major_radius(ss.thread)
-    thread_len = ss.thread_length
+    head_d = cs.head_diameter
+    head_t = cs.head_thickness
+    thread_r = threads.major_radius(cs.thread)
+    thread_len = cs.thread_length
 
     # Head: cylinder along X at X = head_t / 2
     head = Pos(head_t / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=head_d / 2, height=head_t)
@@ -56,9 +56,9 @@ def main() -> None:
     from build123d import export_step
 
     params = PurflingCutterParams()
-    screw = build_silver_screw(params)
-    export_step(screw, "/tmp/silver_screw.step")
-    print(f"Exported /tmp/silver_screw.step  (volume = {screw.volume:.1f} mm^3)")
+    screw = build_captive_screw(params)
+    export_step(screw, "/tmp/captive_screw.step")
+    print(f"Exported /tmp/captive_screw.step  (volume = {screw.volume:.1f} mm^3)")
 
 
 if __name__ == "__main__":

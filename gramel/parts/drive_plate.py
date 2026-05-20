@@ -1,11 +1,11 @@
 """
 Drive plate — small brass plate that stands vertically up from the shaft's
 outboard end, transmits drive screw translation to the shaft via the
-captive silver-screw bearing at its thumb end.
+captive-screw bearing at its thumb end.
 
 Coordinate convention (plate's local frame):
   X: plate normal — thickness direction. +X = "back" (faces the shaft),
-     −X = "front" (faces outboard, where the silver-screw head sits).
+     −X = "front" (faces outboard, where the captive-screw head sits).
   Y: horizontal across the plate.
   Z: vertical. Origin (Z = 0) is the shaft-end boss centre; the thumb-end
      boss centre sits at Z = crossbore_to_tapped_bore_gap.
@@ -16,7 +16,7 @@ tangent lines.
 
 Holes:
   - Central mount-screw clearance hole at the shaft end (Z = 0).
-  - Silver-screw clearance hole at the thumb end (Z = gap).
+  - Captive-screw clearance hole at the thumb end (Z = gap).
 
 Anti-rotation: rectangular slot milled into the back face (+X face) at
 Z = 0, sized to receive the matching tenon on the shaft's −X end. The
@@ -84,17 +84,17 @@ def build_drive_plate(params: PurflingCutterParams) -> Part:
 
     # --- Holes ------------------------------------------------------------
     # Mount hole at shaft end: standard M2 clearance (~0.2 mm radial).
-    # Silver hole at thumb end: deliberately sloppy (~0.3 mm radial) so the
+    # Captive hole at thumb end: deliberately sloppy (~0.3 mm radial) so the
     # captive bearing doesn't bind.
     mount_r = dp.mount_hole_diameter / 2
-    silver_r = dp.silver_clearance_hole_diameter / 2
+    captive_r = dp.captive_clearance_hole_diameter / 2
     mount_hole = (
         Pos(0, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=mount_r, height=thickness * 3)
     )
-    silver_hole = (
-        Pos(0, 0, gap) * Rot(0, 90, 0) * Cylinder(radius=silver_r, height=thickness * 3)
+    captive_hole = (
+        Pos(0, 0, gap) * Rot(0, 90, 0) * Cylinder(radius=captive_r, height=thickness * 3)
     )
-    plate = plate - mount_hole - silver_hole
+    plate = plate - mount_hole - captive_hole
 
     # --- Anti-rotation slot in the back face (+X face) --------------------
     # *Horizontal slot across the full plate width* at Z = 0. The shaft's

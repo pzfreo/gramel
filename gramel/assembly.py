@@ -9,7 +9,7 @@ transforms with parts in a static "as-clamped" position:
   - Shaft centred through the crossbore at a nominal edge-margin.
   - Blade stack inside the slot, grub screw clamped against the stack.
   - Drive plate mounted on the shaft's −X end face.
-  - Silver-screw + thumbwheel/drive screw forming the captive bearing
+  - Captive-screw + thumbwheel/drive screw forming the captive bearing
     at the shank's tapped-bore level.
   - Depth-lock bolt fully advanced, push rod pressing up on the
     shaft's −Z flat.
@@ -32,7 +32,7 @@ from gramel.parts.grub_screw import build_grub_screw
 from gramel.parts.push_rod import build_push_rod
 from gramel.parts.shaft import build_shaft
 from gramel.parts.shank import build_shank
-from gramel.parts.silver_screw import build_silver_screw
+from gramel.parts.captive_screw import build_captive_screw
 from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
 
 
@@ -89,14 +89,14 @@ def build_assembly(params: PurflingCutterParams) -> Compound:
     plate_x = shaft_x_off - plate_thick / 2
     plate = Pos(plate_x, 0, crossbore_z) * plate_local
 
-    # --- Silver screw + thumbwheel/drive screw: captive bearing ---------
-    silver_local = build_silver_screw(params)
-    head_t = params.silver_screw.head_thickness
-    silver_x = plate_x - plate_thick / 2 - head_t  # local X=0 (head −X face)
-    silver = Pos(silver_x, 0, tapped_z) * silver_local
+    # --- Captive screw + thumbwheel/drive screw: captive bearing ---------
+    captive_local = build_captive_screw(params)
+    head_t = params.captive_screw.head_thickness
+    captive_x = plate_x - plate_thick / 2 - head_t  # local X=0 (head −X face)
+    captive = Pos(captive_x, 0, tapped_z) * captive_local
 
     tw_local = build_thumbwheel_drive_screw(params)
-    # Silver boss −X face sits axial_play inboard of the plate's back face
+    # Boss −X face sits axial_play inboard of the plate's back face
     tw_x = shaft_x_off + params.captive_bearing.axial_play
     tw = Pos(tw_x, 0, tapped_z) * tw_local
 
@@ -120,7 +120,7 @@ def build_assembly(params: PurflingCutterParams) -> Compound:
             *stack,
             grub,
             plate,
-            silver,
+            captive,
             tw,
             bolt,
             rod,
