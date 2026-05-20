@@ -46,9 +46,13 @@ class ViewPlacement:
       - Iso view bottom-left
     """
 
-    side: tuple[float, float] = (-100.0, 8.0)
-    front: tuple[float, float] = (-55.0, 8.0)
-    iso: tuple[float, float] = (-20.0, -40.0)
+    # Orthographics in the upper-left, all at 1:1. The exploded iso (also
+    # at 1:1, 2D bbox ~118×138) sits in the lower portion and right
+    # portion of the left column. The iso's upper-left corner is sparsely
+    # occupied so we tolerate a little nominal overlap with the side view.
+    side: tuple[float, float] = (-95.0, 20.0)
+    front: tuple[float, float] = (-57.0, 20.0)
+    iso: tuple[float, float] = (5.0, -10.0)
 
 
 # ---------------------------------------------------------------------------
@@ -175,13 +179,12 @@ def build_assembly_drawing(
     def place(compound: Compound, pos: tuple[float, float]) -> Compound:
         return compound.translate((pos[0], pos[1], 0))
 
-    # Exploded iso is large; scale 0.5 to fit comfortably.
-    ISO_SCALE = 0.5
+    # Everything at 1:1.
     parts_visible = Compound(
         children=[
             place(side_v, layout.side),
             place(front_v, layout.front),
-            place(iso_v.scale(ISO_SCALE), layout.iso),
+            place(iso_v, layout.iso),
         ]
     )
     parts_hidden = Compound(
@@ -207,30 +210,27 @@ def build_assembly_drawing(
         result = dim_linear((p1[0], p1[1], 0), (p2[0], p2[1], 0), side, distance, draft, label=label)
         dim_shapes.append(result.shape)
 
-    # Side view: world X → page X, world Z → page Y. Centred at (sx, sy) =
-    # layout.side, with world centroid mapping to that page position.
+    # Side view: world X → page X, world Z → page Y at 1:1.
     sx, sy = layout.side
     side_left = sx + (bb.min.X - centroid[0])
     side_right = sx + (bb.max.X - centroid[0])
     side_top = sy + (bb.max.Z - centroid[2])
     side_bot = sy + (bb.min.Z - centroid[2])
 
-    # Overall length (X) along the top of the side view
-    add_dim((side_left, side_top), (side_right, side_top), "above", 8, f"{bb.size.X:.0f}")
-    # Overall height (Z) on the left of the side view
-    add_dim((side_left, side_bot), (side_left, side_top), "left", 8, f"{bb.size.Z:.0f}")
+    add_dim((side_left, side_top), (side_right, side_top), "above", 5, f"{bb.size.X:.0f}")
+    add_dim((side_left, side_bot), (side_left, side_top), "left", 5, f"{bb.size.Z:.0f}")
 
     # Front view: overall width (Y) along the bottom
     fx, fy = layout.front
     front_left = fx + (bb.min.Y - centroid[1])
     front_right = fx + (bb.max.Y - centroid[1])
     front_bot = fy + (bb.min.Z - centroid[2])
-    add_dim((front_left, front_bot), (front_right, front_bot), "below", 8, f"{bb.size.Y:.0f}")
+    add_dim((front_left, front_bot), (front_right, front_bot), "below", 5, f"{bb.size.Y:.0f}")
 
     # --- View labels --------------------------------------------------------
-    annotation_text.append(placed_text("SIDE VIEW", 3.0, layout.side[0], side_bot - 18, left_align=False))
-    annotation_text.append(placed_text("FRONT", 3.0, layout.front[0], front_bot - 18, left_align=False))
-    annotation_text.append(placed_text("EXPLODED VIEW", 3.0, layout.iso[0], layout.iso[1] - 35, left_align=False))
+    annotation_text.append(placed_text("SIDE VIEW", 3.0, layout.side[0], side_bot - 8, left_align=False))
+    annotation_text.append(placed_text("FRONT", 3.0, layout.front[0], front_bot - 8, left_align=False))
+    annotation_text.append(placed_text("EXPLODED VIEW", 3.0, layout.iso[0], layout.iso[1] - 75, left_align=False))
 
     # --- Frame, title block, BOM (in place of notes block) ------------------
     frame = page_frame()
