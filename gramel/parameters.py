@@ -453,19 +453,19 @@ class DriveScrewParams(BaseModel):
     )
     left_face_tap: str = Field(
         default="M2",
-        description="Thread of the tap on the thumbwheel's left end face (for silver screw).",
+        description="Thread of the tap on the thumbwheel's left end face (for captive screw).",
         json_schema_extra=_spec("§4.4.40", status="MEASURED", units=""),
     )
     left_face_tap_depth: float = Field(
         default=2.8,
         gt=0,
-        description="Depth of the tap for the silver screw, into the −X face of the silver boss / thumbwheel. Set to match a stock M2 × 6 silver screw: thread_len (6) − drive_plate.thickness (3) − captive_bearing.axial_play (0.2) = 2.8 mm. Was 4 mm originally, then 3 mm; now derived from the screw's stock thread length so the captive bearing axial play comes out right.",
+        description="Depth of the tap for the captive screw, into the −X face of the boss / thumbwheel. Set to match a stock M2 × 6 screw: thread_len (6) − drive_plate.thickness (3) − captive_bearing.axial_play (0.2) = 2.8 mm. Was 4 mm originally, then 3 mm; now derived from the screw's stock thread length so the captive bearing axial play comes out right.",
         json_schema_extra=_spec("§4.4.40", status="DERIVED"),
     )
     unthreaded_length: float = Field(
         default=3.0,
         gt=0,
-        description="Length of the unthreaded section between the thumbwheel disc and the start of the M3 threaded portion of the drive screw. Provides solid material around the silver-screw tap bottom so it doesn't eat into the M3 thread.",
+        description="Length of the unthreaded section between the thumbwheel disc and the start of the M3 threaded portion of the drive screw. Provides solid material around the captive-screw tap bottom so it doesn't eat into the M3 thread.",
         json_schema_extra=_spec("§4.4 (unthreaded section — design addition)", status="MEASURED"),
     )
     unthreaded_diameter: float = Field(
@@ -491,17 +491,17 @@ class ThumbwheelParams(BaseModel):
         description="Thumbwheel thickness (X dimension — along the drive-screw axis).",
         json_schema_extra=_spec("§4.4.42", status="MEASURED"),
     )
-    silver_boss_diameter: float = Field(
+    boss_diameter: float = Field(
         default=6.0,
         gt=0,
-        description="Diameter of the small boss on the outboard (−X, drive-plate side) face of the thumbwheel. The silver-screw tap enters through this boss, giving extra material around the tap so it doesn't eat into the thumbwheel's knurled edge.",
-        json_schema_extra=_spec("§4.4 (silver boss — design addition)", status="MEASURED"),
+        description="Diameter of the small boss on the outboard (−X, drive-plate side) face of the thumbwheel. The captive-screw tap enters through this boss, giving extra material around the tap so it doesn't eat into the thumbwheel's knurled edge.",
+        json_schema_extra=_spec("§4.4 (boss — design addition)", status="MEASURED"),
     )
-    silver_boss_length: float = Field(
+    boss_length: float = Field(
         default=0.5,
         gt=0,
-        description="X length of the silver boss. Short — just enough to give a positive seat for the silver-screw tap.",
-        json_schema_extra=_spec("§4.4 (silver boss — design addition)", status="MEASURED"),
+        description="X length of the boss. Short — just enough to give a positive seat for the captive-screw tap.",
+        json_schema_extra=_spec("§4.4 (boss — design addition)", status="MEASURED"),
     )
     knurl: Literal["straight", "diamond"] = Field(
         default="straight",
@@ -539,7 +539,7 @@ class DrivePlateParams(BaseModel):
     thumb_end_radius: float = Field(
         default=3.0,
         gt=0,
-        description="Radius of the smaller boss at the thumbwheel end (6 mm diameter), around the silver-screw clearance hole.",
+        description="Radius of the smaller boss at the thumbwheel end (6 mm diameter), around the captive-screw clearance hole.",
         json_schema_extra=_spec("§4.5.45 (egg shape — not in spec)", status="MEASURED"),
     )
     thickness: float = Field(
@@ -548,22 +548,22 @@ class DrivePlateParams(BaseModel):
         description="Plate thickness (X dimension — the plate's normal direction). 3 mm = 1 mm anti-rotation slot + 2 mm wall on the front face.",
         json_schema_extra=_spec("§4.5.47", status="MEASURED"),
     )
-    silver_clearance_hole_diameter: float = Field(
+    captive_clearance_hole_diameter: float = Field(
         default=2.4,
         gt=0,
-        description="Hole the SILVER screw passes through. 0.2 mm radial clearance on M2 — sufficient for the captive bearing to spin freely without binding.",
+        description="Hole the CAPTIVE screw passes through. 0.2 mm radial clearance on M2 — sufficient for the captive bearing to spin freely without binding.",
         json_schema_extra=_spec("§4.5.48"),
     )
     mount_hole_diameter: float = Field(
         default=2.4,
         gt=0,
         description="Hole the MOUNT screw passes through (shaft end of plate). Standard M2 clearance fit (~0.2 mm radial). Doesn't need the sloppy captive-bearing tolerance.",
-        json_schema_extra=_spec("§4.5 (mount hole — distinct from silver hole)"),
+        json_schema_extra=_spec("§4.5 (mount hole — distinct from captive-screw hole)"),
     )
 
 
-class SilverScrewParams(BaseModel):
-    """§4.5 items 50, 52 — silver screw.
+class CaptiveScrewParams(BaseModel):
+    """§4.5 items 50, 52 — captive screw (any stock M2 pan-head will do).
 
     Length is a stock dimension (default M2 × 6 mm). The drive-screw left-face
     tap depth is what bends to maintain the captive-bearing axial play —
@@ -572,7 +572,7 @@ class SilverScrewParams(BaseModel):
 
     thread: str = Field(
         default="M2",
-        description="Silver-screw thread. Matches drive_screw.left_face_tap (§4.4.40).",
+        description="Captive-screw thread. Matches drive_screw.left_face_tap (§4.4.40).",
         json_schema_extra=_spec("§4.5.50", status="MEASURED", units=""),
     )
     thread_length: float = Field(
@@ -599,14 +599,14 @@ class CaptiveBearingParams(BaseModel):
     """
     §4.5 item 53 — the signature mechanism of this tool.
 
-    The silver screw is deliberately over-length. It bottoms on the thumbwheel's
+    The captive screw is deliberately over-length. It bottoms on the thumbwheel's
     left-face tap *before* its head clamps the drive plate, leaving the plate
-    captive in axial play between the silver-screw head (outboard) and the
+    captive in axial play between the captive-screw head (outboard) and the
     thumbwheel left face (inboard).
 
     Geometric relationship (enforced by PurflingCutterParams model validator):
 
-        silver_screw.thread_length
+        captive_screw.thread_length
             = drive_plate.thickness
             + captive_bearing.axial_play
             + drive_screw.left_face_tap_depth
@@ -619,7 +619,7 @@ class CaptiveBearingParams(BaseModel):
         default=0.2,
         gt=0,
         le=0.5,
-        description="Designed axial bearing clearance. Measured 0.2 mm — the non-binding gap that lets the drive plate float between the silver-screw head and the thumbwheel's left face while the drive screw rotates freely.",
+        description="Designed axial bearing clearance. Measured 0.2 mm — the non-binding gap that lets the drive plate float between the captive-screw head and the thumbwheel's left face while the drive screw rotates freely.",
         json_schema_extra=_spec("§4.5.53", status="MEASURED"),
     )
 
@@ -651,7 +651,7 @@ class PurflingCutterParams(BaseModel):
     drive_screw: DriveScrewParams = Field(default_factory=DriveScrewParams)
     thumbwheel: ThumbwheelParams = Field(default_factory=ThumbwheelParams)
     drive_plate: DrivePlateParams = Field(default_factory=DrivePlateParams)
-    silver_screw: SilverScrewParams = Field(default_factory=SilverScrewParams)
+    captive_screw: CaptiveScrewParams = Field(default_factory=CaptiveScrewParams)
     captive_bearing: CaptiveBearingParams = Field(default_factory=CaptiveBearingParams)
 
     # --- Mating-pair derivations (cutting_pair + process) ------------------
@@ -826,7 +826,7 @@ class PurflingCutterParams(BaseModel):
 
     @model_validator(mode="after")
     def _validate_captive_bearing(self) -> "PurflingCutterParams":
-        """The silver-screw length, drive-plate thickness, axial play, and tap
+        """The captive-screw length, drive-plate thickness, axial play, and tap
         depth must satisfy the captive-bearing relationship — otherwise the
         plate either gets clamped (axial_play < design) or floats free
         (axial_play > design).
@@ -836,14 +836,14 @@ class PurflingCutterParams(BaseModel):
             + self.captive_bearing.axial_play
             + self.drive_screw.left_face_tap_depth
         )
-        if abs(self.silver_screw.thread_length - expected_thread_len) > 1e-6:
+        if abs(self.captive_screw.thread_length - expected_thread_len) > 1e-6:
             raise ValueError(
-                f"Captive-bearing relationship violated: silver_screw.thread_length "
-                f"({self.silver_screw.thread_length:.3f}) ≠ drive_plate.thickness "
+                f"Captive-bearing relationship violated: captive_screw.thread_length "
+                f"({self.captive_screw.thread_length:.3f}) ≠ drive_plate.thickness "
                 f"({self.drive_plate.thickness}) + axial_play ({self.captive_bearing.axial_play}) "
                 f"+ left_face_tap_depth ({self.drive_screw.left_face_tap_depth}) "
                 f"= {expected_thread_len:.3f}. Adjust left_face_tap_depth to "
-                f"{self.silver_screw.thread_length - self.drive_plate.thickness - self.captive_bearing.axial_play:.3f}."
+                f"{self.captive_screw.thread_length - self.drive_plate.thickness - self.captive_bearing.axial_play:.3f}."
             )
         return self
 
@@ -910,7 +910,7 @@ __all__ = [
     "PurflingCutterParams",
     "ShaftParams",
     "ShankParams",
-    "SilverScrewParams",
+    "CaptiveScrewParams",
     "SpacerParams",
     "Status",
     "ThumbwheelParams",

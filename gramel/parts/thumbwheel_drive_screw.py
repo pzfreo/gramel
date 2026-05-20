@@ -4,19 +4,19 @@ shank. Spec §4.4 says these are turned from one piece.
 
 Layout along X (from the −X outboard face at X = 0, inboard toward +X):
 
-  silver boss | thumbwheel disc | unthreaded collar | M3 drive-screw thread
+  boss | thumbwheel disc | unthreaded collar | M3 drive-screw thread
 
-  X = 0                          (silver-screw tap entry; outboard −X face)
-       silver_boss_length
+  X = 0                          (captive-screw tap entry; outboard −X face)
+       boss_length
             + thumbwheel.thickness
                  + drive_screw.unthreaded_length
                       + drive_screw.length        (total = thread inboard end)
 
 Bores:
-  - Silver-screw tap from the −X face inward by left_face_tap_depth. With
+  - Captive-screw tap from the −X face inward by left_face_tap_depth. With
     default values (boss 0.5, disc 2, unthreaded collar 3, tap depth 3) the
     tap bottoms 0.5 mm into the unthreaded collar — well before the M3
-    thread root, so the silver-screw tap can never compromise the drive-
+    thread root, so the captive-screw tap can never compromise the drive-
     screw thread.
 
 The threaded portion is modelled as a smooth cylinder at the thread's
@@ -41,13 +41,13 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
     ds = params.drive_screw
 
     # Section lengths along X
-    boss_len = tw.silver_boss_length
+    boss_len = tw.boss_length
     disc_thick = tw.thickness
     unth_len = ds.unthreaded_length
     thread_len = ds.length
 
     # Radii
-    boss_r = tw.silver_boss_diameter / 2
+    boss_r = tw.boss_diameter / 2
     disc_r = tw.diameter / 2
     unth_r = ds.unthreaded_diameter / 2
     thread_r = threads.major_radius(ds.thread)
@@ -59,7 +59,7 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
     x_thread = boss_len + disc_thick + unth_len + thread_len / 2
 
     # Default Cylinder is along Z; Rot(0, 90, 0) rotates Z → X.
-    silver_boss = (
+    boss = (
         Pos(x_boss, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=boss_r, height=boss_len)
     )
     disc = Pos(x_disc, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=disc_r, height=disc_thick)
@@ -80,9 +80,9 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
             Pos(x_thread, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=thread_r, height=thread_len)
         )
 
-    body = silver_boss + disc + unthreaded + thread
+    body = boss + disc + unthreaded + thread
 
-    # --- Silver-screw tap from the −X face inward -------------------------
+    # --- Captive-screw tap from the −X face inward -------------------------
     tap_drill_r = threads.tap_drill_radius(ds.left_face_tap)
     tap_depth = ds.left_face_tap_depth
     tap = (

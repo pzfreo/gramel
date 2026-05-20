@@ -97,7 +97,7 @@
   <!-- Vertical fin standing up from the OUTBOARD (left) end of the shaft.
        Order along X (left → right): drive plate, axial-play gap, thumbwheel, drive screw, shank. -->
   <rect x="280" y="80" width="10" height="55" class="brass"/>
-  <!-- Clearance hole for the silver screw at Y=100 -->
+  <!-- Clearance hole for the captive screw at Y=100 -->
   <circle cx="285" cy="100" r="5.5" fill="#ffffff" stroke="#6b5520" stroke-width="1"/>
   <!-- Mounting screws into top of shaft (replaces original soldered joint) -->
   <circle cx="283" cy="138" r="1.4" fill="#2b2f33"/>
@@ -105,7 +105,7 @@
 
   <!-- ============== THUMBWHEEL + DRIVE SCREW (integral) ============== -->
   <!-- Thumbwheel: knurled disc, edge-on. Sits BETWEEN the drive plate (outboard) and the shank (inboard).
-       Left face of thumbwheel has the tapped hole for the silver screw. -->
+       Left face of thumbwheel has the tapped hole for the captive screw. -->
   <rect x="292" y="65" width="38" height="70" class="brass"/>
   <g stroke="#6b5520" stroke-width="0.6">
     <line x1="296" y1="68" x2="296" y2="132"/>
@@ -118,7 +118,7 @@
     <line x1="324" y1="68" x2="324" y2="132"/>
     <line x1="328" y1="68" x2="328" y2="132"/>
   </g>
-  <!-- Hidden tapped hole in LEFT face of thumbwheel for silver screw -->
+  <!-- Hidden tapped hole in LEFT face of thumbwheel for captive screw -->
   <line x1="292" y1="97"  x2="316" y2="97"  class="hidden"/>
   <line x1="292" y1="103" x2="316" y2="103" class="hidden"/>
 
@@ -131,7 +131,7 @@
     <line x1="332" y1="105" x2="458" y2="105"/>
   </g>
 
-  <!-- ============== SILVER SCREW (bearing retainer) ============== -->
+  <!-- ============== CAPTIVE SCREW (bearing retainer) ============== -->
   <!-- Threads RIGHTWARD into the LEFT face of the thumbwheel.
        Order: head (left) → drive plate clearance hole → small axial-play gap → tap in thumbwheel left face.
        Bottoms out on the tap, leaving small axial play so plate spins free. -->
@@ -139,7 +139,7 @@
   <rect x="272" y="91" width="6" height="18" class="steel"/>
   <!-- Shank passing rightward through plate clearance hole and into thumbwheel tap -->
   <rect x="278" y="97" width="38" height="6" fill="#d3d6da" stroke="#2b2f33" stroke-width="0.8"/>
-  <!-- Hidden thread engagement inside the thumbwheel (right portion of the silver screw shank) -->
+  <!-- Hidden thread engagement inside the thumbwheel (right portion of the captive screw shank) -->
   <g class="thread">
     <line x1="294" y1="99" x2="314" y2="99"/>
     <line x1="294" y1="101" x2="314" y2="101"/>
@@ -149,7 +149,7 @@
   <!-- The plate is at X=280..290, the thumbwheel left face at X=292, leaving a ~2px (representative) gap. -->
   <line x1="291" y1="135" x2="291" y2="170" stroke="#c33" stroke-width="0.7" stroke-dasharray="2 2"/>
   <text x="200" y="190" fill="#c33" font-size="10">tiny axial play between plate and thumbwheel —</text>
-  <text x="200" y="203" fill="#c33" font-size="10">silver screw bottoms on its tap before head clamps plate</text>
+  <text x="200" y="203" fill="#c33" font-size="10">captive screw bottoms on its tap before head clamps plate</text>
   <line x1="291" y1="172" x2="200" y2="186" stroke="#c33" stroke-width="0.5" stroke-dasharray="1 2"/>
 
   <!-- ============== DEPTH LOCK ============== -->
@@ -199,7 +199,7 @@
   <line x1="285" y1="20" x2="285" y2="80" class="lead"/>
   <text x="285" y="14" text-anchor="middle" class="label">DRIVE PLATE</text>
   <text x="285" y="30" text-anchor="middle" class="sublabel">vertical fin screwed to outboard end of shaft;</text>
-  <text x="285" y="44" text-anchor="middle" class="sublabel">clearance hole near top for silver screw</text>
+  <text x="285" y="44" text-anchor="middle" class="sublabel">clearance hole near top for captive screw</text>
 
   <line x1="430" y1="20" x2="311" y2="65" class="lead"/>
   <text x="432" y="14" class="label">THUMBWHEEL + DRIVE SCREW</text>
@@ -208,7 +208,7 @@
   <text x="432" y="58" class="sublabel">which threads through shank tapped bore</text>
 
   <line x1="170" y1="180" x2="275" y2="100" class="lead"/>
-  <text x="168" y="184" text-anchor="end" class="label">SILVER SCREW (bearing retainer)</text>
+  <text x="168" y="184" text-anchor="end" class="label">CAPTIVE SCREW (bearing retainer)</text>
   <text x="168" y="200" text-anchor="end" class="sublabel">head on outboard face of drive plate;</text>
   <text x="168" y="216" text-anchor="end" class="sublabel">shank passes through plate clearance hole,</text>
   <text x="168" y="232" text-anchor="end" class="sublabel">threads into left face of thumbwheel;</text>

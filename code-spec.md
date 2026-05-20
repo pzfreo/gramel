@@ -144,10 +144,10 @@ To evaluate the constraint-modeling methodology, **all** mating relationships in
 |---|---|---|
 | `SlidingFit` | Shaft ↔ shank cross-bore | Shaft OD, cross-bore ID (= OD + sliding_clearance), bore axis location |
 | `ThreadedFit` | Drive screw ↔ shank tapped bore | Thread spec, screw major/minor, bore drill diameter, engagement length, induced wall-thickness rule |
-| `CaptiveBearing` | Silver screw + drive plate + thumbwheel left face | Silver-screw length (= plate thickness + play + tap depth), clearance hole, tap depth, mounted axial gap |
+| `CaptiveBearing` | Captive screw + drive plate + thumbwheel left face | Captive-screw length (= plate thickness + play + tap depth), clearance hole, tap depth, mounted axial gap |
 | `BladeStackClamp` | Blade + spacer + blade ↔ blade slot + grub screw | Slot width (= 2·blade thickness + spacer + grub-screw advance + clearance), grub-screw nose-advance range |
 
-`CaptiveBearing` is the highest-value mate — the deliberately-over-length silver screw and the resulting axial-play geometry is the signature feature of this tool. If any mate must be consistent-by-construction, it is this one.
+`CaptiveBearing` is the highest-value mate — the deliberately-over-length captive screw and the resulting axial-play geometry is the signature feature of this tool. If any mate must be consistent-by-construction, it is this one.
 
 ### 6.2 Open methodology questions
 
@@ -167,7 +167,7 @@ Model dimensions are at real-world (small) scale; slicer scales 1.5× at print t
 
 For the prototype this means:
 - **Drive screw + shank tapped bore:** both are *printed* threads engaging each other. They self-mate (both scale together). **This is the mechanism we are testing.**
-- **Silver screw, grub screw, drive-plate mount screws, depth-lock bolt:** also printed; cosmetic / static in the prototype. The over-length silver screw still demonstrates the captive-bearing geometry, but it does not need to thread under load.
+- **Captive screw, grub screw, drive-plate mount screws, depth-lock bolt:** also printed; cosmetic / static in the prototype. The over-length captive screw still demonstrates the captive-bearing geometry, but it does not need to thread under load.
 
 If the prototype shows we need stronger small fasteners, the production path uses standard metal fasteners at the real-world thread sizes. Until then, accept printed-everywhere.
 
@@ -201,8 +201,8 @@ Assembly uses build123d Joints. Rotations and translations expressed via joints,
 |---|---|
 | `CylindricalJoint` | Shaft in shank cross-bore (rotate + slide; rotation prevented downstream by drive-plate mount screws) |
 | `CylindricalJoint` + thread coupling | Drive screw in shank tapped bore (translates as it rotates) |
-| `RigidJoint` | Drive plate to shaft outboard end face; blades + spacer pinched in slot; silver screw bottomed in thumbwheel tap |
-| `LinearJoint` with `limit=play` | Silver-screw head ↔ drive plate face (the captive-bearing degree of freedom) |
+| `RigidJoint` | Drive plate to shaft outboard end face; blades + spacer pinched in slot; captive screw bottomed in thumbwheel tap |
+| `LinearJoint` with `limit=play` | Captive-screw head ↔ drive plate face (the captive-bearing degree of freedom) |
 
 ### 9.2 Verification
 

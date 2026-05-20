@@ -28,7 +28,7 @@ from gramel.parts.grub_screw import build_grub_screw
 from gramel.parts.push_rod import build_push_rod
 from gramel.parts.shaft import build_shaft
 from gramel.parts.shank import build_shank
-from gramel.parts.silver_screw import build_silver_screw
+from gramel.parts.captive_screw import build_captive_screw
 from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
 
 # ---------------------------------------------------------------------------
@@ -122,12 +122,12 @@ def test_grub_screw_bbox(cnc_params: PurflingCutterParams) -> None:
     assert pytest.approx(cnc_params.grub_screw.length, abs=0.05) == bb.size.X
 
 
-def test_silver_screw_bbox(cnc_params: PurflingCutterParams) -> None:
-    part = build_silver_screw(cnc_params)
+def test_captive_screw_bbox(cnc_params: PurflingCutterParams) -> None:
+    part = build_captive_screw(cnc_params)
     bb = part.bounding_box()
     assert part.volume > 30
-    # Silver screw layout along +X: head + thread = head_t + thread_len
-    head_t = cnc_params.silver_screw.head_thickness
+    # Captive screw layout along +X: head + thread = head_t + thread_len
+    head_t = cnc_params.captive_screw.head_thickness
     thread_len = (
         cnc_params.drive_plate.thickness
         + cnc_params.captive_bearing.axial_play
@@ -175,7 +175,7 @@ def test_thumbwheel_drive_screw_bbox(cnc_params: PurflingCutterParams) -> None:
     assert part.volume > 300
     tw = cnc_params.thumbwheel
     ds = cnc_params.drive_screw
-    expected_x = tw.silver_boss_length + tw.thickness + ds.unthreaded_length + ds.length
+    expected_x = tw.boss_length + tw.thickness + ds.unthreaded_length + ds.length
     assert pytest.approx(expected_x, abs=0.1) == bb.size.X
     assert pytest.approx(tw.diameter, rel=0.01) == bb.size.Y
 
@@ -246,26 +246,26 @@ def test_shaft_flat_does_not_meet_top(cnc_params: PurflingCutterParams) -> None:
 
 
 def test_captive_bearing_axial_play(cnc_params: PurflingCutterParams) -> None:
-    """Silver screw is deliberately over-length: it bottoms on the thumbwheel
+    """Captive screw is deliberately over-length: it bottoms on the thumbwheel
     tap before its head clamps the drive plate, leaving exactly
-    `axial_play` of slack. The silver screw build expresses that
+    `axial_play` of slack. The captive screw build expresses that
     relationship; this test asserts it holds.
     """
     p = cnc_params
-    silver = build_silver_screw(p)
-    head_t = p.silver_screw.head_thickness
-    # Thread portion length per build_silver_screw = plate + axial_play + tap_depth.
+    captive = build_captive_screw(p)
+    head_t = p.captive_screw.head_thickness
+    # Thread portion length per build_captive_screw = plate + axial_play + tap_depth.
     expected_thread_len = (
         p.drive_plate.thickness + p.captive_bearing.axial_play + p.drive_screw.left_face_tap_depth
     )
     assert pytest.approx(
         head_t + expected_thread_len, abs=0.05
-    ) == silver.bounding_box().size.X
-    # The captive bearing only exists if the silver screw is longer than the
+    ) == captive.bounding_box().size.X
+    # The captive bearing only exists if the captive screw is longer than the
     # depth that bottoms on the tap — otherwise the plate clamps fully.
     assert (
         p.drive_plate.thickness + p.captive_bearing.axial_play
-        < silver.bounding_box().size.X
+        < captive.bounding_box().size.X
     )
 
 
@@ -313,7 +313,7 @@ def test_drive_screw_engages_shank_tap(cnc_params: PurflingCutterParams) -> None
         ("blade", build_blade),
         ("blade_retainer", build_blade_retainer),
         ("grub_screw", build_grub_screw),
-        ("silver_screw", build_silver_screw),
+        ("captive_screw", build_captive_screw),
         ("push_rod", build_push_rod),
         ("drive_plate", build_drive_plate),
         ("depth_lock_bolt", build_depth_lock_bolt),
