@@ -145,17 +145,22 @@ def release_version() -> str:
 
 
 def bundle_zip(version: str) -> Path:
-    """Pack the shop-handoff bundle: STEP files, drawings PDF, RFQ, spec.
+    """Pack the shop-handoff bundle: STEP files, combined drawings PDF, RFQ, spec.
 
-    Filename includes the release version so it's clear which build the
-    zip came from. The zip is written next to dist/, not inside it.
+    Filename includes the release version. Per-drawing PDFs/SVGs are
+    intentionally excluded — the combined `gramel_drawings.pdf` contains
+    all six drawings in one file. The zip is written next to dist/.
     """
     archive = DIST.parent / f"gramel-{version}.zip"
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
-        # Per-part STEPs + assembly STEP + per-drawing files + combined PDF
-        for path in sorted(DIST.rglob("*")):
-            if path.is_file():
-                zf.write(path, path.relative_to(DIST))
+        # Per-part STEPs
+        for step in sorted((DIST / "step").glob("*.step")):
+            zf.write(step, step.relative_to(DIST))
+        # Full assembly STEP + combined drawings PDF
+        for top in ("gramel_assembly.step", "gramel_drawings.pdf"):
+            src = DIST / top
+            if src.exists():
+                zf.write(src, top)
         # Quotation request and spec as top-level cover documents
         for extra in ("quotation-request.md", "specification.md"):
             src = DIST.parent / extra
