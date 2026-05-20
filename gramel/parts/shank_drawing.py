@@ -176,7 +176,7 @@ def build_shank_drawing(
     s_right = sx + width / 2
     s_bot = sy - length / 2
     s_top = sy + length / 2
-    add_dim((s_left, s_bot), (s_right, s_bot), "below", 6, f"{width:.1f}")
+    add_dim((s_left, s_bot), (s_right, s_bot), "below", 6, f"{width:.2f}")
     cb_side_y = s_top - cb_x_from_top
     tap_side_y = s_top - tap_x_from_top
     add_dim((s_right, cb_side_y), (s_right, tap_side_y), "right", 8, f"{inter_gap:.1f}")
@@ -205,7 +205,11 @@ def build_shank_drawing(
     # face-view bore callouts.
     slot_inner_x = s_left + slot_d
     slot_mid_y = s_bot + (s_thread_top - s_bot) * 0.7
-    add_leader((slot_inner_x, slot_mid_y), (s_left - 20, slot_mid_y), f"slot {slot_d:.0f} deep")
+    add_leader(
+        (slot_inner_x, slot_mid_y),
+        (s_left - 20, slot_mid_y),
+        f"slot {slot_d:.0f} deep, flat floor",
+    )
 
     # Bottom view: width (page X, working-face direction) × depth (page Y).
     bx, by = layout.bottom
@@ -213,7 +217,7 @@ def build_shank_drawing(
     b_right = bx + width / 2
     b_bot = by - depth / 2
     b_top = by + depth / 2
-    add_dim((b_left, b_bot), (b_right, b_bot), "below", 6, f"{width:.1f}")
+    add_dim((b_left, b_bot), (b_right, b_bot), "below", 6, f"{width:.2f}")
     add_dim((b_right, b_bot), (b_right, b_top), "right", 6, f"{depth:.1f}")
 
     # Iso view label.

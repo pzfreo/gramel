@@ -247,7 +247,8 @@ def export_drawing(
     exporter.add_shape(frame, layer="frame")
     exporter.add_shape(parts_visible, layer="part")
     exporter.add_shape(parts_hidden, layer="hidden")
-    exporter.add_shape(annotations, layer="part")
+    if annotations.children:
+        exporter.add_shape(annotations, layer="part")
     for dim in dim_shapes:
         exporter.add_shape(dim, layer="dims")
     exporter.add_shape(text, layer="text")

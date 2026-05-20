@@ -36,11 +36,32 @@ from gramel.parts.captive_screw import build_captive_screw
 from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
 
 
-def build_assembly(params: PurflingCutterParams) -> Compound:
-    """Compose the full assembly as a single Compound."""
+def build_assembly(params: PurflingCutterParams, explode: float = 0.0) -> Compound:
+    """Compose the full assembly as a single Compound.
+
+    Args:
+        params: cutter parameters.
+        explode: explosion factor. 0 = fully assembled (default); 1.0 = each
+            part translated outward by its natural disassembly direction by
+            the per-part distance below. Use values in 0–1.5 typically.
+    """
     sp = params.shank
     crossbore_z = sp.length - sp.crossbore_position_from_top
     tapped_z = sp.length - params.tapped_bore_position_from_top
+
+    # Explosion offsets (mm at explode=1.0). Each part shifts outward along
+    # its natural disassembly direction. The shank stays as the anchor.
+    EX_SHAFT = (25, 0, 0)
+    EX_STACK = (25, 0, 0)         # blades + retainers + spacer move with shaft
+    EX_GRUB = (55, 0, 0)
+    EX_PLATE = (-25, 0, 0)
+    EX_CAPTIVE = (-50, 0, 0)
+    EX_TW = (-25, 0, 0)
+    EX_BOLT = (0, 0, -35)
+    EX_ROD = (0, 0, -15)
+
+    def ex(direction: tuple[float, float, float]) -> tuple[float, float, float]:
+        return (direction[0] * explode, direction[1] * explode, direction[2] * explode)
 
     shank = build_shank(params)
 
@@ -48,7 +69,8 @@ def build_assembly(params: PurflingCutterParams) -> Compound:
     shaft_local = build_shaft(params)
     shaft_len = params.shaft.length
     shaft_x_off = -shaft_len / 2
-    shaft = Pos(shaft_x_off, 0, crossbore_z) * shaft_local
+    ex_shaft = ex(EX_SHAFT)
+    shaft = Pos(shaft_x_off + ex_shaft[0], ex_shaft[1], crossbore_z + ex_shaft[2]) * shaft_local
 
     # --- Blade slot stack (along the slot's X direction) ----------------
     slot_x_min = shaft_x_off + shaft_len - params.shaft.end_to_slot_distance - params.shaft.blade_slot_width
@@ -62,43 +84,61 @@ def build_assembly(params: PurflingCutterParams) -> Compound:
     retainer_local = build_blade_retainer(params)
     blade_local = build_blade(params)
 
+    ex_stack = ex(EX_STACK)
     stack: list[Compound] = []
     x_c = slot_x_min
     for _ in range(2):
-        stack.append(Pos(x_c + ret_t / 2, 0, crossbore_z) * retainer_local)
+        stack.append(
+            Pos(x_c + ret_t / 2 + ex_stack[0], ex_stack[1], crossbore_z + ex_stack[2])
+            * retainer_local
+        )
         x_c += ret_t
-    stack.append(Pos(x_c + blade_t / 2, 0, blade_z) * blade_local)
+    stack.append(
+        Pos(x_c + blade_t / 2 + ex_stack[0], ex_stack[1], blade_z + ex_stack[2]) * blade_local
+    )
     x_c += blade_t
     if spacer_t > 0:
         spacer_local = build_channel_spacer(params)
-        stack.append(Pos(x_c + spacer_t / 2, 0, blade_z) * spacer_local)
+        stack.append(
+            Pos(x_c + spacer_t / 2 + ex_stack[0], ex_stack[1], blade_z + ex_stack[2])
+            * spacer_local
+        )
         x_c += spacer_t
-    stack.append(Pos(x_c + blade_t / 2, 0, blade_z) * blade_local)
+    stack.append(
+        Pos(x_c + blade_t / 2 + ex_stack[0], ex_stack[1], blade_z + ex_stack[2]) * blade_local
+    )
     x_c += blade_t
     for _ in range(2):
-        stack.append(Pos(x_c + ret_t / 2, 0, crossbore_z) * retainer_local)
+        stack.append(
+            Pos(x_c + ret_t / 2 + ex_stack[0], ex_stack[1], crossbore_z + ex_stack[2])
+            * retainer_local
+        )
         x_c += ret_t
 
     # --- Grub screw: tip touching the outboard end of the stack ---------
     grub_local = build_grub_screw(params)
-    grub = Pos(x_c, 0, crossbore_z) * grub_local
+    ex_grub = ex(EX_GRUB)
+    grub = Pos(x_c + ex_grub[0], ex_grub[1], crossbore_z + ex_grub[2]) * grub_local
 
     # --- Drive plate: back face at shaft's −X end -----------------------
     plate_local = build_drive_plate(params)
     plate_thick = params.drive_plate.thickness
     plate_x = shaft_x_off - plate_thick / 2
-    plate = Pos(plate_x, 0, crossbore_z) * plate_local
+    ex_plate = ex(EX_PLATE)
+    plate = Pos(plate_x + ex_plate[0], ex_plate[1], crossbore_z + ex_plate[2]) * plate_local
 
     # --- Captive screw + thumbwheel/drive screw: captive bearing ---------
     captive_local = build_captive_screw(params)
     head_t = params.captive_screw.head_thickness
     captive_x = plate_x - plate_thick / 2 - head_t  # local X=0 (head −X face)
-    captive = Pos(captive_x, 0, tapped_z) * captive_local
+    ex_captive = ex(EX_CAPTIVE)
+    captive = Pos(captive_x + ex_captive[0], ex_captive[1], tapped_z + ex_captive[2]) * captive_local
 
     tw_local = build_thumbwheel_drive_screw(params)
     # Boss −X face sits axial_play inboard of the plate's back face
     tw_x = shaft_x_off + params.captive_bearing.axial_play
-    tw = Pos(tw_x, 0, tapped_z) * tw_local
+    ex_tw = ex(EX_TW)
+    tw = Pos(tw_x + ex_tw[0], ex_tw[1], tapped_z + ex_tw[2]) * tw_local
 
     # --- Depth-lock bolt + push rod (fully advanced) --------------------
     rod_local = build_push_rod(params)
@@ -107,7 +147,8 @@ def build_assembly(params: PurflingCutterParams) -> Compound:
     # Push rod top bears on the shaft's −Z flat
     rod_top_z = crossbore_z - params.shaft_outer_diameter / 2 + params.shaft.flat_depth
     rod_bottom_z = rod_top_z - params.depth_lock.push_rod_length
-    rod = Pos(0, 0, rod_bottom_z) * rod_local
+    ex_rod = ex(EX_ROD)
+    rod = Pos(ex_rod[0], ex_rod[1], rod_bottom_z + ex_rod[2]) * rod_local
 
     # Bolt tip at rod bottom; bolt's local Z=knob+collar+thread is at the tip
     bolt_tip_local_z = (
@@ -115,7 +156,8 @@ def build_assembly(params: PurflingCutterParams) -> Compound:
         + params.depth_lock.bolt_collar_length
         + params.depth_lock.bolt_thread_length
     )
-    bolt = Pos(0, 0, rod_bottom_z - bolt_tip_local_z) * bolt_local
+    ex_bolt = ex(EX_BOLT)
+    bolt = Pos(ex_bolt[0], ex_bolt[1], rod_bottom_z - bolt_tip_local_z + ex_bolt[2]) * bolt_local
 
     return Compound(
         children=[

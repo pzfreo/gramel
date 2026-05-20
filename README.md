@@ -31,6 +31,13 @@ uv run python -m gramel.parts.shank
 uv run python -m gramel.parts.shank_drawing
 # → /tmp/shank_drawing.pdf
 
+# Build the full production manufacturing package: STEP files for each
+# brass part + per-drawing SVG/PDF + a single combined-drawings PDF
+uv run python scripts/build_production.py
+# → dist/step/GRM-0*_*.step
+# → dist/drawings/GRM-0*_*.svg / .pdf
+# → dist/gramel_drawings.pdf
+
 # Lint, type-check, test
 uv run ruff check gramel/
 uv run mypy gramel/
@@ -79,6 +86,31 @@ The thread split is deliberate: real-thread geometry helps the FDM print
 mechanism engage and actively *hurts* the CNC handoff (the shop reads
 the thread spec off the drawing per ISO 6410, not the helical geometry —
 modelled threads bloat the STEP and confuse some CAM packages).
+
+## Releases
+
+Releases bundle the full production manufacturing package
+(STEP files, per-drawing PDFs, combined drawings PDF, quotation
+request, spec) and attach it to a GitHub release.
+
+To cut a release:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The `.github/workflows/release.yml` workflow then:
+
+1. runs `pytest` (won't release on a broken build),
+2. runs `scripts/build_production.py` to produce `dist/`,
+3. zips `dist/` into `gramel-v0.1.0.zip`,
+4. creates a GitHub release with auto-generated notes and attaches
+   `gramel_drawings.pdf`, the zip, and `quotation-request.md`.
+
+The workflow can also be triggered manually (Actions → Release → Run
+workflow) to verify the build without cutting a release; in that mode
+the artifacts are uploaded to the workflow run instead of a release.
 
 ## Layout
 
