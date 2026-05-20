@@ -342,9 +342,9 @@ class DepthLockParams(BaseModel):
         json_schema_extra=_spec("§4.3 (knob — not numbered)", status="MEASURED"),
     )
     push_rod_diameter: float = Field(
-        default=5.0,
+        default=4.5,
         gt=0,
-        description="Steel push-rod diameter. Slides freely in the upper (untapped) section of the depth-lock bore.",
+        description="Steel push-rod diameter. ⌀4.5 in a ⌀5 bore (M6 tap drill = 5.0, so the smooth section above the tap is also 5.0) gives 0.25 mm radial clearance — comfortable sliding fit.",
         json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="MEASURED"),
     )
     push_rod_length: float = Field(

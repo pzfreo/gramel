@@ -139,7 +139,7 @@ def test_captive_screw_bbox(cnc_params: PurflingCutterParams) -> None:
 def test_push_rod_bbox(cnc_params: PurflingCutterParams) -> None:
     part = build_push_rod(cnc_params)
     bb = part.bounding_box()
-    assert part.volume > 800
+    assert part.volume > 700
     assert pytest.approx(cnc_params.depth_lock.push_rod_length, abs=0.05) == bb.size.Z
     assert pytest.approx(cnc_params.depth_lock.push_rod_diameter, rel=0.01) == bb.size.X
 
