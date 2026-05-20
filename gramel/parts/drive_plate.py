@@ -18,10 +18,12 @@ Holes:
   - Central mount-screw clearance hole at the shaft end (Z = 0).
   - Captive-screw clearance hole at the thumb end (Z = gap).
 
-Anti-rotation: rectangular slot milled into the back face (+X face) at
-Z = 0, sized to receive the matching tenon on the shaft's −X end. The
-slot + tenon pair prevents the plate from rotating around the mount-
-screw axis; the screw itself holds the parts axially.
+Anti-rotation: small rectangular tenon projecting from the back face
+(+X face) at Z = 0, sized to engage a matching slot in the shaft's
+−X end face. The tenon + slot pair prevents the plate from rotating
+around the mount-screw axis; the screw itself holds the parts axially.
+The tenon is on the plate (not the shaft) so the plate keeps full
+thickness in the load-bearing region.
 """
 
 import math
@@ -46,7 +48,6 @@ from gramel.parameters import PurflingCutterParams
 def build_drive_plate(params: PurflingCutterParams) -> Part:
     """Build the drive plate as a build123d Part."""
     dp = params.drive_plate
-    sp = params.shaft
     r_big = dp.shaft_end_radius
     r_small = dp.thumb_end_radius
     gap = params.shank.crossbore_to_tapped_bore_gap
@@ -82,8 +83,32 @@ def build_drive_plate(params: PurflingCutterParams) -> Part:
 
     plate = big + small + quad
 
+    # --- Anti-rotation tenon on the back face (+X face) -------------------
+    # Boss projecting outboard from the back face at Z = 0. The tenon's Y
+    # outline follows the plate's egg perimeter at the tenon's Z range — no
+    # corners protruding past the plate edge. Built by extruding the same
+    # egg outline by tenon_depth, then clipping to the tenon's Z band.
+    tenon_x_centre = thickness / 2 + dp.tenon_depth / 2
+    big_t = Pos(tenon_x_centre, 0, 0) * Rot(0, 90, 0) * Cylinder(
+        radius=r_big, height=dp.tenon_depth
+    )
+    small_t = Pos(tenon_x_centre, 0, gap) * Rot(0, 90, 0) * Cylinder(
+        radius=r_small, height=dp.tenon_depth
+    )
+    quad_t = extrude(quad_sketch.sketch, amount=dp.tenon_depth / 2, both=True).translate(
+        (tenon_x_centre, 0, 0)
+    )
+    egg_extension = big_t + small_t + quad_t
+    tenon_clipper = Pos(tenon_x_centre, 0, 0) * Box(
+        dp.tenon_depth + 1, 2 * r_big + 2, dp.tenon_height
+    )
+    tenon = egg_extension & tenon_clipper
+    plate = plate + tenon
+
     # --- Holes ------------------------------------------------------------
-    # Mount hole at shaft end: standard M2 clearance (~0.2 mm radial).
+    # Mount hole at shaft end: standard M2 clearance (~0.2 mm radial). Goes
+    # through the plate AND the tenon — the mount screw must reach the tap
+    # in the shaft's end face past the tenon engagement.
     # Captive hole at thumb end: deliberately sloppy (~0.3 mm radial) so the
     # captive bearing doesn't bind.
     mount_r = dp.mount_hole_diameter / 2
@@ -95,19 +120,6 @@ def build_drive_plate(params: PurflingCutterParams) -> Part:
         Pos(0, 0, gap) * Rot(0, 90, 0) * Cylinder(radius=captive_r, height=thickness * 3)
     )
     plate = plate - mount_hole - captive_hole
-
-    # --- Anti-rotation slot in the back face (+X face) --------------------
-    # *Horizontal slot across the full plate width* at Z = 0. The shaft's
-    # tenon plugs into the middle part of this slot. Simpler to mill than a
-    # small precise rectangle: one mill pass with no precise centring.
-    overshoot = 0.5  # opens the slot cleanly through the plate edges
-    slot_x_max = thickness / 2 + overshoot
-    slot_x_min = thickness / 2 - sp.tenon_depth
-    slot_x_size = slot_x_max - slot_x_min
-    slot_x_centre = (slot_x_min + slot_x_max) / 2
-    slot_y_extent = 2 * (r_big + overshoot)  # full plate Y at Z = 0 + margin
-    slot = Pos(slot_x_centre, 0, 0) * Box(slot_x_size, slot_y_extent, sp.tenon_height)
-    plate = plate - slot
 
     return plate  # type: ignore[return-value]
 
