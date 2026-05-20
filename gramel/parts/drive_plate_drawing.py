@@ -69,7 +69,8 @@ def build_drive_plate_drawing(
     captive_d = dp.captive_clearance_hole_diameter  # 2.6
     tenon_depth = dp.tenon_depth         # 1.5 — tenon X projection from back face
     tenon_height = dp.tenon_height       # 3.0 — tenon Z extent
-    tenon_width = dp.tenon_width         # 6.0 — tenon Y extent
+    # Tenon Y extent follows the plate's egg outline at the tenon's Z range
+    # — no fixed width parameter, the perimeter does the clipping.
 
     # World Z extent of the plate: −r_big to +r_small + gap
     z_min = -r_big
@@ -186,11 +187,12 @@ def build_drive_plate_drawing(
     )
 
     # Tenon Z height — leader on the right side (label too wide for inline dim).
-    # Tenon is on the back face — shown as hidden lines in this front-face view.
+    # Tenon Y follows the plate outline at the tenon Z band, so no explicit
+    # width callout — the perimeter is the perimeter.
     add_leader(
         face_xy(0, tenon_height / 2),
         (f_big_right[0] + 14, f_big_centre[1] + 12),
-        f"tenon {tenon_height:.1f} tall × {tenon_width:.1f} wide",
+        f"tenon {tenon_height:.1f} tall",
     )
 
     # --- Side view page coords (centred at sx, sy) -------------------------

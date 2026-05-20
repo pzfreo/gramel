@@ -549,9 +549,9 @@ class DrivePlateParams(BaseModel):
     """
 
     shaft_end_radius: float = Field(
-        default=4.5,
+        default=4.0,
         gt=0,
-        description="Radius of the larger boss at the shaft end of the plate (9 mm diameter).",
+        description="Radius of the larger boss at the shaft end of the plate (8 mm diameter) — matched to the shaft OD so the plate's bottom edge is flush with the shaft and the 8 mm tenon goes edge-to-edge with no overhang.",
         json_schema_extra=_spec("§4.5.45 (egg shape — not in spec)", status="MEASURED"),
     )
     thumb_end_radius: float = Field(
@@ -590,12 +590,10 @@ class DrivePlateParams(BaseModel):
         description="Z dimension of the anti-rotation tenon — a horizontal rib at Z = 0 (shaft-end boss centre) on the plate's back face.",
         json_schema_extra=_spec("§4.5 (tenon — design addition)", status="MEASURED"),
     )
-    tenon_width: float = Field(
-        default=8.0,
-        gt=0,
-        description="Y dimension of the anti-rotation tenon. Matches the shaft diameter so the tenon goes across the full width of the matching slot — one mill pass on each part. The mount-screw clearance hole passes through the tenon.",
-        json_schema_extra=_spec("§4.5 (tenon — design addition)", status="MEASURED"),
-    )
+    # Note: tenon Y extent is derived from the plate's outline at the tenon's
+    # Z range (the tenon is built as a clipped extrusion of the egg shape),
+    # so there is no separate tenon_width parameter. The tenon edges follow
+    # the plate's perimeter exactly — no protruding corners.
 
 
 class CaptiveScrewParams(BaseModel):
