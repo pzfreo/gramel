@@ -37,8 +37,22 @@ def build_shank(params: PurflingCutterParams) -> Part:
     depth = shank.depth  # Y extent (tool-travel direction)
 
     # Box: X width centered, Y depth centered, Z length from 0 (bottom) to length (top).
-    # Working face is +X face at X = +width/2.
-    body: Part = Box(width, depth, length, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # Working face is +X face at X = +width/2. Wrap in Part() so subsequent
+    # boolean ops (and fillet) produce a Part-compatible result rather than
+    # trying to instantiate a new Box from the modified shape.
+    body: Part = Part() + Box(width, depth, length, align=(Align.CENTER, Align.CENTER, Align.MIN))
+
+    # --- Ergonomic fillet on the Box BEFORE curved features ---------------
+    # OCCT cannot reliably fillet all edges of the final shape (convex
+    # face + spherical dome + bores creates edge configurations that the
+    # filleting algorithm gives up on). The fix is to round the simple Box
+    # first: 1 mm fillet on all 12 edges. The subsequent convexity-intersect
+    # replaces the front-side filleted edges with the smooth convex curve;
+    # the dome intersect replaces the top edges with the dome surface;
+    # and the bore + slot cuts come last so those edges remain sharp.
+    fillet_r = shank.edge_fillet_radius
+    if fillet_r > 0:
+        body = body.fillet(fillet_r, body.edges())
 
     # --- Convex working face (+X face) ------------------------------------
     # The +X face is curved so the centre of Y bulges out in +X. Intersect
@@ -142,14 +156,6 @@ def build_shank(params: PurflingCutterParams) -> Part:
             radius=dl_radius, height=dl_depth - dl_collar_len
         )
         body = body - depth_lock_bore
-
-    # --- Edge fillets (ergonomic finishing) -------------------------------
-    fillet_r = shank.edge_fillet_radius
-    if fillet_r > 0:
-        try:
-            body = body.fillet(fillet_r, body.edges())
-        except Exception:
-            print(f"WARN: failed to fillet all edges at r={fillet_r}; leaving sharp.")
 
     return body
 

@@ -437,7 +437,7 @@ class ShankParams(BaseModel):
         json_schema_extra=_spec("§4.3 (top dome — not in spec)"),
     )
     edge_fillet_radius: float = Field(
-        default=0.5,
+        default=1.0,
         ge=0,
         description="Radius of fillet applied to every external edge of the shank.",
         json_schema_extra=_spec("§8 (finishing — not in §4)", status="MEASURED"),
@@ -464,9 +464,9 @@ class DriveScrewParams(BaseModel):
         json_schema_extra=_spec("§4.4.38", status="MEASURED"),
     )
     length: float = Field(
-        default=18.0,
+        default=28.0,
         gt=0,
-        description="Threaded length of the drive screw — supports full X travel + engagement.",
+        description="Threaded length of the drive screw. Sized for ≥5 mm thread engagement in the shank tapped bore across the practical edge-margin range (1–8 mm). With shaft.length=45 and a centred neutral position, 18 mm would disengage entirely at small edge margins; 28 mm gives ~10 mm engagement at edge margin = 1 mm and fills the bore at the neutral 8.7 mm.",
         json_schema_extra=_spec("§4.4.39", status="MEASURED"),
     )
     left_face_tap: str = Field(
