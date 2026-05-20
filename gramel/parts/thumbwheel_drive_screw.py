@@ -83,10 +83,15 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
     body = boss + disc + unthreaded + thread
 
     # --- Captive-screw tap from the −X face inward -------------------------
+    # The hole is drilled deeper than the tap by `left_face_tap_chip_relief`
+    # so chips clear into the unthreaded well at the bottom. Shop uses a
+    # standard plug tap (no bottoming tap). The screw still bottoms on the
+    # tap face at left_face_tap_depth, so captive-bearing geometry is
+    # unaffected.
     tap_drill_r = threads.tap_drill_radius(ds.left_face_tap)
-    tap_depth = ds.left_face_tap_depth
+    drill_depth = ds.left_face_tap_depth + ds.left_face_tap_chip_relief
     tap = (
-        Pos(tap_depth / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=tap_drill_r, height=tap_depth)
+        Pos(drill_depth / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=tap_drill_r, height=drill_depth)
     )
     body = body - tap
 

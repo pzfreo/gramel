@@ -1,17 +1,19 @@
 # CNC Quotation Request — Double-Blade Purfling Cutter
 
 **Customer:** Paul Fremantle <paul@fremantle.org>
-**Project:** One-off precision violin purfling cutter, brass body
+**Project:** Precision violin purfling cutter, brass body
 **Date issued:** 2026-05-20
-**Quantity:** 1 set (all parts)
+**Quantities requested:** 1, 20, and 50 sets (please quote each tier)
 
 ---
 
 ## 1. Scope
 
-CNC manufacture of the brass parts listed in §3, complete to the drawings supplied in §6. All steel fasteners (captive screw, mount screw, grub screw, push rod) are stock items — **not** in scope unless your shop also supplies them; please quote on the brass parts only.
+CNC manufacture of the five brass parts in §3 plus one steel push rod (cut to length, no other machining). Threaded fasteners (captive screw, mount screw, grub screw) are standard stock items and **not** in scope.
 
-The five brass parts assemble into a hand tool used by violin makers. See `GRM-00 ASSEMBLY` (exploded view + BOM) for the relationship between parts.
+The brass parts assemble into a hand tool used by violin makers. See `GRM-00 ASSEMBLY` (exploded view + BOM) for the relationship between parts.
+
+Please quote at three quantities: **1, 20, and 50 sets** (a "set" = one of each of the five brass parts plus one push rod). The 50-set quote should reflect setup amortisation if applicable.
 
 ---
 
@@ -19,7 +21,8 @@ The five brass parts assemble into a hand tool used by violin makers. See `GRM-0
 
 | Component | Material | Notes |
 |---|---|---|
-| All listed brass parts | **Free-machining brass, CZ121 / C36000 (or equivalent C26800 / CuZn37)** | Matches the original 19th-century tool. Substitution to a closely equivalent free-machining brass is acceptable — please flag the actual grade you'd use. |
+| Brass parts (GRM-01 through GRM-05) | **Free-machining brass, CZ121 / C36000 (or equivalent C26800 / CuZn37)** | Matches the original 20th-century tool. Substitution to a closely equivalent free-machining brass is acceptable — please flag the actual grade you'd use. |
+| Push rod | **Bright drawn mild steel, ⌀4.5 mm round bar** | Cut to 45 mm; ends square and deburred. No further machining. |
 
 Surface finish notes per drawing; see §4 below.
 
@@ -34,6 +37,7 @@ Surface finish notes per drawing; see §4 below.
 | 3 | Thumbwheel + drive screw (integral) | GRM-03 | 1 | Turned from one piece. Knurled disc ⌀10 + ⌀5 collar + M3 × 0.5 thread. ⌀6 silver-screw boss + M2 tap on the −X face. |
 | 4 | Drive plate | GRM-04 | 1 | Egg-shape (⌀8 big boss + ⌀6 small boss, 9.5 mm centres). 3 mm thick + 1.5 mm anti-rotation tenon on back face. Two through-holes (⌀2.4 mount + ⌀2.6 captive bearing). |
 | 5 | Depth-lock bolt + knurled knob | GRM-05 | 1 | Knurled knob ⌀10 × 14 mm + ⌀6.25 collar × 5 mm + M6 × 1 thread × 13 mm + 0.5 × 45° lead-in chamfer |
+| 6 | Push rod | (no drawing — see §2) | 1 | ⌀4.5 mm bright drawn mild steel rod, **cut to 45 mm**. Both ends square and deburred. ±0.2 mm length tolerance. |
 
 ---
 
@@ -84,7 +88,7 @@ Surface finish notes per drawing; see §4 below.
 | `GRM-04_drive_plate_drawing.pdf` | GRM-04 | Drive plate |
 | `GRM-05_depth_lock_bolt_drawing.pdf` | GRM-05 | Depth-lock bolt + knurled knob |
 
-STEP files can be supplied for each part on request — please indicate if you'd find them useful for CAM setup.
+**STEP files supplied:** `GRM-01_shank.step`, `GRM-02_shaft.step`, `GRM-03_thumbwheel_drive_screw.step`, `GRM-04_drive_plate.step`, `GRM-05_depth_lock_bolt.step` — CNC-clean (no helical thread geometry; threads per the drawing callouts).
 
 ---
 
@@ -98,26 +102,30 @@ STEP files can be supplied for each part on request — please indicate if you'd
 
 ## 8. Timing
 
-This is a one-off personal project — no rush. Please quote on your standard lead time. Indicate if any feature (e.g., the small captive-bearing hole, the knurls, the small tenon clipped to the plate perimeter) drives a setup cost; we can iterate on the design to bring the price down before you cut metal.
+Please quote on your standard lead time at each quantity tier. Indicate if any feature (e.g., the small captive-bearing hole, the knurls, the small tenon clipped to the plate perimeter) drives a disproportionate setup cost; we can iterate on the design to bring the price down before you cut metal.
 
 ---
 
 ## 9. Quote format requested
 
-| Item | Unit cost | Total |
-|---|---|---|
-| GRM-01 Shank | | |
-| GRM-02 Shaft | | |
-| GRM-03 Thumbwheel + drive screw | | |
-| GRM-04 Drive plate | | |
-| GRM-05 Depth-lock bolt + knob | | |
-| Setup / fixturing | | |
-| Material | | |
-| Finish (polish, deburr, etc.) | | |
-| Shipping | | |
-| **Total** | | |
+Per-set unit cost at each tier (i.e. fully-amortised cost per set, all five brass parts). Setup, material, finish, and shipping can be itemised separately or rolled into the per-set price — whichever your accounting prefers.
 
-Please flag any feature you'd want to discuss before committing.
+| Item | 1 set | 20 sets (per set) | 50 sets (per set) |
+|---|---|---|---|
+| GRM-01 Shank | | | |
+| GRM-02 Shaft | | | |
+| GRM-03 Thumbwheel + drive screw | | | |
+| GRM-04 Drive plate | | | |
+| GRM-05 Depth-lock bolt + knob | | | |
+| Push rod (⌀4.5 × 45 steel) | | | |
+| Setup / fixturing (allocated) | | | |
+| Material | | | |
+| Finish (polish, deburr, etc.) | | | |
+| **Per-set total** | | | |
+| Shipping (total order) | | | |
+| **Order total** | | | |
+
+Please flag any feature you'd want to discuss before committing. If the 20-set or 50-set quote drops setup cost dramatically, please note that — useful for planning.
 
 ---
 

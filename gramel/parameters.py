@@ -480,6 +480,12 @@ class DriveScrewParams(BaseModel):
         description="Depth of the tap for the captive screw, into the −X face of the boss / thumbwheel. Set to match a stock M2 × 6 screw: thread_len (6) − drive_plate.thickness (3) − captive_bearing.axial_play (0.2) = 2.8 mm. Was 4 mm originally, then 3 mm; now derived from the screw's stock thread length so the captive bearing axial play comes out right.",
         json_schema_extra=_spec("§4.4.40", status="DERIVED"),
     )
+    left_face_tap_chip_relief: float = Field(
+        default=1.0,
+        ge=0,
+        description="Extra depth drilled past the bottom of the M2 tap as a chip-relief well. Avoids the bottoming-tap requirement: shop drills tap_depth + chip_relief, taps with a standard plug tap to tap_depth, chips clear into the relief. The screw still bottoms on the tapped section at the same Z, so captive-bearing geometry is unchanged.",
+        json_schema_extra=_spec("§4.4 (chip relief — manufacturing aid)", status="MEASURED"),
+    )
     unthreaded_length: float = Field(
         default=3.0,
         gt=0,

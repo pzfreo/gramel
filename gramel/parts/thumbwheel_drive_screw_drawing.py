@@ -77,6 +77,7 @@ def build_thumbwheel_drawing(
     tap_thread = ds.left_face_tap                          # M2
     tap_pitch = threads.pitch(tap_thread)
     tap_depth = ds.left_face_tap_depth                     # 2.8 mm
+    chip_relief = ds.left_face_tap_chip_relief             # 1.0 mm chip-relief well below the tap
 
     # Step boundaries along the local +X axis (from −X end at X=0):
     x_boss_end = boss_len                # 0.5
@@ -216,7 +217,7 @@ def build_thumbwheel_drawing(
     add_leader(
         (ex, ey),
         (ex - 14, ey + 14),
-        f"{tap_thread}×{tap_pitch} × {tap_depth:.1f} deep",
+        f"{tap_thread}×{tap_pitch} × {tap_depth:.1f} deep, drill {tap_depth + chip_relief:.1f} (chip relief)",
     )
 
     # --- Iso view label -----------------------------------------------------
