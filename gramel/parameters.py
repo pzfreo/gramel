@@ -324,9 +324,9 @@ class DepthLockParams(BaseModel):
         json_schema_extra=_spec("§4.3 (collar — design addition)", status="MEASURED"),
     )
     bolt_tip_chamfer: float = Field(
-        default=0.5,
+        default=1.0,
         ge=0,
-        description="Lead-in chamfer height on the bolt's thread tip. Helps the bolt start threading without cross-threading; 0.5 mm is standard for M6.",
+        description="Lead-in chamfer height on the bolt's thread tip. 1 mm = one full thread pitch for M6 × 1; visible lead-in that helps the bolt start threading without cross-threading.",
         json_schema_extra=_spec("§4.3 (chamfer — design addition)", status="MEASURED"),
     )
     knob_diameter: float = Field(
@@ -469,6 +469,12 @@ class DriveScrewParams(BaseModel):
         description="Threaded length of the drive screw. Sized for ≥5 mm thread engagement in the shank tapped bore across the practical edge-margin range (1–8 mm). With shaft.length=45 and a centred neutral position, 18 mm would disengage entirely at small edge margins; 28 mm gives ~10 mm engagement at edge margin = 1 mm and fills the bore at the neutral 8.7 mm.",
         json_schema_extra=_spec("§4.4.39", status="MEASURED"),
     )
+    tip_chamfer: float = Field(
+        default=0.5,
+        ge=0,
+        description="Lead-in chamfer height on the drive screw's +X thread tip. Helps the drive screw enter and start threading in the shank tapped bore.",
+        json_schema_extra=_spec("§4.4 (chamfer — design addition)", status="MEASURED"),
+    )
     left_face_tap: str = Field(
         default="M2",
         description="Thread of the tap on the thumbwheel's left end face (for captive screw).",
@@ -531,6 +537,12 @@ class ThumbwheelParams(BaseModel):
         default="straight",
         description="Knurl pattern style.",
         json_schema_extra=_spec("§4.4.43", units=""),
+    )
+    disc_edge_chamfer: float = Field(
+        default=0.3,
+        ge=0,
+        description="Small chamfer on the two circular edges of the knurled disc (where the OD meets the −X and +X flat faces). Breaks the sharp edges so the user doesn't catch a fingertip when spinning the wheel.",
+        json_schema_extra=_spec("§4.4 (chamfer — design addition)", status="MEASURED"),
     )
 
 

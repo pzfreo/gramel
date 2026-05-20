@@ -24,7 +24,9 @@ major diameter for now; real IsoThread geometry comes later.
 """
 
 from build123d import (
+    Axis,
     Cylinder,
+    GeomType,
     Part,
     Pos,
     Rot,
@@ -94,6 +96,29 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
         Pos(drill_depth / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=tap_drill_r, height=drill_depth)
     )
     body = body - tap
+
+    # --- Lead-in chamfer on the drive-screw +X tip (CNC path only) ---------
+    if ds.tip_chamfer > 0 and not params.process.prototype:
+        try:
+            tip_face = body.faces().sort_by(Axis.X).last
+            body = body.chamfer(ds.tip_chamfer, None, list(tip_face.edges()))  # type: ignore[assignment]
+        except Exception:
+            pass
+
+    # --- Edge chamfer on the knurled disc OD ------------------------------
+    # Both circular edges of the disc (where its outer cylinder meets the
+    # −X and +X flat faces) — selected by being circular edges at the
+    # disc's outer radius.
+    if tw.disc_edge_chamfer > 0:
+        try:
+            disc_edges = [
+                e for e in body.edges()
+                if e.geom_type == GeomType.CIRCLE and abs(e.radius - disc_r) < 0.05
+            ]
+            if disc_edges:
+                body = body.chamfer(tw.disc_edge_chamfer, None, disc_edges)  # type: ignore[assignment]
+        except Exception:
+            pass
 
     return body  # type: ignore[return-value]
 
