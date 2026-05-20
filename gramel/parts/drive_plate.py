@@ -18,10 +18,12 @@ Holes:
   - Central mount-screw clearance hole at the shaft end (Z = 0).
   - Captive-screw clearance hole at the thumb end (Z = gap).
 
-Anti-rotation: rectangular slot milled into the back face (+X face) at
-Z = 0, sized to receive the matching tenon on the shaft's −X end. The
-slot + tenon pair prevents the plate from rotating around the mount-
-screw axis; the screw itself holds the parts axially.
+Anti-rotation: small rectangular tenon projecting from the back face
+(+X face) at Z = 0, sized to engage a matching slot in the shaft's
+−X end face. The tenon + slot pair prevents the plate from rotating
+around the mount-screw axis; the screw itself holds the parts axially.
+The tenon is on the plate (not the shaft) so the plate keeps full
+thickness in the load-bearing region.
 """
 
 import math
@@ -46,7 +48,6 @@ from gramel.parameters import PurflingCutterParams
 def build_drive_plate(params: PurflingCutterParams) -> Part:
     """Build the drive plate as a build123d Part."""
     dp = params.drive_plate
-    sp = params.shaft
     r_big = dp.shaft_end_radius
     r_small = dp.thumb_end_radius
     gap = params.shank.crossbore_to_tapped_bore_gap
@@ -96,18 +97,12 @@ def build_drive_plate(params: PurflingCutterParams) -> Part:
     )
     plate = plate - mount_hole - captive_hole
 
-    # --- Anti-rotation slot in the back face (+X face) --------------------
-    # *Horizontal slot across the full plate width* at Z = 0. The shaft's
-    # tenon plugs into the middle part of this slot. Simpler to mill than a
-    # small precise rectangle: one mill pass with no precise centring.
-    overshoot = 0.5  # opens the slot cleanly through the plate edges
-    slot_x_max = thickness / 2 + overshoot
-    slot_x_min = thickness / 2 - sp.tenon_depth
-    slot_x_size = slot_x_max - slot_x_min
-    slot_x_centre = (slot_x_min + slot_x_max) / 2
-    slot_y_extent = 2 * (r_big + overshoot)  # full plate Y at Z = 0 + margin
-    slot = Pos(slot_x_centre, 0, 0) * Box(slot_x_size, slot_y_extent, sp.tenon_height)
-    plate = plate - slot
+    # --- Anti-rotation tenon on the back face (+X face) -------------------
+    # Small rectangular boss projecting outboard from the back face at Z = 0,
+    # to engage the matching slot in the shaft's −X end face.
+    tenon_x_centre = thickness / 2 + dp.tenon_depth / 2
+    tenon = Pos(tenon_x_centre, 0, 0) * Box(dp.tenon_depth, dp.tenon_width, dp.tenon_height)
+    plate = plate + tenon
 
     return plate  # type: ignore[return-value]
 

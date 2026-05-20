@@ -90,31 +90,34 @@ def build_shaft(params: PurflingCutterParams) -> Part:
     )
     body = body - end_tap  # type: ignore[assignment]
 
-    # --- Anti-rotation tenon at the −X end --------------------------------
-    # A *horizontal rib* across the full shaft diameter at the −X end face,
-    # projecting outboard by tenon_depth. The matching slot in the drive
-    # plate also runs the full plate width — one mill pass each, no precise
-    # positioning needed. Combined with the single central M2 mount screw,
-    # the tenon prevents rotation of the plate relative to the shaft.
-    tenon_y = od
-    tenon = Pos(-shaft.tenon_depth / 2, 0, 0) * Box(
-        shaft.tenon_depth, tenon_y, shaft.tenon_height
+    # --- Anti-rotation slot in the −X end face ----------------------------
+    # A *horizontal slot* cut into the shaft's −X end face, milled across
+    # the full diameter (one mill pass). Receives the matching tenon on
+    # the drive plate's back face. Combined with the single central M2
+    # mount screw, the slot prevents rotation of the plate relative to
+    # the shaft.
+    tenon_depth = params.drive_plate.tenon_depth
+    tenon_height = params.drive_plate.tenon_height
+    overshoot = 0.5  # opens the slot cleanly through the end face and side
+    slot_x_size = tenon_depth + overshoot
+    slot_x_centre = -overshoot / 2 + tenon_depth / 2  # spans −overshoot to +tenon_depth
+    end_slot = Pos(slot_x_centre, 0, 0) * Box(
+        slot_x_size,
+        od + 2 * overshoot,  # wider than shaft so the cut goes clean through Y
+        tenon_height,
     )
-    body = body + tenon  # type: ignore[assignment]
+    body = body - end_slot  # type: ignore[assignment]
 
     # --- Drive-plate mount hole in the −X end face ------------------------
     # Single central tapped hole. Two M2 screws don't fit on a 7.9 mm shaft,
-    # so we use one + the tenon for anti-rotation (see above).
+    # so we use one + the slot for anti-rotation (see above).
     mount_thread = shaft.drive_plate_mount_thread
     mount_drill_radius = threads.tap_drill_radius(mount_thread)
     mount_depth = shaft.drive_plate_mount_depth
-    # Drill the mount hole from the −X end face inward (in +X direction).
-    # The hole's X range covers a bit of the tenon and the shaft body, so
-    # use enough length and centre carefully.
     mount_hole = (
-        Pos(mount_depth / 2 - shaft.tenon_depth, 0, 0)
+        Pos(mount_depth / 2, 0, 0)
         * Rot(0, 90, 0)
-        * Cylinder(radius=mount_drill_radius, height=mount_depth + shaft.tenon_depth)
+        * Cylinder(radius=mount_drill_radius, height=mount_depth)
     )
     body = body - mount_hole  # type: ignore[assignment]
 

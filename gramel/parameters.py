@@ -246,18 +246,6 @@ class ShaftParams(BaseModel):
         description="Depth of the tapped holes on the shaft's outboard end face (for the drive-plate screws). ESTIMATE.",
         json_schema_extra=_spec("§4.2.19 (mount depth — not numbered)"),
     )
-    tenon_height: float = Field(
-        default=3.0,
-        gt=0,
-        description="Z dimension of the anti-rotation tenon — a horizontal rib across the shaft's −X end face. The tenon's Y extent is the full shaft diameter (one mill pass instead of a small rectangle). Sized so the matching slot in the drive plate is a forgiving milling op rather than a fiddly micro-feature.",
-        json_schema_extra=_spec("§4.2.19 (tenon — design addition)"),
-    )
-    tenon_depth: float = Field(
-        default=1.5,
-        gt=0,
-        description="X projection of the tenon outboard from the shaft's −X end face. Leaves 1.5 mm of wall on the drive plate's front face (plate is 3 mm thick).",
-        json_schema_extra=_spec("§4.2.19 (tenon — design addition)"),
-    )
     # Note: shaft OD is no longer a field on ShaftParams — it now derives
     # from PurflingCutterParams.cutting_pair.nominal_diameter. The shaft's
     # OD is one half of a mating pair and must stay in lockstep with the
@@ -579,9 +567,9 @@ class DrivePlateParams(BaseModel):
         json_schema_extra=_spec("§4.5.47", status="MEASURED"),
     )
     captive_clearance_hole_diameter: float = Field(
-        default=2.4,
+        default=2.6,
         gt=0,
-        description="Hole the CAPTIVE screw passes through. 0.2 mm radial clearance on M2 — sufficient for the captive bearing to spin freely without binding.",
+        description="Hole the CAPTIVE screw passes through. Deliberately sloppy (~0.3 mm radial clearance on M2) — the plate rides on the captive screw as a bearing, so it needs more clearance than a standard screw hole.",
         json_schema_extra=_spec("§4.5.48"),
     )
     mount_hole_diameter: float = Field(
@@ -589,6 +577,24 @@ class DrivePlateParams(BaseModel):
         gt=0,
         description="Hole the MOUNT screw passes through (shaft end of plate). Standard M2 clearance fit (~0.2 mm radial). Doesn't need the sloppy captive-bearing tolerance.",
         json_schema_extra=_spec("§4.5 (mount hole — distinct from captive-screw hole)"),
+    )
+    tenon_depth: float = Field(
+        default=1.5,
+        gt=0,
+        description="X projection of the anti-rotation tenon outboard from the plate's +X (back) face into the matching slot in the shaft's −X end face. The tenon is on the plate (not the shaft) so the plate keeps its full 3 mm thickness in the load-bearing region.",
+        json_schema_extra=_spec("§4.5 (tenon — design addition)", status="MEASURED"),
+    )
+    tenon_height: float = Field(
+        default=3.0,
+        gt=0,
+        description="Z dimension of the anti-rotation tenon — a horizontal rib at Z = 0 (shaft-end boss centre) on the plate's back face.",
+        json_schema_extra=_spec("§4.5 (tenon — design addition)", status="MEASURED"),
+    )
+    tenon_width: float = Field(
+        default=6.0,
+        gt=0,
+        description="Y dimension of the anti-rotation tenon. Smaller than the shaft diameter (8 mm) so the tenon fits in the matching shaft slot with comfortable clearance for assembly.",
+        json_schema_extra=_spec("§4.5 (tenon — design addition)", status="MEASURED"),
     )
 
 

@@ -70,8 +70,10 @@ def build_shaft_drawing(
     slot_w = sp.blade_slot_width      # X dimension (along shaft) — 6 mm
     slot_y = sp.blade_slot_length     # Y dimension (across) — 5 mm
     end_to_slot = sp.end_to_slot_distance  # 4 mm; also grub-screw tap depth
-    tenon_depth = sp.tenon_depth      # 1 mm — X projection
-    tenon_height = sp.tenon_height    # 2 mm — Z height
+    # The shaft now has a slot in the −X end face (the tenon lives on the
+    # drive plate), so these are the SLOT dims — same values, mirror role.
+    slot_x_depth = params.drive_plate.tenon_depth    # 1.5 mm into the end face
+    slot_z_height = params.drive_plate.tenon_height  # 3.0 mm Z extent
     grub_thread = params.grub_screw.thread       # M4
     grub_pitch = threads.pitch(grub_thread)
     mount_thread = sp.drive_plate_mount_thread   # M2
@@ -155,11 +157,9 @@ def build_shaft_drawing(
     tx, ty = layout.top
     t_left = tx - length / 2           # cylinder −X end
     t_right = tx + length / 2          # cylinder +X end
-    t_tenon_x = t_left - tenon_depth   # tenon outer face
     t_bot = ty - od / 2
     t_top = ty + od / 2
 
-    add_dim((t_tenon_x, t_top), (t_right, t_top), "above", 10, f"{length + tenon_depth:.1f}")
     add_dim((t_left, t_top), (t_right, t_top), "above", 5, f"{length:.1f}")
     slot_x_start_world = length - end_to_slot - slot_w
     slot_x_end_world = length - end_to_slot
@@ -173,16 +173,17 @@ def build_shaft_drawing(
         (slot_dim_x + 12, ty + od / 2 + 14),
         f"slot {slot_y:.0f} wide",
     )
+    # End-face slot (anti-rotation, receives the drive-plate tenon) —
+    # leader on the top view at the −X end.
     add_leader(
-        (t_tenon_x + tenon_depth / 2, t_bot),
-        (t_tenon_x - 10, t_bot - 14),
-        f"tenon {tenon_depth:.1f} proj.",
+        (t_left + slot_x_depth / 2, t_bot),
+        (t_left - 8, t_bot - 14),
+        f"end slot {slot_x_depth:.1f} deep",
     )
 
     # --- Front view dims ----------------------------------------------------
     fx, fy = layout.front
     f_left = fx - length / 2
-    f_tenon_x = f_left - tenon_depth
     f_bot = fy - od / 2
     f_top = fy + od / 2
 
@@ -193,16 +194,16 @@ def build_shaft_drawing(
     add_leader((fx - 18, f_top), (fx - 8, f_top + 14), "Ra 1.6")
     # Mount tap on the −X end face.
     add_leader(
-        (f_tenon_x, fy),
-        (f_tenon_x - 18, fy - 16),
+        (f_left, fy),
+        (f_left - 18, fy - 16),
         f"{mount_thread}×{mount_pitch} × {mount_depth:.0f} deep",
     )
-    # Tenon Z height dim — fits inline. Use .1f format ("3.0") to avoid a
-    # build123d dim_linear bug that crashes when path length and label width
-    # land in a specific narrow ratio (single-char label "3" + 3 mm path).
-    f_tenon_top = fy + tenon_height / 2
-    f_tenon_bot = fy - tenon_height / 2
-    add_dim((f_tenon_x, f_tenon_bot), (f_tenon_x, f_tenon_top), "left", 6, f"{tenon_height:.1f}")
+    # End-face slot Z height — dim inline near the −X end face.
+    # Use .1f format ("3.0") to avoid a build123d dim_linear bug at
+    # certain path-length / label-width ratios.
+    f_slot_top = fy + slot_z_height / 2
+    f_slot_bot = fy - slot_z_height / 2
+    add_dim((f_left, f_slot_bot), (f_left, f_slot_top), "left", 6, f"{slot_z_height:.1f}")
 
     # --- Right end view -----------------------------------------------------
     ex, ey = layout.end

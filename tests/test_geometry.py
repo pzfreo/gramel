@@ -76,9 +76,9 @@ def test_shaft_volume_and_bbox(cnc_params: PurflingCutterParams) -> None:
     part = build_shaft(cnc_params)
     bb = part.bounding_box()
     assert part.volume > 1500
-    # Shaft length is along X; bbox includes the tenon overhang on the −X end.
-    expected_x = cnc_params.shaft.length + cnc_params.shaft.tenon_depth
-    assert pytest.approx(expected_x, abs=0.05) == bb.size.X
+    # Shaft length is along X; the end-face slot is a cut (no protrusion),
+    # so the bbox X is exactly the shaft length.
+    assert pytest.approx(cnc_params.shaft.length, abs=0.05) == bb.size.X
     # Y is the full diameter; Z is the diameter minus the flat depth.
     od = cnc_params.shaft_outer_diameter
     assert pytest.approx(od, rel=0.01) == bb.size.Y
@@ -148,7 +148,9 @@ def test_drive_plate_bbox(cnc_params: PurflingCutterParams) -> None:
     part = build_drive_plate(cnc_params)
     bb = part.bounding_box()
     assert part.volume > 250
-    assert pytest.approx(cnc_params.drive_plate.thickness, rel=0.01) == bb.size.X
+    # X extent includes the tenon projection on the +X back face.
+    expected_x = cnc_params.drive_plate.thickness + cnc_params.drive_plate.tenon_depth
+    assert pytest.approx(expected_x, rel=0.01) == bb.size.X
     # Plate Z extent = shaft_end_radius + thumb_end_radius + crossbore_to_tapped_bore_gap
     expected_z = (
         cnc_params.drive_plate.shaft_end_radius
