@@ -318,10 +318,28 @@ class DepthLockParams(BaseModel):
         json_schema_extra=_spec("§4.3.32", status="MEASURED", units=""),
     )
     bolt_thread_length: float = Field(
-        default=18.0,
+        default=13.0,
         gt=0,
-        description="Length of threaded portion of the depth-lock bolt.",
+        description="Length of the threaded portion of the depth-lock bolt (above the collar). 13 mm — gives 1 mm of preload margin between the rod-lock contact and the knob bottoming on the shank (see locking calc).",
         json_schema_extra=_spec("§4.3 (bolt — not numbered)", status="MEASURED"),
+    )
+    bolt_collar_diameter: float = Field(
+        default=6.25,
+        gt=0,
+        description="Outside diameter of the unthreaded collar between the knob and the threaded shaft. Slightly larger than the M6 thread major; mates with the enlarged section of the shank's depth-lock bore as an anti-cocking guide.",
+        json_schema_extra=_spec("§4.3 (collar — design addition)", status="MEASURED"),
+    )
+    bolt_collar_length: float = Field(
+        default=5.0,
+        gt=0,
+        description="Z length of the unthreaded collar between knob and thread.",
+        json_schema_extra=_spec("§4.3 (collar — design addition)", status="MEASURED"),
+    )
+    bolt_tip_chamfer: float = Field(
+        default=0.5,
+        ge=0,
+        description="Lead-in chamfer height on the bolt's thread tip. Helps the bolt start threading without cross-threading; 0.5 mm is standard for M6.",
+        json_schema_extra=_spec("§4.3 (chamfer — design addition)", status="MEASURED"),
     )
     knob_diameter: float = Field(
         default=10.0,
@@ -342,7 +360,7 @@ class DepthLockParams(BaseModel):
         json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="MEASURED"),
     )
     push_rod_length: float = Field(
-        default=45.5,
+        default=45.0,
         gt=0,
         description="Steel push-rod length. Sits above the bolt; pushed up against the shaft to lock.",
         json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="MEASURED"),
@@ -388,10 +406,22 @@ class ShankParams(BaseModel):
         description="Depth-lock blind bore diameter. M6 tap drill is 5.0 mm; same diameter also accepts the 5 mm push rod (sliding fit in the untapped upper section).",
         json_schema_extra=_spec("§4.3.30", status="DERIVED"),
     )
+    depth_lock_collar_bore_diameter: float = Field(
+        default=6.35,
+        gt=0,
+        description="Diameter of the enlarged section at the BOTTOM of the depth-lock bore. Receives the bolt's 6.25 collar with light sliding clearance (~0.05 mm radial), giving an anti-cocking guide that locates the bolt in the working clamping range.",
+        json_schema_extra=_spec("§4.3 (collar bore — design addition)", status="MEASURED"),
+    )
+    depth_lock_collar_bore_length: float = Field(
+        default=5.0,
+        gt=0,
+        description="Length of the enlarged collar-bore section. Matches the bolt's collar length so the collar fully engages the bore at lock position.",
+        json_schema_extra=_spec("§4.3 (collar bore — design addition)", status="MEASURED"),
+    )
     depth_lock_threaded_length: float = Field(
         default=12.0,
         gt=0,
-        description="Length of the M6-tapped section at the BOTTOM of the depth-lock bore. The remainder of the bore (up to the crossbore) is a smooth sliding fit for the push rod. ESTIMATE: bolt thread length is 18 mm, so 12 mm of tapped engagement is sufficient and leaves the rest as push-rod travel.",
+        description="Length of the M6-tapped section immediately ABOVE the collar bore. The remainder of the bore (up to the crossbore) is a smooth sliding fit for the push rod.",
         json_schema_extra=_spec("§4.3 (threading depth — not in spec)"),
     )
     relief_slot_width: float = Field(

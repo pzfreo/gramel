@@ -163,7 +163,9 @@ def test_depth_lock_bolt_bbox(cnc_params: PurflingCutterParams) -> None:
     bb = part.bounding_box()
     assert part.volume > 1000
     expected_z = (
-        cnc_params.depth_lock.knob_thickness + cnc_params.depth_lock.bolt_thread_length
+        cnc_params.depth_lock.knob_thickness
+        + cnc_params.depth_lock.bolt_collar_length
+        + cnc_params.depth_lock.bolt_thread_length
     )
     assert pytest.approx(expected_z, abs=0.05) == bb.size.Z
     assert pytest.approx(cnc_params.depth_lock.knob_diameter, rel=0.01) == bb.size.X
