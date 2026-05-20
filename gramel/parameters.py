@@ -881,6 +881,51 @@ class PurflingCutterParams(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def _validate_depth_lock_sliding_fits(self) -> "PurflingCutterParams":
+        """Two sliding-fit clearances inside the depth-lock bore must remain
+        positive — otherwise the moving part binds against the bore wall.
+
+        1. **Push rod ↔ smooth bore**. The smooth section of the bore is
+           sized at the M6 tap-drill diameter (5.0 mm) because the same
+           drill is used for the tapped section below. The rod has to be
+           smaller than that to slide.
+
+        2. **Bolt collar ↔ collar bore**. The unthreaded collar between
+           the knob and the thread acts as an anti-cocking guide. It needs
+           clearance over the matching enlarged section at the bottom of
+           the bore.
+
+        Required minimum diametric clearance for both: 0.05 mm (a very
+        tight sliding fit). 0 or negative clearance = interference, the
+        bolt won't go in.
+        """
+        min_clearance = 0.05  # diametric
+
+        rod_clearance = self.shank.depth_lock_bore_diameter - self.depth_lock.push_rod_diameter
+        if rod_clearance < min_clearance:
+            raise ValueError(
+                f"Push-rod sliding-fit violated: depth_lock_bore_diameter "
+                f"({self.shank.depth_lock_bore_diameter:.3f}) − push_rod_diameter "
+                f"({self.depth_lock.push_rod_diameter:.3f}) = {rod_clearance:.3f} mm "
+                f"diametric clearance, < min {min_clearance:.3f}. The rod needs to "
+                f"be smaller than the bore so it can slide."
+            )
+
+        collar_clearance = (
+            self.shank.depth_lock_collar_bore_diameter
+            - self.depth_lock.bolt_collar_diameter
+        )
+        if collar_clearance < min_clearance:
+            raise ValueError(
+                f"Bolt-collar sliding-fit violated: depth_lock_collar_bore_diameter "
+                f"({self.shank.depth_lock_collar_bore_diameter:.3f}) − bolt_collar_diameter "
+                f"({self.depth_lock.bolt_collar_diameter:.3f}) = {collar_clearance:.3f} mm "
+                f"diametric clearance, < min {min_clearance:.3f}. The collar needs to "
+                f"be smaller than the matching enlarged bore section."
+            )
+        return self
+
     # --- Wall-thickness validators ------------------------------------------
 
     @model_validator(mode="after")
