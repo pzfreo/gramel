@@ -1,9 +1,11 @@
-# CNC Quotation Request — Double-Blade Purfling Cutter
+# RFQ — Double-Blade Purfling Cutter
 
 **Customer:** Paul Fremantle <paul@fremantle.org>
 **Project:** Precision violin purfling cutter, brass body
 **Date issued:** 2026-05-20
 **Quantities requested:** 1, 20, and 50 sets (please quote each tier)
+
+> **Summary.** Small precision brass hand tool for violin making — six components per set, moderate tolerances, cosmetic finishing.
 
 ---
 
@@ -21,7 +23,7 @@ Please quote at three quantities: **1, 20, and 50 sets** (a "set" = one of each 
 
 | Component | Material | Notes |
 |---|---|---|
-| Brass parts (GRM-01 through GRM-05) | **Free-machining brass, CZ121 / C36000 (or equivalent C26800 / CuZn37)** | Matches the original 20th-century tool. Substitution to a closely equivalent free-machining brass is acceptable — please flag the actual grade you'd use. |
+| Brass parts (GRM-01 through GRM-05) | **Free-machining brass such as CZ121 (C36000) or equivalent** | Matches the original 20th-century tool. Please flag the actual grade you'd use. |
 | Push rod | **Bright drawn mild steel, ⌀4.5 mm round bar** | Cut to 45 mm; ends square and deburred. No further machining. |
 
 Surface finish notes per drawing; see §4 below.
@@ -55,25 +57,17 @@ Surface finish notes per drawing; see §4 below.
 | **Surface finish — general** | Ra 3.2 | Default |
 | **Surface finish — mating sliding surfaces** | Ra 1.6 | Shaft OD, drive-screw thread, push-rod bore — noted on drawings |
 | **Edges** | Break all sharp edges 0.3 max; shank has 0.5 mm ergonomic fillet | GRM-01 |
-| **Material removal** | All visible brass to be **draw-filed and polished to a satin / low-gloss finish**. **No lacquer.** Knurls remain as-knurled. |
+| **Visible brass finish** | Deburred with an attractive satin finish suitable for a hand tool. **No lacquer.** Knurls remain as-knurled. (Hand-polish only if it doesn't drive cost disproportionately at higher quantities — please flag.) |
 
 ---
 
 ## 5. Special manufacturing notes
 
-- **Knurls.** Straight (axial) knurl, ~0.5 mm pitch, on:
-  - Thumbwheel disc edge (GRM-03)
-  - Depth-lock knob (GRM-05)
-
-- **Drive plate (GRM-04) is small.** Plate is 8 × 17 × 3 mm with a small raised tenon on the back face. The tenon follows the egg perimeter of the plate (so it does not have protruding corners). 3:1 scale on the drawing.
-
-- **Drive plate ↔ shaft anti-rotation.** Drive plate has a 1.5 × 3 × 8 mm rectangular tenon raised on its +X back face; the shaft has a matching slot cut across its −X end face (full diameter, one mill pass). The plate's tenon outline follows the plate's egg perimeter — verify on GRM-04 that the corners are clipped to match.
-
-- **Depth-lock bolt thread tip (GRM-05).** Lead-in chamfer 0.5 mm at 45° to prevent cross-threading; small but important.
-
-- **Captive-bearing relationship.** The captive screw (M2 × 6 stock screw, supplied by customer) bottoms on the M2 tap in the thumbwheel's −X face *before* its head clamps the drive plate, leaving 0.2 mm of axial bearing play. The geometry is built in — no adjustment needed at assembly — but please measure the M2 tap depth (2.8 mm nominal) carefully; this is the dial that sets the bearing play.
-
-- **Shank relief slot (GRM-01).** Runs from the bottom of the shank up to the shaft cross-bore — does *not* continue above. The shank's working face is convex (R ≈ 8 mm, ~2 mm sagitta over the chord); the slot is cut into this convex face.
+- **Knurls.** Straight (axial) knurl, ~0.5 mm pitch — thumbwheel disc edge (GRM-03) and depth-lock knob (GRM-05).
+- **GRM-03 M2 tap depth = 2.8 mm.** This is a captive-bearing critical dim; please hold ±0.1 mm. Drill 3.8 mm (chip-relief well below the tap).
+- **GRM-03 thread tip chamfer.** 0.5 × 45° lead-in on the M6 thread.
+- **GRM-04 drive plate** is 8 × 17 × 3 mm; the back-face tenon is profile-clipped to the egg outline, which falls out naturally if you mill the back-face relief first and profile the egg outline second.
+- **GRM-01 relief slot** stops at the cross-bore; does not continue above. Flat-floored (not following the convex face).
 
 ---
 
@@ -94,7 +88,7 @@ Surface finish notes per drawing; see §4 below.
 
 ## 7. Deliverables expected from the shop
 
-1. Five brass parts to drawing, plus an in-process inspection certificate or a verbal note on any feature you needed to deviate on.
+1. Five brass parts to drawing, plus a brief note identifying any deviations from the drawings.
 2. Hand-assembled trial fit: confirm shaft slides in the shank crossbore (item §4 critical fit), and confirm the drive plate tenon engages the shaft end-face slot without binding.
 3. Parts shipped to: **address to be confirmed before despatch**.
 
