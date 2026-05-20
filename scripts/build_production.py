@@ -40,6 +40,7 @@ from gramel.assembly import build_assembly
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import export_drawing
 from gramel.parts.assembly_drawing import build_assembly_drawing
+from gramel.parts.blade_retainer_drawing import build_blade_retainer_drawing
 from gramel.parts.depth_lock_bolt import build_depth_lock_bolt
 from gramel.parts.depth_lock_bolt_drawing import build_depth_lock_bolt_drawing
 from gramel.parts.drive_plate import build_drive_plate
@@ -69,6 +70,7 @@ DRAWINGS: list[tuple[str, str, Callable[[PurflingCutterParams], Any]]] = [
     ("GRM-03", "thumbwheel_drive_screw", build_thumbwheel_drawing),
     ("GRM-04", "drive_plate", build_drive_plate_drawing),
     ("GRM-05", "depth_lock_bolt", build_depth_lock_bolt_drawing),
+    ("GRM-06", "blade_retainer", build_blade_retainer_drawing),
 ]
 
 

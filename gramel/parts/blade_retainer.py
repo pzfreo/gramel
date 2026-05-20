@@ -25,10 +25,8 @@ def build_blade_retainer(params: PurflingCutterParams) -> Part:
     end_w = r.end_width
     mid_w = r.middle_width
     L = r.length
-
-    # Allocate Z extent: each end takes 20% (2 mm), middle takes 60% (6 mm)
-    end_z = L * 0.2
-    mid_z = L * 0.6
+    mid_z = r.middle_length
+    end_z = (L - mid_z) / 2
 
     top_end = Pos(0, 0, +(L / 2 - end_z / 2)) * Box(t, end_w, end_z)
     middle = Pos(0, 0, 0) * Box(t, mid_w, mid_z)

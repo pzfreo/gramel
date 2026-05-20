@@ -174,9 +174,15 @@ class BladeRetainerParams(BaseModel):
     """
 
     length: float = Field(
-        default=10.0,
+        default=11.0,
         gt=0,
         description="Z length of the retainer (long axis = slot's open Z direction). Wider Y ends stick out at the top and bottom of the slot.",
+        json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
+    )
+    middle_length: float = Field(
+        default=8.0,
+        gt=0,
+        description="Z extent of the narrower waist between the two wider end blocks. Must exceed the slot's Z extent at the cylinder boundary (2·√(r²−(W/2)²) = 6.24 mm for r=4, W=5) so the wider ends sit clear of the shaft surface and lock against it.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     end_width: float = Field(
