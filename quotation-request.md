@@ -110,6 +110,4 @@ Four small bone-shaped copper pieces per tool. They fit in the shaft's blade slo
 | Quantity at scale | 4 × the quote tier (i.e. 80 for 20 tools, 200 for 50) + an allowance for spares if you can supply them |
 | Process suggestion | Laser cut or stamp from copper sheet — both work; whichever is cheaper at your volumes. |
 
-(Note: the *user-supplied channel-width shim* that sits between the two blades is **not** in this scope — that's an off-the-shelf shim-stock item the user picks per cut.)
-
-Drawings for the blade and the retainer are not yet prepared — the dimensions above are sufficient for a feasibility-and-pricing check. If you'd quote and need formal drawings I'll produce them.
+A reference STEP file and drawing for the bone-shaped retainer is included in this package as `GRM-06_blade_retainer-optional`. A formal blade drawing has not been prepared — the dimensions above should be sufficient for a feasibility-and-pricing check. If you need a formal blade drawing to quote, let me know and I'll produce one.
