@@ -16,7 +16,7 @@ import math
 from collections.abc import Callable
 
 import pytest
-from build123d import Part
+from build123d import Part, Pos
 
 from gramel.parameters import PurflingCutterParams
 from gramel.parts.blade import build_blade
@@ -332,3 +332,103 @@ def test_part_builds_and_has_nonzero_volume(
     part = builder(cnc_params)
     assert part.volume > 0, f"{name} built with zero volume"
     assert math.isfinite(part.volume)
+
+
+# ---------------------------------------------------------------------------
+# Interference checks — assembled-position overlaps that visual inspection
+# of drawings will miss. A 0.027 mm³ wedge of retainer-vs-shaft material at
+# the slot corners shipped in v0.1.0 because nothing flagged it.
+# ---------------------------------------------------------------------------
+
+
+def _intersection_volume(a: Part, b: Part) -> float:
+    """Boolean intersect two positioned parts; return overlap volume in mm³."""
+    isect = a & b
+    return float(isect.volume) if isect else 0.0
+
+
+# 1 µm³ tolerance for OCCT boolean noise on touching faces.
+INTERFERENCE_TOL = 1e-3
+
+
+def test_blade_retainer_fits_in_shaft_slot(cnc_params: PurflingCutterParams) -> None:
+    """Bone retainer's waist sits inside the slot and the wider ends sit
+    clear of the shaft cylinder surface — no overlap anywhere.
+
+    Regression: v0.1.0 shipped a 6 mm waist (vs the 6.24 mm minimum at
+    the slot's Z extent for a 5 mm Y slot in a Ø8 shaft), producing four
+    0.027 mm³ wedge interferences at the corners.
+    """
+    p = cnc_params
+    shaft = build_shaft(p)
+    retainer = build_blade_retainer(p)
+
+    slot_x_max = p.shaft.length - p.shaft.end_to_slot_distance
+    slot_x_min = slot_x_max - p.shaft.blade_slot_width
+    ret_t = p.blade_retainer.thickness
+
+    # Innermost retainer in the stack (against the −X wall of the slot)
+    for offset_x in (slot_x_min + ret_t / 2, slot_x_max - ret_t / 2):
+        placed = Pos(offset_x, 0, 0) * retainer
+        vol = _intersection_volume(shaft, placed)
+        assert vol < INTERFERENCE_TOL, (
+            f"retainer at x={offset_x:.2f} interferes with shaft by {vol:.4f} mm³"
+        )
+
+
+def test_blade_fits_in_shaft_slot(cnc_params: PurflingCutterParams) -> None:
+    """Blade sits inside the shaft's blade slot without overlapping the shaft.
+
+    The blade body lives entirely inside the slot Y opening; the Z tip
+    projects through the open top/bottom and so doesn't intersect material.
+    """
+    p = cnc_params
+    shaft = build_shaft(p)
+    blade = build_blade(p)
+
+    slot_x_max = p.shaft.length - p.shaft.end_to_slot_distance
+    slot_x_min = slot_x_max - p.shaft.blade_slot_width
+    blade_t = p.blade.thickness
+    blade_z = -2.5  # matches the assembly's "tip below, top above" placement
+
+    placed = Pos((slot_x_min + slot_x_max) / 2 - blade_t, 0, blade_z) * blade
+    vol = _intersection_volume(shaft, placed)
+    assert vol < INTERFERENCE_TOL, f"blade interferes with shaft by {vol:.4f} mm³"
+
+
+def test_drive_plate_tenon_fits_shaft_end_slot(cnc_params: PurflingCutterParams) -> None:
+    """The drive-plate tenon must drop into the shaft's −X end slot with
+    no material overlap — the slot is sized at tenon_depth + 0.5 mm in X
+    and full diameter wide in Y so the tenon clears."""
+    p = cnc_params
+    shaft = build_shaft(p)
+    plate = build_drive_plate(p)
+
+    # Place the plate as the assembly does: −X face flush against the
+    # shaft's −X end (X=0).
+    plate_thick = p.drive_plate.thickness
+    placed = Pos(-plate_thick / 2, 0, 0) * plate
+
+    vol = _intersection_volume(shaft, placed)
+    assert vol < INTERFERENCE_TOL, (
+        f"drive plate (tenon) interferes with shaft by {vol:.4f} mm³"
+    )
+
+
+def test_shaft_passes_through_shank_crossbore(cnc_params: PurflingCutterParams) -> None:
+    """The shaft slides through the shank's crossbore. They share a nominal
+    diameter; with a real H7/g6 fit the shaft is slightly smaller, but the
+    CNC-path geometry is modelled at the shared nominal — so the boolean
+    intersection should be empty (touching faces, not overlapping volume)."""
+    p = cnc_params
+    shank = build_shank(p)
+    shaft = build_shaft(p)
+
+    crossbore_z = p.shank.length - p.shank.crossbore_position_from_top
+    placed = Pos(-p.shaft.length / 2, 0, crossbore_z) * shaft
+
+    vol = _intersection_volume(shank, placed)
+    assert vol < INTERFERENCE_TOL, (
+        f"shaft and shank crossbore interfere by {vol:.4f} mm³ — "
+        f"crossbore is undersized or shaft outer diameter is oversized"
+    )
