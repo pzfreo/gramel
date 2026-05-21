@@ -16,13 +16,16 @@ from build123d import (
     Color,
     Compound,
     Edge,
+    ExportDXF,
     ExportSVG,
     LineType,
     Part,
     Shape,
     Text,
+    Unit,
     Wire,
 )
+from build123d.exporters import ColorIndex
 
 # ---------------------------------------------------------------------------
 # Page geometry — ISO 5457 A4 landscape
@@ -265,3 +268,38 @@ def export_drawing(
         print(f"Exported {pdf_path}")
     except ImportError:
         print(f"cairosvg not installed — skipping PDF export to {pdf_path}.")
+
+
+def export_dxf_drawing(
+    *,
+    dxf_path: str,
+    parts_visible: Compound,
+    parts_hidden: Compound,
+    frame: Compound,
+    dim_shapes: list[Shape[object]],
+    text: Compound,
+    annotations: Compound,
+) -> None:
+    """Write a DXF mirror of the drawing for shops that prefer DXF over PDF.
+
+    Layers map 1:1 to the SVG layers; colours use the AutoCAD ColorIndex
+    palette since DXF doesn't carry RGB the way SVG does.
+    """
+    exporter = ExportDXF(unit=Unit.MM)
+    exporter.add_layer("frame", color=ColorIndex.BLACK, line_weight=0.35, line_type=LineType.CONTINUOUS)
+    exporter.add_layer("part", color=ColorIndex.BLACK, line_weight=0.5, line_type=LineType.CONTINUOUS)
+    exporter.add_layer("hidden", color=ColorIndex.GRAY, line_weight=0.3, line_type=LineType.DASHED)
+    exporter.add_layer("dims", color=ColorIndex.BLUE, line_weight=0.2, line_type=LineType.CONTINUOUS)
+    exporter.add_layer("text", color=ColorIndex.BLACK, line_weight=0.05, line_type=LineType.CONTINUOUS)
+
+    exporter.add_shape(frame, layer="frame")
+    exporter.add_shape(parts_visible, layer="part")
+    exporter.add_shape(parts_hidden, layer="hidden")
+    if annotations.children:
+        exporter.add_shape(annotations, layer="part")
+    for dim in dim_shapes:
+        exporter.add_shape(dim, layer="dims")
+    exporter.add_shape(text, layer="text")
+
+    exporter.write(dxf_path)
+    print(f"Exported {dxf_path}")
