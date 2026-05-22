@@ -276,7 +276,7 @@ class ShaftParams(BaseModel):
         json_schema_extra=_spec("§4.2.17", status="MEASURED"),
     )
     length: float = Field(
-        default=45.0,
+        default=35.0,
         gt=0,
         description="Total shaft length (measured on the original).",
         json_schema_extra=_spec("§4.2.18", status="MEASURED"),
@@ -476,9 +476,9 @@ class DriveScrewParams(BaseModel):
         json_schema_extra=_spec("§4.4.38", status="MEASURED"),
     )
     length: float = Field(
-        default=28.0,
+        default=18.0,
         gt=0,
-        description="Threaded length of the drive screw. Sized for ≥5 mm thread engagement in the shank tapped bore across the practical edge-margin range (1–8 mm). With shaft.length=45 and a centred neutral position, 18 mm would disengage entirely at small edge margins; 28 mm gives ~10 mm engagement at edge margin = 1 mm and fills the bore at the neutral 8.7 mm.",
+        description="Threaded length of the drive screw. With the measured shaft.length=35 mm, an 18 mm thread gives ~10 mm engagement at edge margin = 1 mm and full bore engagement at the neutral position. (Earlier the shaft was modelled at 45 mm by mistake, which forced 28 mm — that's been corrected.)",
         json_schema_extra=_spec("§4.4.39", status="MEASURED"),
     )
     tip_chamfer: float = Field(

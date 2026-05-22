@@ -75,7 +75,7 @@ def test_shank_volume_and_bbox(cnc_params: PurflingCutterParams) -> None:
 def test_shaft_volume_and_bbox(cnc_params: PurflingCutterParams) -> None:
     part = build_shaft(cnc_params)
     bb = part.bounding_box()
-    assert part.volume > 1500
+    assert part.volume > 1200
     # Shaft length is along X; the end-face slot is a cut (no protrusion),
     # so the bbox X is exactly the shaft length.
     assert pytest.approx(cnc_params.shaft.length, abs=0.05) == bb.size.X
