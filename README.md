@@ -130,3 +130,15 @@ CLAUDE.md              project notes for LLM-assisted work
 The relationship between `specification.md` and the code is one-to-one:
 every numeric field in `parameters.py` carries a `spec_ref` pointing back
 to a §-numbered entry in the spec.
+
+## License
+
+This repository is released under the [Open Community License (OCL v1)](https://github.com/OpenCommunityLicence/OpenCommunityLicence)
+(Prusa Research, 2026). Full text in [`LICENSE`](./LICENSE).
+
+In plain English: **you may use these designs (CAD, drawings, STEP/DXF
+files, parametric model) for your own personal use, modification, repair,
+and non-commercial sharing — but you may not sell the design or copies
+of the parts**. Internal use within a business is allowed (e.g. a violin
+maker manufacturing tools for their own workshop is fine); reselling
+manufactured copies is not. See the LICENSE file for the binding terms.
