@@ -51,12 +51,12 @@ def test_production_mode_uses_iso286_worst_case() -> None:
 
 
 def test_stack_thickness() -> None:
-    # Hardware only: 4 × 0.75 + 2 × 0.7 = 4.4 (spacer not included)
-    assert PurflingCutterParams().stack_thickness == pytest.approx(4.4)
+    # Hardware only: 4 × 0.85 + 2 × 0.7 = 4.8 (spacer not included)
+    assert PurflingCutterParams().stack_thickness == pytest.approx(4.8)
 
 
 def test_slot_spare() -> None:
-    # slot(6.0) - hardware(4.4) = 1.6 available for spacer + grub advance
+    # slot(6.4) - hardware(4.8) = 1.6 available for spacer + grub advance
     assert PurflingCutterParams().slot_spare == pytest.approx(1.6)
 
 
@@ -110,8 +110,8 @@ def test_contact_corner_width() -> None:
 
 def test_shaft_wall_around_slot() -> None:
     # Only the X-direction wall matters (slot is open in Y, end walls are §4.2.14).
-    # (8.0 − blade_slot_length=5) / 2 = 1.5
-    assert PurflingCutterParams().shaft_wall_around_slot == pytest.approx(1.5)
+    # (8.0 − blade_slot_length=4.75) / 2 = 1.625
+    assert PurflingCutterParams().shaft_wall_around_slot == pytest.approx(1.625)
 
 
 def test_shank_wall_between_bores() -> None:

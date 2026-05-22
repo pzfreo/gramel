@@ -3,17 +3,17 @@ Bone-shaped copper retainer. Four per tool, sit in the blade slot to
 hold the blade-spacer-blade stack in place along the slot's X direction.
 
 Local frame:
-  X: thickness (0.75 mm). Plate's normal direction.
+  X: thickness (0.85 mm). Plate's normal direction.
   Y: width — varies along the bone profile: 5.5 mm at the ends, 4.5 mm
      in the middle.
   Z: long axis (10 mm). Bone profile is symmetric about Z = 0.
 
-This draft uses a stacked-rectangles approximation of the bone outline:
-two short wider end blocks + a longer narrower middle block. Real bone
-profile (with rounded outer corners) would be a refinement.
+Three stacked rectangles (top knob + waist + bottom knob), then the
+four outermost X-axis edges (the outside corners of each knob end) are
+filleted to match the rounded ends of the measured original.
 """
 
-from build123d import Box, Part, Pos
+from build123d import Axis, Box, Part, Pos
 
 from gramel.parameters import PurflingCutterParams
 
@@ -27,13 +27,29 @@ def build_blade_retainer(params: PurflingCutterParams) -> Part:
     L = r.length
     mid_z = r.middle_length
     end_z = (L - mid_z) / 2
+    fillet_r = r.corner_fillet_radius
 
     top_end = Pos(0, 0, +(L / 2 - end_z / 2)) * Box(t, end_w, end_z)
     middle = Pos(0, 0, 0) * Box(t, mid_w, mid_z)
     bot_end = Pos(0, 0, -(L / 2 - end_z / 2)) * Box(t, end_w, end_z)
 
-    body = top_end + middle + bot_end
-    return body  # type: ignore[return-value]
+    body: Part = top_end + middle + bot_end  # type: ignore[assignment]
+
+    # Fillet the four outside corners of the bone — the X-direction edges at
+    # |Y| = end_w/2 AND |Z| = L/2 (the outermost corners of each knob). Inner
+    # corners where each knob steps in to the waist stay sharp.
+    if fillet_r > 0:
+        tol = 0.05
+        outside_corner_edges = [
+            e
+            for e in body.edges().filter_by(Axis.X)
+            if abs(abs(e.center().Y) - end_w / 2) < tol
+            and abs(abs(e.center().Z) - L / 2) < tol
+        ]
+        if outside_corner_edges:
+            body = body.fillet(fillet_r, outside_corner_edges)  # type: ignore[assignment]
+
+    return body
 
 
 def main() -> None:

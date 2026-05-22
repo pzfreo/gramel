@@ -46,6 +46,8 @@ from gramel.assembly import build_assembly
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import export_dxf_drawing, export_drawing
 from gramel.parts.assembly_drawing import build_assembly_drawing
+from gramel.parts.blade import build_blade
+from gramel.parts.blade_drawing import build_blade_drawing
 from gramel.parts.blade_retainer import build_blade_retainer
 from gramel.parts.blade_retainer_drawing import build_blade_retainer_drawing
 from gramel.parts.depth_lock_bolt import build_depth_lock_bolt
@@ -71,6 +73,7 @@ PARTS: list[tuple[str, str, Callable[[PurflingCutterParams], Part]]] = [
     ("GRM-04", "drive_plate", build_drive_plate),
     ("GRM-05", "depth_lock_bolt", build_depth_lock_bolt),
     ("GRM-06", "blade_retainer-optional", build_blade_retainer),
+    ("GRM-07", "blade-optional", build_blade),
 ]
 
 DRAWINGS: list[tuple[str, str, Callable[[PurflingCutterParams], Any]]] = [
@@ -81,6 +84,7 @@ DRAWINGS: list[tuple[str, str, Callable[[PurflingCutterParams], Any]]] = [
     ("GRM-04", "drive_plate", build_drive_plate_drawing),
     ("GRM-05", "depth_lock_bolt", build_depth_lock_bolt_drawing),
     ("GRM-06", "blade_retainer-optional", build_blade_retainer_drawing),
+    ("GRM-07", "blade-optional", build_blade_drawing),
 ]
 
 

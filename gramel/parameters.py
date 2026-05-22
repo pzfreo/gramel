@@ -109,9 +109,9 @@ class BladeParams(BaseModel):
         json_schema_extra=_spec("§4.1.1", status="MEASURED"),
     )
     width: float = Field(
-        default=4.0,
+        default=3.6,
         gt=0,
-        description="Y dimension when seated — perpendicular to the shaft, fits in the slot's 5 mm Y dim with clearance.",
+        description="Y dimension when seated — perpendicular to the shaft, fits in the slot's 4.75 mm Y dim with ~0.575 mm clearance per side.",
         json_schema_extra=_spec("§4.1.2", status="MEASURED"),
     )
     length: float = Field(
@@ -124,7 +124,7 @@ class BladeParams(BaseModel):
         default=25.0,
         gt=0,
         lt=90,
-        description="Single bevel — confirmed on the original. Angle still estimate.",
+        description="Single bevel sharpening angle. The manufacturer produces a simple flat-plane bevel wedge at the tip (modelled here as a 25° triangular wedge); the luthier hollow-grinds the visible face and hones the cutting edge to the final shape after delivery.",
         json_schema_extra=_spec("§4.1.4", units="deg"),
     )
     tip_shape: Literal["round", "straight", "angled"] = Field(
@@ -174,34 +174,40 @@ class BladeRetainerParams(BaseModel):
     """
 
     length: float = Field(
-        default=11.0,
+        default=10.0,
         gt=0,
-        description="Z length of the retainer (long axis = slot's open Z direction). Wider Y ends stick out at the top and bottom of the slot.",
+        description="Z length of the retainer (long axis = slot's open Z direction). Wider Y ends stick out at the top and bottom of the slot. Measured on the original tool.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     middle_length: float = Field(
-        default=8.0,
+        default=6.25,
         gt=0,
-        description="Z extent of the narrower waist between the two wider end blocks. Must exceed the slot's Z extent at the cylinder boundary (2·√(r²−(W/2)²) = 6.24 mm for r=4, W=5) so the wider ends sit clear of the shaft surface and lock against it.",
+        description="Z extent of the narrower waist between the two wider end blocks ('shaft of the bone' on the measured tool). The slot's Z extent at the cylinder boundary is 2·√(r²−(W/2)²) = 6.44 mm for r=4, W=4.75 — so the measured 6.25 mm waist leaves the knob inner edges ~0.1 mm inside the cylinder material. The original tool relies on annealed copper compressibility at the four corners to seat without resistance.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     end_width: float = Field(
         default=5.5,
         gt=0,
-        description="Y width at the bone-shaped ends (at +Z and −Z extremes of the retainer). > slot's 5 mm Y so the ends lock against the shaft's +Z and −Z faces.",
+        description="Y width at the bone-shaped ends (at +Z and −Z extremes of the retainer). > slot's 4.75 mm Y so the wider ends sit above and below the slot openings.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     middle_width: float = Field(
         default=4.5,
         gt=0,
-        description="Y width through the retainer's middle. < slot's 5 mm Y so this section fits inside the slot.",
+        description="Y width through the retainer's middle. < slot's 4.75 mm Y so this section fits inside the slot.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     thickness: float = Field(
-        default=0.75,
+        default=0.85,
         gt=0,
         description="X dimension of the flat copper shim — stacks alongside the blades along the shaft.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
+    )
+    corner_fillet_radius: float = Field(
+        default=1.3,
+        ge=0,
+        description="Fillet radius on the four outside corners of the bone (the outermost ±Y, ±Z corners of the knob ends). The other corners (where knobs step inward to the waist) stay sharp. Max usable via the corner-fillet approach is ~1.87 mm (knob Z height − 0.005); OCCT fails at 1.875 mm exactly.",
+        json_schema_extra=_spec("§4.1 (retainer — finishing detail)", status="MEASURED"),
     )
 
 
@@ -258,15 +264,15 @@ class ShaftParams(BaseModel):
     # crossbore. Access via params.shaft_outer_diameter at the top level.
 
     blade_slot_width: float = Field(
-        default=6.0,
+        default=6.4,
         gt=0,
-        description="X dimension of blade slot (along the shaft). Hardware stack (4 retainers + 2 blades) = ~4.4 mm; remaining ~1.6 mm is shared between the channel spacer and grub-screw advance.",
+        description="X dimension of blade slot (along the shaft). Hardware stack (4 retainers × 0.85 + 2 blades × 0.7) = 4.8 mm; remaining ~1.6 mm is shared between the channel spacer and grub-screw advance.",
         json_schema_extra=_spec("§4.2.8", status="MEASURED"),
     )
     blade_slot_length: float = Field(
-        default=5.0,
+        default=4.75,
         gt=0,
-        description="Y dimension of blade slot (across the shaft). The 5 mm direction; fits blade.width (4 mm) plus clearance. Z is the open through direction (blades drop through).",
+        description="Y dimension of blade slot (across the shaft). Fits blade.width (3.6 mm) plus ~0.575 mm clearance per side. Z is the open through direction (blades drop through).",
         json_schema_extra=_spec("§4.2.9", status="MEASURED"),
     )
     end_to_slot_distance: float = Field(
@@ -276,7 +282,7 @@ class ShaftParams(BaseModel):
         json_schema_extra=_spec("§4.2.17", status="MEASURED"),
     )
     length: float = Field(
-        default=45.0,
+        default=35.0,
         gt=0,
         description="Total shaft length (measured on the original).",
         json_schema_extra=_spec("§4.2.18", status="MEASURED"),
@@ -476,9 +482,9 @@ class DriveScrewParams(BaseModel):
         json_schema_extra=_spec("§4.4.38", status="MEASURED"),
     )
     length: float = Field(
-        default=28.0,
+        default=18.0,
         gt=0,
-        description="Threaded length of the drive screw. Sized for ≥5 mm thread engagement in the shank tapped bore across the practical edge-margin range (1–8 mm). With shaft.length=45 and a centred neutral position, 18 mm would disengage entirely at small edge margins; 28 mm gives ~10 mm engagement at edge margin = 1 mm and fills the bore at the neutral 8.7 mm.",
+        description="Threaded length of the drive screw. With the measured shaft.length=35 mm, an 18 mm thread gives ~10 mm engagement at edge margin = 1 mm and full bore engagement at the neutral position. (Earlier the shaft was modelled at 45 mm by mistake, which forced 28 mm — that's been corrected.)",
         json_schema_extra=_spec("§4.4.39", status="MEASURED"),
     )
     tip_chamfer: float = Field(

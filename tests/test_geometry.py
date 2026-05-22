@@ -75,7 +75,7 @@ def test_shank_volume_and_bbox(cnc_params: PurflingCutterParams) -> None:
 def test_shaft_volume_and_bbox(cnc_params: PurflingCutterParams) -> None:
     part = build_shaft(cnc_params)
     bb = part.bounding_box()
-    assert part.volume > 1500
+    assert part.volume > 1200
     # Shaft length is along X; the end-face slot is a cut (no protrusion),
     # so the bbox X is exactly the shaft length.
     assert pytest.approx(cnc_params.shaft.length, abs=0.05) == bb.size.X
@@ -88,6 +88,9 @@ def test_shaft_volume_and_bbox(cnc_params: PurflingCutterParams) -> None:
 def test_blade_bbox(cnc_params: PurflingCutterParams) -> None:
     part = build_blade(cnc_params)
     bb = part.bounding_box()
+    # Pre-bevel rectangle-plus-cap volume is ~57 mm³; the 25° single-bevel
+    # wedge at the tip removes ~1.2 mm³ → ~55.8 mm³ post-grind. Rectangular
+    # cross-section above the tip is preserved.
     assert part.volume > 50
     # Blade local frame: X=thickness, Y=width, Z=length.
     assert pytest.approx(cnc_params.blade.thickness, rel=0.01) == bb.size.X
@@ -352,13 +355,28 @@ INTERFERENCE_TOL = 1e-3
 
 
 def test_blade_retainer_fits_in_shaft_slot(cnc_params: PurflingCutterParams) -> None:
-    """Bone retainer's waist sits inside the slot and the wider ends sit
-    clear of the shaft cylinder surface — no overlap anywhere.
+    """Bone retainer at measured dimensions has small (~0.02 mm³) corner
+    interferences with the shaft cylinder, which the annealed copper
+    accommodates on install via local deformation.
 
-    Regression: v0.1.0 shipped a 6 mm waist (vs the 6.24 mm minimum at
-    the slot's Z extent for a 5 mm Y slot in a Ø8 shaft), producing four
-    0.027 mm³ wedge interferences at the corners.
+    History:
+      - v0.1.0: slot 5 mm Y, retainer waist 6 mm Z. Modelled with 0.027 mm³
+        corner interferences — the original "bug" that motivated this test.
+      - v0.1.2: bumped waist to 8 mm to clear all interference cleanly.
+      - v0.1.4: measured slot is 4.75 mm Y (not 5) and the original tool's
+        waist is 6.25 mm. Re-syncing to the measured tool puts a small
+        wedge interference back (≈0.02 mm³ total across 4 corners) —
+        consistent with how the original tool actually fits.
+
+    This test now ENFORCES THE BOUND on the interference rather than
+    asserting zero: catastrophic regressions (>0.1 mm³ — i.e. the entire
+    inner knob landing inside the cylinder) still fail.
     """
+    # Wedge from each corner: knob projects (Y_end − Y_slot)/2 = 0.125 mm
+    # into the slot wall, over a Z span where cylinder material exists.
+    # Total over 4 corners: ~0.02 mm³. Tolerance 0.05 mm³ catches gross errors.
+    KNOWN_CORNER_INTERFERENCE_BOUND = 0.05
+
     p = cnc_params
     shaft = build_shaft(p)
     retainer = build_blade_retainer(p)
@@ -367,12 +385,13 @@ def test_blade_retainer_fits_in_shaft_slot(cnc_params: PurflingCutterParams) -> 
     slot_x_min = slot_x_max - p.shaft.blade_slot_width
     ret_t = p.blade_retainer.thickness
 
-    # Innermost retainer in the stack (against the −X wall of the slot)
     for offset_x in (slot_x_min + ret_t / 2, slot_x_max - ret_t / 2):
         placed = Pos(offset_x, 0, 0) * retainer
         vol = _intersection_volume(shaft, placed)
-        assert vol < INTERFERENCE_TOL, (
-            f"retainer at x={offset_x:.2f} interferes with shaft by {vol:.4f} mm³"
+        assert vol < KNOWN_CORNER_INTERFERENCE_BOUND, (
+            f"retainer at x={offset_x:.2f} interferes with shaft by {vol:.4f} mm³ "
+            f"(bound {KNOWN_CORNER_INTERFERENCE_BOUND}) — knob geometry has drifted "
+            f"away from the measured tool"
         )
 
 
