@@ -88,6 +88,9 @@ def test_shaft_volume_and_bbox(cnc_params: PurflingCutterParams) -> None:
 def test_blade_bbox(cnc_params: PurflingCutterParams) -> None:
     part = build_blade(cnc_params)
     bb = part.bounding_box()
+    # Pre-bevel rectangle-plus-cap volume is ~57 mm³; the 25° single-bevel
+    # wedge at the tip removes ~1.2 mm³ → ~55.8 mm³ post-grind. Rectangular
+    # cross-section above the tip is preserved.
     assert part.volume > 50
     # Blade local frame: X=thickness, Y=width, Z=length.
     assert pytest.approx(cnc_params.blade.thickness, rel=0.01) == bb.size.X

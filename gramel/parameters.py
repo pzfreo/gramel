@@ -124,7 +124,7 @@ class BladeParams(BaseModel):
         default=25.0,
         gt=0,
         lt=90,
-        description="Single bevel — confirmed on the original. Angle still estimate.",
+        description="Single bevel sharpening angle. The manufacturer produces a simple flat-plane bevel wedge at the tip (modelled here as a 25° triangular wedge); the luthier hollow-grinds the visible face and hones the cutting edge to the final shape after delivery.",
         json_schema_extra=_spec("§4.1.4", units="deg"),
     )
     tip_shape: Literal["round", "straight", "angled"] = Field(
