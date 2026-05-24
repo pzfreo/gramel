@@ -4,24 +4,34 @@ THE MERGE HAPPENS IN PRINT (OPEN-FLAT) ORIENTATION.
 
 Hinge handling (no scaling):
   - Reference hinge is used at native size.
-  - Bottom is cropped at ref z=3.5 to remove the leftover tabs from where
-    the hinge attached to the toothbrush body.
-  - Cropped bottom sits on the bed (print z=0).
-  - Side plates merge into the case walls; the round teardrop pin + apex
-    stick up above the case top (correct print-in-place geometry).
+  - Bottom is cropped at ref z=2 (cropped slab sits on the bed) so that
+    the TOP of the full-width side plate ends up flush with the case top.
+  - The narrow tab region (ref z=2..3.5, ≈0.8 mm thick) is kept on
+    purpose: it acts as an anti-sag bridge under the first widening of
+    the plate so the whole hinge prints supportless.
+  - Above the case top, the teardrop body + apex protrude as the
+    pivot pin (correct print-in-place geometry — pivot is above the
+    mating-face level, which is what makes a clamshell pivot cleanly).
 
 Reference hinge structure (z-slab analysis of the STL):
-  z = 0   – 3.5 : leftover attachment tabs        (cropped away)
-  z = 3.5 – 8   : side plates (full X span)       (merges with case wall)
-  z = 8   – 10.85: round teardrop body + pin bore (above case top)
-  z = 10.85–12.49: apex                            (above case top)
+  z = 0    – 2    : tab tip (X ≈ 0.8, narrow Y) – cropped away
+  z = 2    – 3.5  : tab (X ≈ 0.8, Y widening 9 → 15) – anti-sag bridge
+  z = 3.5  – 6.5  : side plate ramping (X 0.9 → 3.81, full Y)
+  z = 6.5  – 9.75 : full-width side plate (X = 3.81)         ← merges with case wall
+  z = 10   – 12.5 : round teardrop body + apex               ← protrudes above case top
+
+With case half thickness = 8 mm and crop at ref z=2, drop by 2:
+  print z = 0..6   : tab + ramp (anchors in lower case wall)
+  print z = 6..8   : full side plate (merges with upper case wall)
+  print z = 8..10.5: teardrop + apex (pivot above case top)
 
 Pipeline:
   1. Build case body without hinge in build123d (closed orientation)
   2. Rotate LID 180° about the hinge axis to put it next to BASE in
      PRINT orientation, both halves flat on the bed
   3. Export base + (rotated) lid as STLs, load with trimesh
-  4. Crop reference hinges at ref z=3.5, translate down by 3.5
+  4. Crop reference hinges at ref z=REF_HINGE_CROP_Z, translate down by
+     the same amount
   5. Position at cluster CX positions, with hinge axis at the gap between
      the case halves (print Y = ext_cy_max + HINGE_WIDTH/2)
   6. Boolean union: case_lid ∪ lid_hinges, case_base ∪ base_hinges
@@ -49,8 +59,13 @@ OUT_DIR = PROJ / "dist" / "case"
 # Reference-hinge frame constants (from STL inspection):
 REF_HINGE_WIDTH = 7.62              # ref X full span (split direction)
 REF_HINGE_LEN = 15.05               # ref Y full span (along hinge axis)
-REF_HINGE_CROP_Z = 3.5              # crop everything below this in ref frame
-REF_SIDE_PLATE_TOP_Z = 8.0          # top of side plates in ref frame
+# Crop level chosen so the TOP of the full-width side plate (ref z ≈ 10)
+# lands flush with the case top (print z = case_z_extent = 8). With drop
+# = REF_HINGE_CROP_Z, this puts ref z=10 at print z = 10 − 2 = 8. The
+# kept slice (ref z=2..3.5) is the anti-sag tab that lets the hinge
+# print supportless; cropping above z=3.5 would remove that bridge.
+REF_HINGE_CROP_Z = 2.0
+REF_SIDE_PLATE_TOP_Z = 10.0         # top of full-width side plate in ref frame
 
 
 def _crop_below(mesh: trimesh.Trimesh, z_plane: float) -> trimesh.Trimesh:
