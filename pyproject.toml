@@ -21,6 +21,8 @@ dev = [
     "mypy>=1.10",
     "ruff>=0.7",
     "black>=24.0",
+    "trimesh>=4.12.2",
+    "manifold3d>=3.5.0",
 ]
 
 [build-system]
