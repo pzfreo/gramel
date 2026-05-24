@@ -37,7 +37,12 @@ from gramel.parts.mount_screw import build_mount_screw
 from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
 
 
-def build_assembly(params: PurflingCutterParams, explode: float = 0.0) -> Compound:
+def build_assembly(
+    params: PurflingCutterParams,
+    explode: float = 0.0,
+    shaft_x_offset: float = 0.0,
+    blade_drop_below_retainers: float | None = None,
+) -> Compound:
     """Compose the full assembly as a single Compound.
 
     Args:
@@ -45,6 +50,16 @@ def build_assembly(params: PurflingCutterParams, explode: float = 0.0) -> Compou
         explode: explosion factor. 0 = fully assembled (default); 1.0 = each
             part translated outward by its natural disassembly direction by
             the per-part distance below. Use values in 0–1.5 typically.
+        shaft_x_offset: X translation applied to the shaft + everything that
+            moves with it (blade stack, grub screw, drive plate, captive
+            screw, mount screw, thumbwheel/drive screw). 0 = centred through
+            the crossbore (default). Positive values push the cutter end
+            (+X) further out the working-face side of the shank.
+        blade_drop_below_retainers: how far the blade tip protrudes below
+            the bottom of the retainers. None (default) preserves the
+            current behaviour (blade Z = crossbore_z − 2.5). When set,
+            positions the blade Z so the tip sits at retainer_bottom_Z minus
+            this value.
     """
     sp = params.shank
     crossbore_z = sp.length - sp.crossbore_position_from_top
@@ -66,10 +81,10 @@ def build_assembly(params: PurflingCutterParams, explode: float = 0.0) -> Compou
 
     shank = build_shank(params)
 
-    # --- Shaft: centred through the crossbore ---------------------------
+    # --- Shaft: centred through the crossbore (+ optional offset) -------
     shaft_local = build_shaft(params)
     shaft_len = params.shaft.length
-    shaft_x_off = -shaft_len / 2
+    shaft_x_off = -shaft_len / 2 + shaft_x_offset
     ex_shaft = ex(EX_SHAFT)
     shaft = Pos(shaft_x_off + ex_shaft[0], ex_shaft[1], crossbore_z + ex_shaft[2]) * shaft_local
 
@@ -79,8 +94,17 @@ def build_assembly(params: PurflingCutterParams, explode: float = 0.0) -> Compou
     spacer_t = params.spacer.thickness
     ret_t = params.blade_retainer.thickness
 
-    # Blade Z position: tip extends below the slot, top extends above
-    blade_z = crossbore_z - 2.5
+    # Blade Z position. Default behaviour: blade Z = crossbore_z − 2.5
+    # (legacy "as clamped" position). When blade_drop_below_retainers is
+    # given, position the blade so its tip sits `drop` below the bottom of
+    # the retainers. Retainer extends ±retainer.length/2 about crossbore_z.
+    if blade_drop_below_retainers is None:
+        blade_z = crossbore_z - 2.5
+    else:
+        retainer_bottom_z = crossbore_z - params.blade_retainer.length / 2
+        # Blade is positioned by its centre Z; tip = blade_z − blade.length/2
+        blade_tip_z = retainer_bottom_z - blade_drop_below_retainers
+        blade_z = blade_tip_z + params.blade.length / 2
 
     retainer_local = build_blade_retainer(params)
     blade_local = build_blade(params)
@@ -122,6 +146,9 @@ def build_assembly(params: PurflingCutterParams, explode: float = 0.0) -> Compou
     grub = Pos(x_c + ex_grub[0], ex_grub[1], crossbore_z + ex_grub[2]) * grub_local
 
     # --- Drive plate: back face at shaft's −X end -----------------------
+    # Note: drive plate, captive screw, mount screw and thumbwheel all move
+    # with the shaft (they're captive to it through the captive bearing) —
+    # shaft_x_off already carries shaft_x_offset.
     plate_local = build_drive_plate(params)
     plate_thick = params.drive_plate.thickness
     plate_x = shaft_x_off - plate_thick / 2
