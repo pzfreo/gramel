@@ -136,6 +136,53 @@ as a vector intermediate for further editing if needed.
 
 Don't skip the PDF step.
 
+## Trusting the user (rules learned the hard way)
+
+These exist because I burned ~15 hours on a print-in-place hinge by
+arguing with the user's empirical evidence, building elaborate parametric
+attempts when the answer was "just use the reference STL", and re-running
+analyses after being told the answer. Read these before doing any 3D /
+geometry / physical-artifact work in this repo.
+
+1. **Empirical evidence outranks my analysis. Always.** If the user says
+   "I've printed this and it works", that is ground truth. If my analysis
+   disagrees, the analysis is wrong — not the reality. Stop the analysis,
+   trust the report.
+
+2. **One "you're wrong" from the user = mandatory stop and recalibrate.**
+   Not "let me check one more thing." Stop, ask what they want me to do,
+   do it. No contrarian follow-ups. No more "but the data shows…".
+
+3. **>3 iterations on the same problem = the approach is probably wrong.**
+   Don't try iteration 4. Stop and ask: is there a fundamentally simpler
+   path I've been ignoring? (For the hinge, that path was "use the
+   reference STL directly" — visible from message 2, taken at hour 8.)
+
+4. **Default to the dumbest workable approach first.** "Just use the
+   reference STL" before "write a parametric replica." Custom parametric
+   is a last resort, not a first impulse. Elaborate analysis is often
+   avoidance of the simpler answer.
+
+5. **For physical artifacts, ask before building.** Two questions on hour
+   1 would have saved most of the lost hinge time:
+   - "Does the reference part work as-is, or does it need a separate
+     metal part (pin, magnet, fastener)?"
+   - "In print/use orientation, what's on top — feature A or feature B?"
+
+6. **Do not run an analysis to verify what the user has just told me.**
+   If they say the orientation is X, the orientation is X. Building a
+   z-distribution to "check" is disrespectful and usually produces a
+   wrong answer that I then defend.
+
+7. **For 3D / spatial geometry, my intuition is often wrong.** Defer to
+   the user's spatial judgment. They can see the object; I'm reasoning
+   from bounding boxes and triangle centroids.
+
+8. **Sanity-check the output artifact before declaring done.** Two STL
+   files shipped for a print-in-place hinge should have failed an
+   obvious "would a slicer treat this correctly?" check before I
+   declared the task complete. Look at what you're handing over.
+
 ## Workflow rules (also in global CLAUDE.md, repeated here)
 
 - Branch per change. Never commit to main, never auto-merge.
