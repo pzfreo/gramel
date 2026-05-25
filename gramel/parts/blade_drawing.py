@@ -1,14 +1,13 @@
 """
-A4 landscape drawing of the violin purfling blade (GRM-07, optional).
+A4 landscape drawing of the violin purfling blade (GRM-07).
 
-The blade is a small O1 tool-steel knife — traditionally supplied by
-the luthier or a specialist. Included here for shops that quote
-optional blade supply at quantity.
+The blade is a small O1 tool-steel knife. The shop supplies it with a
+single-bevel grind at the tip; the luthier finish-grinds and hones the
+cutting edge after delivery.
 
 Layout: face view (Z up, looking along X) on the left, side view to
 its right at same scale. The bevel wedge is visible in the side view
-at the tip; the luthier finish-grinds and hones the cutting edge
-after delivery.
+at the tip.
 """
 
 from __future__ import annotations
@@ -186,8 +185,8 @@ def build_blade_drawing(
     frame = page_frame()
     title_lines = title_block_lines()
     title_text = title_block_text(
-        part_name="BLADE (OPTIONAL)",
-        drawing_no="GRM-07 (OPT.)",
+        part_name="BLADE",
+        drawing_no="GRM-07",
         scale="5:1",
         sheet="1/1",
         material="O1 tool steel, hardened ~60 HRC",
@@ -197,13 +196,12 @@ def build_blade_drawing(
     nb_lines = notes_block_lines()
     nb_text = notes_block_text(notes=(
         "NOTES:",
-        "1. OPTIONAL — supplied by luthier or specialist",
-        "2. Material: O1 tool steel, hardened & tempered ~60 HRC",
-        "3. Outline ± 0.05; thickness ± 0.025",
-        "4. Single bevel as shown — primary grind + hone by luthier",
-        "5. Tip: rounded, polished",
-        "6. Quantity: 2 per tool (see RFQ for batch quantities)",
-        "7. All dimensions in mm",
+        "1. Material: O1 tool steel, hardened & tempered ~60 HRC",
+        "2. Outline ± 0.05; thickness ± 0.025",
+        "3. Single bevel as shown — primary grind + hone by luthier",
+        "4. Tip: rounded, polished",
+        "5. Quantity: 2 per tool (see RFQ for batch quantities)",
+        "6. All dimensions in mm",
     ))
     frame_compound = Compound(children=[frame, title_lines, nb_lines])
     text_compound = Compound(
