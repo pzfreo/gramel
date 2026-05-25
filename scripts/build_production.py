@@ -63,17 +63,14 @@ from gramel.parts.thumbwheel_drive_screw_drawing import build_thumbwheel_drawing
 
 DIST = Path(__file__).resolve().parent.parent / "dist"
 
-# (drawing-number, file-stem, builder). The "-optional" suffix in the file
-# stem marks parts that are flagged as optional in the RFQ appendix (the
-# blade retainer is supplied by the manufacturer only if they handle it).
 PARTS: list[tuple[str, str, Callable[[PurflingCutterParams], Part]]] = [
     ("GRM-01", "shank", build_shank),
     ("GRM-02", "shaft", build_shaft),
     ("GRM-03", "thumbwheel_drive_screw", build_thumbwheel_drive_screw),
     ("GRM-04", "drive_plate", build_drive_plate),
     ("GRM-05", "depth_lock_bolt", build_depth_lock_bolt),
-    ("GRM-06", "blade_retainer-optional", build_blade_retainer),
-    ("GRM-07", "blade-optional", build_blade),
+    ("GRM-06", "blade_retainer", build_blade_retainer),
+    ("GRM-07", "blade", build_blade),
 ]
 
 DRAWINGS: list[tuple[str, str, Callable[[PurflingCutterParams], Any]]] = [
@@ -83,8 +80,8 @@ DRAWINGS: list[tuple[str, str, Callable[[PurflingCutterParams], Any]]] = [
     ("GRM-03", "thumbwheel_drive_screw", build_thumbwheel_drawing),
     ("GRM-04", "drive_plate", build_drive_plate_drawing),
     ("GRM-05", "depth_lock_bolt", build_depth_lock_bolt_drawing),
-    ("GRM-06", "blade_retainer-optional", build_blade_retainer_drawing),
-    ("GRM-07", "blade-optional", build_blade_drawing),
+    ("GRM-06", "blade_retainer", build_blade_retainer_drawing),
+    ("GRM-07", "blade", build_blade_drawing),
 ]
 
 
