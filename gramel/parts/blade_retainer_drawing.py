@@ -20,6 +20,7 @@ from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped
 
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
+    dim_label,
     export_drawing,
     notes_block_lines,
     notes_block_text,
@@ -113,7 +114,7 @@ def build_blade_retainer_drawing(
         (f_end_left[0], f_top[1]),
         "left",
         10,
-        f"{length:.1f}",
+        dim_label(length, min_decimals=1),
     )
     # End width (Y) ABOVE the top end block
     add_dim(
@@ -121,7 +122,7 @@ def build_blade_retainer_drawing(
         (f_end_right[0], f_top[1]),
         "above",
         6,
-        f"{end_w:.1f}",
+        dim_label(end_w, min_decimals=1),
     )
     # Middle width (Y) BELOW the middle block
     add_dim(
@@ -129,7 +130,7 @@ def build_blade_retainer_drawing(
         (f_mid_right[0], face_xy(0, 0)[1]),
         "below",
         16,
-        f"{mid_w:.1f}",
+        dim_label(mid_w, min_decimals=1),
     )
     # End-block Z length, on the right side
     add_dim(
@@ -137,7 +138,7 @@ def build_blade_retainer_drawing(
         (f_end_right[0], f_top[1]),
         "right",
         6,
-        f"{end_z:.1f}",
+        dim_label(end_z, min_decimals=1),
     )
     # Waist Z length, on the right at further offset
     add_dim(
@@ -145,14 +146,14 @@ def build_blade_retainer_drawing(
         (f_end_right[0], face_xy(0, +mid_length / 2)[1]),
         "right",
         16,
-        f"{mid_length:.1f}",
+        dim_label(mid_length, min_decimals=1),
     )
 
     # Thickness callout (X direction — out of page)
     add_leader(
         f_mid_right,
         (f_mid_right[0] + 22, f_mid_right[1] - 8),
-        f"thickness {thick:.2f}",
+        f"thickness {dim_label(thick)}",
     )
 
     # Process / finish callout

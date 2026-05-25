@@ -21,6 +21,7 @@ from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped
 from gramel.assembly import build_assembly
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
+    dim_label,
     FX_MAX,
     NB_X_MAX,
     NB_X_MIN,
@@ -219,15 +220,15 @@ def build_assembly_drawing(
     side_top = sy + (bb.max.Z - centroid[2])
     side_bot = sy + (bb.min.Z - centroid[2])
 
-    add_dim((side_left, side_top), (side_right, side_top), "above", 5, f"{bb.size.X:.0f}")
-    add_dim((side_left, side_bot), (side_left, side_top), "left", 5, f"{bb.size.Z:.0f}")
+    add_dim((side_left, side_top), (side_right, side_top), "above", 5, dim_label(bb.size.X, min_decimals=1))
+    add_dim((side_left, side_bot), (side_left, side_top), "left", 5, dim_label(bb.size.Z, min_decimals=1))
 
     # Front view: overall width (Y) along the bottom
     fx, fy = layout.front
     front_left = fx + (bb.min.Y - centroid[1])
     front_right = fx + (bb.max.Y - centroid[1])
     front_bot = fy + (bb.min.Z - centroid[2])
-    add_dim((front_left, front_bot), (front_right, front_bot), "below", 5, f"{bb.size.Y:.0f}")
+    add_dim((front_left, front_bot), (front_right, front_bot), "below", 5, dim_label(bb.size.Y, min_decimals=1))
 
     # --- View labels --------------------------------------------------------
     annotation_text.append(placed_text("SIDE VIEW", 3.0, layout.side[0], side_bot - 8, left_align=False))
