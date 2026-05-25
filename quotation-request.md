@@ -104,7 +104,7 @@ Four small bone-shaped copper pieces per tool. They fit in the shaft's blade slo
 |---|---|
 | Material | Copper (annealed sheet stock) |
 | Quantity per tool | 4 (all identical) |
-| Outline | Bone shape: 11 mm long (Z) — 8 mm waist between 1.5 mm end blocks — 0.75 mm thick (X), Y width 5.5 mm at the ends tapering to 4.5 mm in the middle |
+| Outline | Bone shape: 10 mm long (Z) — 6.25 mm waist between 1.875 mm end blocks — 0.85 mm thick (X), Y width 5.5 mm at the ends tapering to 4.3 mm in the middle. Outer knob corners R1.3 fillet; inner shoulder corners R0.5 fillet. See GRM-06 drawing. |
 | Tolerance | ±0.05 mm on thickness; outline ±0.1 mm |
 | Finish | Deburred. As-received sheet finish is fine. |
 | Quantity at scale | 4 × the quote tier (i.e. 80 for 20 tools, 200 for 50) + an allowance for spares if you can supply them |

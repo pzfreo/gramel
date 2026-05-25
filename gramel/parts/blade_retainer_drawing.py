@@ -51,11 +51,11 @@ def build_blade_retainer_drawing(
     """
     retainer = build_blade_retainer(params)
     r = params.blade_retainer
-    end_w = r.end_width        # 5.5 mm Y at ends
-    mid_w = r.middle_width     # 4.5 mm Y in middle
-    length = r.length          # 11 mm Z
-    mid_length = r.middle_length  # 8 mm Z waist
-    thick = r.thickness        # 0.75 mm X
+    end_w = r.end_width
+    mid_w = r.middle_width
+    length = r.length
+    mid_length = r.middle_length
+    thick = r.thickness
 
     centroid = (0, 0, 0)
     far = 1000.0

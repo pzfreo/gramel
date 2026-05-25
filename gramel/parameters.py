@@ -160,17 +160,17 @@ class BladeRetainerParams(BaseModel):
 
     *Missing from the original spec.* Four of these per tool, all identical.
 
-    Layout in the slot's X direction (along the shaft, 6 mm slot dim): two
+    Layout in the slot's X direction (along the shaft, 6.4 mm slot dim): two
     retainers on each side of the blade-spacer-blade stack —
         retainer | retainer | blade | spacer | blade | retainer | retainer
         | grub-screw slack
-    Total X stack ≈ 4 × 0.75 + 2 × 0.7 + spacer = 4.4 mm + spacer, leaving
-    the remainder of the 6 mm slot for grub-screw advance.
+    Total X stack = 4 × 0.85 + 2 × 0.7 + spacer = 4.8 mm + spacer, leaving
+    the remainder of the 6.4 mm slot for grub-screw advance.
 
     The bone shape locks each retainer in place against the slot's open
-    Z direction: the narrow Y middle (4.5 mm) fits inside the slot's 5 mm
-    Y opening, the wider Y ends (5.5 mm) sit above and below the slot's
-    +Z and −Z openings so the retainer can't slide through.
+    Z direction: the narrow Y middle (4.3 mm) fits inside the slot's
+    4.75 mm Y opening, the wider Y ends (5.5 mm) sit above and below the
+    slot's +Z and −Z openings so the retainer can't slide through.
     """
 
     length: float = Field(
@@ -192,9 +192,9 @@ class BladeRetainerParams(BaseModel):
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     middle_width: float = Field(
-        default=4.5,
+        default=4.3,
         gt=0,
-        description="Y width through the retainer's middle. < slot's 4.75 mm Y so this section fits inside the slot.",
+        description="Y width through the retainer's middle. < slot's 4.75 mm Y so this section fits inside the slot. 4.3 mm gives 0.45 mm nominal waist clearance; the measured original (4.5 mm) is bound to be filed-to-fit, so we machine a hair undersize to leave room for ±0.1 mm copper-cut tolerance.",
         json_schema_extra=_spec("§4.1 (retainer — missing from spec)", status="MEASURED"),
     )
     thickness: float = Field(
@@ -206,8 +206,14 @@ class BladeRetainerParams(BaseModel):
     corner_fillet_radius: float = Field(
         default=1.3,
         ge=0,
-        description="Fillet radius on the four outside corners of the bone (the outermost ±Y, ±Z corners of the knob ends). The other corners (where knobs step inward to the waist) stay sharp. Max usable via the corner-fillet approach is ~1.87 mm (knob Z height − 0.005); OCCT fails at 1.875 mm exactly.",
+        description="Fillet radius on the four outside corners of the bone (the outermost ±Y, ±Z corners of the knob ends). Max usable via the corner-fillet approach is ~1.87 mm (knob Z height − 0.005); OCCT fails at 1.875 mm exactly.",
         json_schema_extra=_spec("§4.1 (retainer — finishing detail)", status="MEASURED"),
+    )
+    shoulder_fillet_radius: float = Field(
+        default=0.5,
+        ge=0,
+        description="Fillet radius on the four convex 'shoulder' corners where each knob steps inward to the waist (at |Y|=end_width/2, |Z|=middle_length/2). These are the corners that 'stick out' from the waist outline. Max ≤ (end_width − middle_width)/2 = 0.6 mm at defaults. Set 0 to leave them sharp.",
+        json_schema_extra=_spec("§4.1 (retainer — finishing detail)", status="DESIGN"),
     )
 
 
