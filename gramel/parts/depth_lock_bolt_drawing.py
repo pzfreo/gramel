@@ -22,6 +22,7 @@ from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped
 from gramel import threads
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
+    dim_label,
     export_drawing,
     notes_block_lines,
     notes_block_text,
@@ -159,13 +160,13 @@ def build_depth_lock_bolt_drawing(
     f_bot = fy - SCALE * knob_d / 2
 
     # Chained dim stack above the bolt: knob + collar + thread = overall
-    add_dim((f_left, f_top), (f_knob_end, f_top), "above", 5, f"{knob_t:.0f}")
-    add_dim((f_knob_end, f_top), (f_collar_end, f_top), "above", 5, f"{collar_len:.0f}")
-    add_dim((f_collar_end, f_top), (f_right, f_top), "above", 5, f"{thread_len:.0f}")
-    add_dim((f_left, f_top), (f_right, f_top), "above", 13, f"{overall_len:.0f}")
+    add_dim((f_left, f_top), (f_knob_end, f_top), "above", 5, dim_label(knob_t, min_decimals=1))
+    add_dim((f_knob_end, f_top), (f_collar_end, f_top), "above", 5, dim_label(collar_len, min_decimals=1))
+    add_dim((f_collar_end, f_top), (f_right, f_top), "above", 5, dim_label(thread_len, min_decimals=1))
+    add_dim((f_left, f_top), (f_right, f_top), "above", 13, dim_label(overall_len, min_decimals=1))
 
     # Knob diameter dim on the left side of the front view
-    add_dim((f_left, f_bot), (f_left, f_top), "left", 8, f"⌀{knob_d:.0f}")
+    add_dim((f_left, f_bot), (f_left, f_top), "left", 8, f"⌀{dim_label(knob_d)}")
 
     # Mid-X positions for leader callouts
     x_knob_mid = fx + SCALE * (knob_t / 2 - overall_len / 2)
@@ -182,13 +183,13 @@ def build_depth_lock_bolt_drawing(
     add_leader(
         (f_left, f_bot),
         (f_left - 12, f_bot - 12),
-        f"{knob_chamfer:.1f} × 45° chamfer",
+        f"{dim_label(knob_chamfer)} × 45° chamfer",
     )
     # Collar diameter (⌀6.25)
     add_leader(
         (x_collar_mid, fy + SCALE * collar_d / 2),
         (x_collar_mid + 4, f_top + 24),
-        f"⌀{collar_d:.2f} collar",
+        f"⌀{dim_label(collar_d)} collar",
     )
     # M6 thread spec
     add_leader(
@@ -200,7 +201,7 @@ def build_depth_lock_bolt_drawing(
     add_leader(
         (f_right, fy),
         (f_right + 12, f_bot - 10),
-        f"{chamfer:.1f} × 45° chamfer",
+        f"{dim_label(chamfer)} × 45° chamfer",
     )
     # Ra 1.6 on the thread (mating surface)
     add_leader(

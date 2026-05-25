@@ -21,6 +21,7 @@ from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped
 
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
+    dim_label,
     export_drawing,
     notes_block_lines,
     notes_block_text,
@@ -131,7 +132,7 @@ def build_blade_drawing(
         (f_top_left[0], f_top_left[1]),
         "left",
         10,
-        f"{length:.1f}",
+        dim_label(length, min_decimals=1),
     )
     # Width ABOVE the top edge
     add_dim(
@@ -139,14 +140,14 @@ def build_blade_drawing(
         f_top_right,
         "above",
         6,
-        f"{width:.1f}",
+        dim_label(width, min_decimals=1),
     )
     # Tip radius callout
     tip_curve_xy = face_xy(width / 2.5, -length / 2 + tip_radius * 0.5)
     add_leader(
         tip_curve_xy,
         (tip_curve_xy[0] + 18, tip_curve_xy[1] - 10),
-        f"R {tip_radius:.2f}",
+        f"R {dim_label(tip_radius)}",
     )
 
     # --- Side view dims (callouts only — the side view is only 3.5 mm wide at 5:1) ---
@@ -155,10 +156,12 @@ def build_blade_drawing(
     add_leader(
         s_top_mid,
         (s_top_mid[0] + 18, s_top_mid[1] + 6),
-        f"thickness {thick:.2f}",
+        f"thickness {dim_label(thick)}",
     )
 
     # Bevel-run dim on the RIGHT of the side view's tip (1.5 mm × 5 = 7.5 mm — fits)
+    # bevel_run is derived from bevel_angle and thickness; show 1 decimal
+    # (the shop grinds the bevel by angle, not by run length).
     s_bevel_tip = side_xy(+thick / 2, -length / 2)
     s_bevel_heel = side_xy(+thick / 2, -length / 2 + bevel_run)
     add_dim(
@@ -166,7 +169,7 @@ def build_blade_drawing(
         s_bevel_heel,
         "right",
         6,
-        f"{bevel_run:.1f}",
+        dim_label(bevel_run, min_decimals=1, max_decimals=1),
     )
 
     # Bevel angle leader to the bevel face midpoint
@@ -174,7 +177,7 @@ def build_blade_drawing(
     add_leader(
         bevel_face_mid,
         (bevel_face_mid[0] + 22, bevel_face_mid[1] - 8),
-        f"{bevel_angle:.0f}° single bevel",
+        f"{dim_label(bevel_angle)}° single bevel",
     )
 
     # View labels above each view

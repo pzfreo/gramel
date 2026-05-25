@@ -22,6 +22,7 @@ from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped
 from gramel import threads
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
+    dim_label,
     export_drawing,
     notes_block_lines,
     notes_block_text,
@@ -159,12 +160,12 @@ def build_thumbwheel_drawing(
 
     # Chained dims above the part: head section (5.5) + thread (18) = overall (23.5).
     # At SCALE 2 each dim path is wide enough for its label to fit inline.
-    add_dim((f_left, f_top), (f_collar_end, f_top), "above", 5, f"{x_collar_end:.1f}")
-    add_dim((f_collar_end, f_top), (f_right, f_top), "above", 5, f"{thread_len:.0f}")
-    add_dim((f_left, f_top), (f_right, f_top), "above", 13, f"{overall_len:.1f}")
+    add_dim((f_left, f_top), (f_collar_end, f_top), "above", 5, dim_label(x_collar_end, min_decimals=1))
+    add_dim((f_collar_end, f_top), (f_right, f_top), "above", 5, dim_label(thread_len, min_decimals=1))
+    add_dim((f_left, f_top), (f_right, f_top), "above", 13, dim_label(overall_len, min_decimals=1))
 
     # Disc diameter — Y dim on left side of the front view (path = 20 page units).
-    add_dim((f_left - 2, f_bot), (f_left - 2, f_top), "left", 8, f"⌀{disc_d:.0f}")
+    add_dim((f_left - 2, f_bot), (f_left - 2, f_top), "left", 8, f"⌀{dim_label(disc_d)}")
 
     # Mid-X positions in PAGE coords (apply SCALE)
     x_boss_mid = fx + SCALE * (boss_len / 2 - overall_len / 2)
@@ -178,23 +179,25 @@ def build_thumbwheel_drawing(
     add_leader(
         (x_boss_mid, fy),
         (f_left - 18, fy - 14),
-        f"⌀{boss_d:.0f} × {boss_len:.1f} boss",
+        f"⌀{dim_label(boss_d)} × {dim_label(boss_len)} boss",
     )
 
-    # BELOW the part — three callouts spread along X
+    # BELOW the part — three callouts staggered along Y so labels
+    # don't overlap (labels are wider than the X spacing between
+    # their feature anchors).
     add_leader(
         (x_disc_mid, f_bot),
-        (x_disc_mid - 8, f_bot - 12),
-        f"disc {disc_t:.0f} thick",
+        (x_disc_mid - 8, f_bot - 8),
+        f"disc {dim_label(disc_t)} thick",
     )
     add_leader(
         (x_collar_mid, fy - SCALE * collar_d / 2),
-        (x_collar_mid + 4, f_bot - 12),
-        f"⌀{collar_d:.0f} collar",
+        (x_collar_mid + 4, f_bot - 14),
+        f"⌀{dim_label(collar_d)} collar",
     )
     add_leader(
         (x_thread_mid + 6, fy - SCALE * thread_d / 2),
-        (x_thread_mid + 10, f_bot - 12),
+        (x_thread_mid + 10, f_bot - 20),
         "Ra 1.6 on thread",
     )
 
@@ -214,17 +217,22 @@ def build_thumbwheel_drawing(
     add_leader(
         (f_right, fy),
         (f_right + 10, f_bot - 12),
-        f"{ds.tip_chamfer:.1f} × 45° chamfer",
+        f"{dim_label(ds.tip_chamfer)} × 45° chamfer",
     )
 
     # --- Left end view: boss + M2 tap visible -----------------------
     ex, ey = layout.left_end
-    # Tap callout points up-left so the label sits between the front and end views,
-    # well clear of the notes block (X ≥ 38.5).
+    # Tap callout to the UPPER-RIGHT of the end view, away from the
+    # front-view dim chain and clear of the notes block (X ≤ 38.5).
     add_leader(
         (ex, ey),
-        (ex - 14, ey + 14),
-        f"{tap_thread}×{tap_pitch} × {tap_depth:.1f} deep, drill {tap_depth + chip_relief:.1f} (chip relief)",
+        (ex + 4, ey + 14),
+        f"{tap_thread}×{tap_pitch} × {dim_label(tap_depth)} deep",
+    )
+    add_leader(
+        (ex, ey),
+        (ex + 4, ey + 9),
+        f"drill {dim_label(tap_depth + chip_relief)} (chip relief)",
     )
 
     # --- Iso view label -----------------------------------------------------

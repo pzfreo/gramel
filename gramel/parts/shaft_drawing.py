@@ -23,6 +23,7 @@ from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped
 from gramel import threads
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
+    dim_label,
     export_drawing,
     notes_block_lines,
     notes_block_text,
@@ -160,25 +161,26 @@ def build_shaft_drawing(
     t_bot = ty - od / 2
     t_top = ty + od / 2
 
-    add_dim((t_left, t_top), (t_right, t_top), "above", 5, f"{length:.1f}")
+    add_dim((t_left, t_top), (t_right, t_top), "above", 5, dim_label(length, min_decimals=1))
     slot_x_start_world = length - end_to_slot - slot_w
     slot_x_end_world = length - end_to_slot
     slot_x_start = tx + slot_x_start_world - length / 2
     slot_x_end = tx + slot_x_end_world - length / 2
-    add_dim((slot_x_start, t_bot), (slot_x_end, t_bot), "below", 5, f"{slot_w:.0f}")
     slot_y_top = ty + slot_y / 2
-    slot_dim_x = (slot_x_start + slot_x_end) / 2
+    # Slot dimensions as one combined leader — the slot is only ~6 mm
+    # wide, too short to host an inline dim label with the new
+    # full-precision value.
     add_leader(
-        (slot_dim_x, slot_y_top),
-        (slot_dim_x + 12, ty + od / 2 + 14),
-        f"slot {slot_y:.0f} wide",
+        ((slot_x_start + slot_x_end) / 2, slot_y_top),
+        (slot_x_end + 6, ty + od / 2 + 14),
+        f"slot {dim_label(slot_w)} × {dim_label(slot_y)}",
     )
     # End-face slot (anti-rotation, receives the drive-plate tenon) —
     # leader on the top view at the −X end.
     add_leader(
         (t_left + slot_x_depth / 2, t_bot),
         (t_left - 8, t_bot - 14),
-        f"end slot {slot_x_depth:.1f} deep",
+        f"end slot {dim_label(slot_x_depth)} deep",
     )
 
     # --- Front view dims ----------------------------------------------------
@@ -188,22 +190,22 @@ def build_shaft_drawing(
     f_top = fy + od / 2
 
     # Flat depth (0.6 mm) — leader because it's too small to dim inline.
-    add_leader((f_left + 4, f_bot), (f_left + 4, f_bot - 14), f"flat {flat_depth:.1f} deep")
+    add_leader((f_left + 4, f_bot), (f_left + 4, f_bot - 14), f"flat {dim_label(flat_depth)} deep")
     # Surface finish + g6 fit on the OD.
-    add_leader((fx, f_top), (fx + 18, f_top + 14), f"⌀{od:.1f} {shaft_fit}")
+    add_leader((fx, f_top), (fx + 18, f_top + 14), f"⌀{dim_label(od)} {shaft_fit}")
     add_leader((fx - 18, f_top), (fx - 8, f_top + 14), "Ra 1.6")
     # Mount tap on the −X end face.
     add_leader(
         (f_left, fy),
         (f_left - 18, fy - 16),
-        f"{mount_thread}×{mount_pitch} × {mount_depth:.0f} deep",
+        f"{mount_thread}×{mount_pitch} × {dim_label(mount_depth)} deep",
     )
     # End-face slot Z height — dim inline near the −X end face.
-    # Use .1f format ("3.0") to avoid a build123d dim_linear bug at
-    # certain path-length / label-width ratios.
+    # min_decimals=1 forces "3.0" rather than "3" to avoid a build123d
+    # dim_linear bug at certain path-length / label-width ratios.
     f_slot_top = fy + slot_z_height / 2
     f_slot_bot = fy - slot_z_height / 2
-    add_dim((f_left, f_slot_bot), (f_left, f_slot_top), "left", 6, f"{slot_z_height:.1f}")
+    add_dim((f_left, f_slot_bot), (f_left, f_slot_top), "left", 6, dim_label(slot_z_height, min_decimals=1))
 
     # --- Right end view -----------------------------------------------------
     ex, ey = layout.end
@@ -212,7 +214,7 @@ def build_shaft_drawing(
     add_leader(
         (ex, ey),
         (ex + 4, ey + 16),
-        f"{grub_thread}×{grub_pitch} × {end_to_slot:.0f} deep",
+        f"{grub_thread}×{grub_pitch} × {dim_label(end_to_slot)} deep",
     )
 
     # --- Iso view label -----------------------------------------------------

@@ -27,6 +27,7 @@ from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped
 
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
+    dim_label,
     export_drawing,
     line_segment,
     notes_block_lines,
@@ -154,20 +155,25 @@ def build_shank_drawing(
     f_right = fx + depth / 2
     f_bot = fy - length / 2
     f_top = fy + length / 2
-    add_dim((f_left, f_bot), (f_left, f_top), "left", 9, f"{length:.1f}")
+    add_dim((f_left, f_bot), (f_left, f_top), "left", 9, dim_label(length, min_decimals=1))
     cb_face_y = f_top - cb_x_from_top
-    add_dim((f_right, f_top), (f_right, cb_face_y), "right", 8, f"{cb_x_from_top:.1f}")
-    # Below the face view: feature dim (slot width) closest to the view,
-    # overall dim (depth) stacked further out — ISO drafting order.
-    add_dim((fx - slot_w / 2, f_bot), (fx + slot_w / 2, f_bot), "below", 6, f"{slot_w:.1f}")
-    add_dim((f_left, f_bot), (f_right, f_bot), "below", 14, f"{depth:.1f}")
+    add_dim((f_right, f_top), (f_right, cb_face_y), "right", 8, dim_label(cb_x_from_top, min_decimals=1))
+    # Below the face view: feature dim (slot width) as a leader because
+    # the slot is only ~5.5 mm wide — too short for an inline dim label.
+    # Overall dim (depth) inline below.
+    add_leader(
+        (fx, f_bot),
+        (fx + 14, f_bot - 8),
+        f"slot {dim_label(slot_w)} wide",
+    )
+    add_dim((f_left, f_bot), (f_right, f_bot), "below", 14, dim_label(depth, min_decimals=1))
 
     # Bore callouts pointing RIGHT into the gap between face view and side view.
     sx_for_face = layout.side[0]
     s_left_for_face = sx_for_face - width / 2
     leader_label_x = (f_right + s_left_for_face) / 2
     tap_face_y = f_top - tap_x_from_top
-    add_leader((fx, cb_face_y), (leader_label_x, cb_face_y - 4), f"⌀{cb_d:.2f} H7")
+    add_leader((fx, cb_face_y), (leader_label_x, cb_face_y - 4), f"⌀{dim_label(cb_d)} H7")
     add_leader((fx, tap_face_y), (leader_label_x, tap_face_y + 3), f"{ds_thread}×{ds_pitch} thru")
 
     # Side view: page X = world X (width), page Y = world Z (length).
@@ -176,17 +182,23 @@ def build_shank_drawing(
     s_right = sx + width / 2
     s_bot = sy - length / 2
     s_top = sy + length / 2
-    add_dim((s_left, s_bot), (s_right, s_bot), "below", 6, f"{width:.2f}")
+    add_dim((s_left, s_bot), (s_right, s_bot), "below", 6, dim_label(width, min_decimals=1))
     cb_side_y = s_top - cb_x_from_top
     tap_side_y = s_top - tap_x_from_top
-    add_dim((s_right, cb_side_y), (s_right, tap_side_y), "right", 8, f"{inter_gap:.1f}")
+    add_dim((s_right, cb_side_y), (s_right, tap_side_y), "right", 8, dim_label(inter_gap, min_decimals=1))
     s_collar_top = s_bot + dl_collar_len
     s_thread_top = s_collar_top + dl_thread_len
     # Collar + threaded + smooth section dims sit FURTHER OUT than the leader
     # callouts below — so the leader lines don't cross through the dim lines.
-    add_dim((s_right, s_bot), (s_right, s_collar_top), "right", 26, f"{dl_collar_len:.0f}")
-    add_dim((s_right, s_collar_top), (s_right, s_thread_top), "right", 32, f"{dl_thread_len:.0f}")
-    add_dim((s_right, s_thread_top), (s_right, cb_side_y), "right", 38, f"{dl_depth - dl_collar_len - dl_thread_len:.0f}")
+    # The collar segment is only ~5.5 mm so use a leader rather than an
+    # inline dim (label wider than segment triggers a build123d edge case).
+    add_leader(
+        (s_right, (s_bot + s_collar_top) / 2),
+        (s_right + 24, s_collar_top + 4),
+        f"collar {dim_label(dl_collar_len)} long",
+    )
+    add_dim((s_right, s_collar_top), (s_right, s_thread_top), "right", 32, dim_label(dl_thread_len, min_decimals=1))
+    add_dim((s_right, s_thread_top), (s_right, cb_side_y), "right", 38, dim_label(dl_depth - dl_collar_len - dl_thread_len, min_decimals=1))
     # Section-boundary indicator lines across the bore.
     bore_half = dl_d / 2
     collar_half = dl_collar_d / 2
@@ -195,10 +207,10 @@ def build_shank_drawing(
 
     # Depth-lock bore-section callouts — leaders pointing RIGHT.
     side_label_x = s_right + 16
-    add_leader((sx, (s_bot + s_collar_top) / 2), (side_label_x, (s_bot + s_collar_top) / 2), f"⌀{dl_collar_d:.2f}")
+    add_leader((sx, (s_bot + s_collar_top) / 2), (side_label_x, (s_bot + s_collar_top) / 2), f"⌀{dim_label(dl_collar_d)}")
     add_leader((sx, (s_collar_top + s_thread_top) / 2), (side_label_x, (s_collar_top + s_thread_top) / 2), f"{dl_thread}×1")
     push_rod_mid_y = (s_thread_top + cb_side_y) / 2
-    add_leader((sx, push_rod_mid_y), (side_label_x, push_rod_mid_y), f"⌀{dl_d:.1f} H8")
+    add_leader((sx, push_rod_mid_y), (side_label_x, push_rod_mid_y), f"⌀{dim_label(dl_d)} H8")
 
     # Relief slot depth callout — leader pointing LEFT from the slot's
     # inner edge in the side view to a label in the empty gap below the
@@ -208,7 +220,7 @@ def build_shank_drawing(
     add_leader(
         (slot_inner_x, slot_mid_y),
         (s_left - 20, slot_mid_y),
-        f"slot {slot_d:.0f} deep, flat floor",
+        f"slot {dim_label(slot_d)} deep, flat floor",
     )
 
     # Bottom view: width (page X, working-face direction) × depth (page Y).
@@ -217,8 +229,8 @@ def build_shank_drawing(
     b_right = bx + width / 2
     b_bot = by - depth / 2
     b_top = by + depth / 2
-    add_dim((b_left, b_bot), (b_right, b_bot), "below", 6, f"{width:.2f}")
-    add_dim((b_right, b_bot), (b_right, b_top), "right", 6, f"{depth:.1f}")
+    add_dim((b_left, b_bot), (b_right, b_bot), "below", 6, dim_label(width, min_decimals=1))
+    add_dim((b_right, b_bot), (b_right, b_top), "right", 6, dim_label(depth, min_decimals=1))
 
     # Iso view label.
     iso_label_y = layout.iso[1] - 40

@@ -27,6 +27,48 @@ from build123d import (
 )
 from build123d.exporters import ColorIndex
 
+
+def dim_label(value: float, *, min_decimals: int = 0, max_decimals: int = 3) -> str:
+    """Format a numeric parameter value into a dimension label without
+    losing precision.
+
+    Use this *everywhere* a parameter value is embedded in a dim or
+    leader label string. Fixed-precision formats like ``f"{x:.0f}"`` or
+    ``f"{x:.1f}"`` will silently round e.g. 4.75 → "5" or 4.75 → "4.8"
+    when the parameter changes — the label drifts from the model and
+    the shop manufactures the wrong part. This helper always shows the
+    full value up to ``max_decimals`` significant decimals, stripping
+    trailing zeros down to ``min_decimals``:
+
+        dim_label(35.0)               → "35"
+        dim_label(6.4)                → "6.4"
+        dim_label(4.75)               → "4.75"
+        dim_label(0.85)               → "0.85"
+        dim_label(3.0, min_decimals=1) → "3.0"   (forced one decimal)
+        dim_label(3.5, min_decimals=1) → "3.5"   (precision unaffected)
+        dim_label(3.55, min_decimals=1) → "3.55" (precision NOT lost)
+
+    ``min_decimals=1`` exists for the rare build123d dim_linear bug
+    where the rendered label width vs the dim path length triggers
+    ``ValueError: Can't get geom adaptor of empty wire`` — forcing
+    one decimal place can move the label across the threshold. Use
+    sparingly; ``min_decimals=0`` is the default and right for almost
+    every label.
+
+    The regression test in ``tests/test_drawing_labels.py`` enforces
+    that no drawing file uses raw fixed-precision formats for dim
+    labels — change this helper or its callers if precision needs
+    explicit rounding.
+    """
+    rounded = round(value, max_decimals)
+    s = f"{rounded:.{max_decimals}f}"
+    if "." in s:
+        while s.endswith("0") and len(s.split(".")[1]) > min_decimals:
+            s = s[:-1]
+        if s.endswith("."):
+            s = s[:-1]
+    return s or "0"
+
 # ---------------------------------------------------------------------------
 # Page geometry — ISO 5457 A4 landscape
 # ---------------------------------------------------------------------------

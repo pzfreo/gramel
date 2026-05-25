@@ -21,6 +21,7 @@ from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped
 
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
+    dim_label,
     export_drawing,
     notes_block_lines,
     notes_block_text,
@@ -158,32 +159,32 @@ def build_drive_plate_drawing(
 
     # Centre-to-centre vertical distance (9.5) — dim on the LEFT side,
     # past the big boss outline (half-width = 13.5 page units at 3:1).
-    add_dim(f_big_centre, f_small_centre, "left", 20, f"{gap:.1f}")
+    add_dim(f_big_centre, f_small_centre, "left", 20, dim_label(gap, min_decimals=1))
     # Big boss diameter via leader
     add_leader(
         f_big_left,
         (f_big_left[0] - 14, f_big_left[1] - 6),
-        f"⌀{2 * r_big:.0f}",
+        f"⌀{dim_label(2 * r_big)}",
     )
     # Small boss diameter via leader
     add_leader(
         face_xy(r_small, gap),
         (face_xy(r_small, gap)[0] - 12, face_xy(r_small, gap)[1] + 6),
-        f"⌀{2 * r_small:.0f}",
+        f"⌀{dim_label(2 * r_small)}",
     )
 
     # Mount hole (big boss, Z=0) — leader to the right
     add_leader(
         f_big_centre,
         (f_big_right[0] + 14, f_big_centre[1] - 4),
-        f"⌀{mount_d:.1f} mount",
+        f"⌀{dim_label(mount_d)} mount",
     )
     # Captive bearing hole (small boss, Z=gap) — leader to the right.
     # Larger than the mount hole — the plate rides on this hole as a bearing.
     add_leader(
         f_small_centre,
         (face_xy(-r_small, gap)[0] + 14, f_small_centre[1] + 4),
-        f"⌀{captive_d:.1f} captive bearing",
+        f"⌀{dim_label(captive_d)} captive bearing",
     )
 
     # Tenon Z height — leader on the right side (label too wide for inline dim).
@@ -192,7 +193,7 @@ def build_drive_plate_drawing(
     add_leader(
         face_xy(0, tenon_height / 2),
         (f_big_right[0] + 14, f_big_centre[1] + 12),
-        f"tenon {tenon_height:.1f} tall",
+        f"tenon {dim_label(tenon_height)} tall",
     )
 
     # --- Side view page coords (centred at sx, sy) -------------------------
@@ -215,7 +216,7 @@ def build_drive_plate_drawing(
         (s_back[0], s_bot[1]),
         "below",
         8,
-        f"{thickness:.1f}",
+        dim_label(thickness, min_decimals=1),
     )
 
     # Tenon projection (1.5 mm past the +X face) — leader pointing at the tenon.
@@ -223,7 +224,7 @@ def build_drive_plate_drawing(
     add_leader(
         tenon_tip,
         (tenon_tip[0] + 14, tenon_tip[1] + 12),
-        f"tenon {tenon_depth:.1f} proj.",
+        f"tenon {dim_label(tenon_depth)} proj.",
     )
 
     # --- Iso view label -----------------------------------------------------
