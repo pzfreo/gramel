@@ -181,5 +181,30 @@ class CaseParams(BaseModel):
         json_schema_extra=_meta(),
     )
 
+    # --- Logo engraving on the lid top --------------------------------------
+
+    logo_text: str = Field(
+        default="Chelli\nStrings",
+        description="Engraved text on the lid's outer-top face. Use \\n for line breaks. Empty string disables.",
+        json_schema_extra=_meta(units=""),
+    )
+    logo_size: float = Field(
+        default=14.0,
+        gt=0,
+        description="Font size of the engraved logo (mm). Drives line spacing too.",
+        json_schema_extra=_meta(),
+    )
+    logo_depth: float = Field(
+        default=0.8,
+        gt=0,
+        description="Depth of the engraved recess into the lid top (mm). V-tapered at 45° (or shallower fallback) for self-supporting first-layer print.",
+        json_schema_extra=_meta(),
+    )
+    logo_rotation: float = Field(
+        default=-90.0,
+        description="Rotation of the engraved logo about the lid-top normal (degrees, CCW positive). Default -90° rotates the text 90° clockwise as viewed from above the closed case — so the case reads naturally when held with its long edge upright.",
+        json_schema_extra=_meta(),
+    )
+
 
 __all__ = ["CaseParams"]

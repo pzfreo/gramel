@@ -19,6 +19,7 @@ the CZ=0 mating face.
 """
 
 import math
+from pathlib import Path
 
 from build123d import (
     Align,
@@ -27,16 +28,28 @@ from build123d import (
     Circle,
     Compound,
     Cylinder,
+    FontStyle,
     Part,
     Plane,
     Polygon,
     Pos,
     Rot,
+    Text,
     extrude,
 )
 
 from gramel.case.parameters import CaseParams
 from gramel.parameters import PurflingCutterParams
+
+# Font file shipped alongside this module; matches the Chelli Strings
+# branding used by pzfreo/pegturner.
+_LOGO_FONT_PATH = str(Path(__file__).parent / "MrsSaintDelafield-Regular.ttf")
+
+# Cascading V-taper angles for the engraved letters — steepest first so
+# the recess is self-supporting when the lid prints face-down. Falls
+# back to gentler angles, then a straight extrude as last resort, if a
+# particular glyph's thin strokes can't survive the chosen taper.
+_ENGRAVE_TAPER_ANGLES = (45, 30, 20, 10)
 
 
 # ---------------------------------------------------------------------------
@@ -484,6 +497,63 @@ def _build_magnet_pockets(
 # ---------------------------------------------------------------------------
 
 
+def _engrave_lid_logo(lid: Part, bounds: dict[str, float], case: CaseParams) -> Part:
+    """Recess the configured logo text into the lid's outer-top face.
+
+    Each line is extruded *down* from CZ=ext_cz_max into the lid with a
+    V-taper (steepest first, fallback chain) so the cavity is self-
+    supporting when the lid prints face-down in the flat-open print
+    orientation (the lid's outer-top sits on the bed).
+
+    The text block is built at the origin (lines stacked along ±Y),
+    then rotated about the lid-top normal by ``case.logo_rotation``
+    (degrees CCW), then translated to the lid centre.
+
+    Returns the lid unchanged if logo_text is empty.
+    """
+    if not case.logo_text:
+        return lid
+
+    cx_c = (bounds["ext_cx_max"] + bounds["ext_cx_min"]) / 2
+    cy_c = (bounds["ext_cy_max"] + bounds["ext_cy_min"]) / 2
+    cz_top = bounds["ext_cz_max"]
+
+    text_lines = case.logo_text.split("\n")
+    line_spacing = case.logo_size
+    total_text_height = (len(text_lines) - 1) * line_spacing
+
+    # Build the text block at the origin, with lines stacked along Y.
+    text_solid = None
+    for i, line in enumerate(text_lines):
+        if not line.strip():
+            continue
+        y_offset = total_text_height / 2 - i * line_spacing
+        line_sketch = Pos(0, y_offset) * Text(
+            line,
+            font_size=case.logo_size,
+            font_path=_LOGO_FONT_PATH,
+            font_style=FontStyle.BOLD,
+            align=(Align.CENTER, Align.CENTER),
+        )
+
+        line_solid = None
+        for taper in _ENGRAVE_TAPER_ANGLES:
+            try:
+                line_solid = Pos(0, 0, cz_top) * extrude(line_sketch, -case.logo_depth, taper=taper)
+                break
+            except Exception:
+                continue
+        if line_solid is None:
+            line_solid = Pos(0, 0, cz_top) * extrude(line_sketch, -case.logo_depth)
+
+        text_solid = line_solid if text_solid is None else text_solid + line_solid
+
+    if text_solid is not None:
+        text_solid = Pos(cx_c, cy_c, 0) * Rot(0, 0, case.logo_rotation) * text_solid
+        lid = lid - text_solid
+    return lid
+
+
 def _half(
     half: str,
     cutter: PurflingCutterParams,
@@ -534,6 +604,9 @@ def _half(
     body = body - my_cavities
     body = body - pocket
     body = body - _build_magnet_pockets(bounds, case, cutter, half)
+
+    if half == "lid":
+        body = _engrave_lid_logo(body, bounds, case)
 
     return body
 

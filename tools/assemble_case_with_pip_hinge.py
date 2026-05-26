@@ -50,11 +50,11 @@ PROJ = Path(__file__).parent.parent
 OUT_DIR = PROJ / "dist" / "case"
 
 # Four pip-hinge inputs (everything else derived inside HingeParams).
-HINGE_LENGTH = 25.0
-STATIONS = 6
+HINGE_LENGTH = 50.0 / 3          # 2/3 of the previous 25 mm = ~16.67 mm each
+STATIONS = 4                     # clasp_width = 16.67/4 ≈ 4.17 mm (same as before)
 KNUCKLE = Knuckle.SMALL          # Po = max(case_h/2, 5 mm) = 5 mm at case_h=8
 
-CLUSTER_END_MARGIN = 17.5        # = HINGE_LENGTH/2 + 5 mm inset from each case end
+CLUSTER_END_MARGIN = HINGE_LENGTH / 2 + 5  # keep 5 mm inset from each case end
 
 
 def _split_hinge_by_side(hinge):
