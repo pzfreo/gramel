@@ -3,16 +3,33 @@
 Upstream: https://github.com/pzfreo/pip-hinge
 Original FreeCAD design by r0berts:
   https://www.printables.com/model/1395662-parametric-print-in-place-hinge-freecad
-build123d port: Paul Fremantle (pzfreo).
-Both licensed CC BY 4.0.
+build123d port + four-input API: Paul Fremantle (pzfreo).
+All CC BY 4.0.
 
 Vendored as a prototype dependency for `tools/assemble_case_with_pip_hinge.py`.
 Do not edit here — change upstream and re-vendor if the design evolves.
+
+──────────────────────────────────────────────────────────────────────────────
+
+Parametric print-in-place piano hinge for clamshell cases. Four inputs,
+everything else derived:
+
+  * ``case_h``        wall height of the case half (mm)
+  * ``hinge_length``  total hinge length along its axis (mm)
+  * ``stations``      number of alternating cs/ps tabs (even, ≥ 2)
+  * ``knuckle``       Knuckle.FULL  → Po = 2 × case_h, knuckle rests on bed,
+                                       no ramp needed
+                      Knuckle.HALF  → Po = case_h, 45°-or-shallower ramp
+                      Knuckle.SMALL → Po = max(case_h/2, 5 mm), steep ramp
+
+Print orientation: lay flat on the bed, hinge axis along Y (parallel to bed).
 """
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from typing import Optional
 
@@ -35,313 +52,283 @@ from OCP.BRep import BRep_Builder
 from OCP.TopoDS import TopoDS_Compound
 
 
+class Knuckle(Enum):
+    """Knuckle size.
+
+    FULL and HALF are percentages of the closed-case height (2 × case_h);
+    SMALL is computed in ``_resolve()`` as max(case_h/2, 5 mm) — the 1/4-of-FULL
+    ratio with a 5 mm absolute floor that keeps the bore + pin big enough to
+    print reliably on a 0.4 mm-nozzle FDM regardless of case height.
+    """
+
+    FULL = 100   # Po = 2 × case_h; knuckle bottom touches bed, no ramp needed
+    HALF = 50    # Po = case_h; 45°-or-shallower self-supporting ramp
+    SMALL = -1   # sentinel — see _resolve() for the actual size formula
+
+
 @dataclass(frozen=True)
 class HingeParams:
-    hinge_height: float = 40.0
-    hinge_width: float = 30.0
-    hinge_thickness: float = 5.0
-    pivot_inner: float = 5.0
-    pivot_outer: Optional[float] = None
-    pivot_clearance: float = 1.0
-    clasp_width: Optional[float] = None
-    clasp_clearance: float = 0.6
-    clasp_center: Optional[float] = None
+    """User-facing parameters for the print-in-place hinge."""
+
+    case_h: float                        # case wall height (mm)
+    hinge_length: float                  # total hinge length along the axis (mm)
+    stations: int = 6                    # alternating cs/ps tab count (even, ≥ 2)
+    knuckle: Knuckle = Knuckle.FULL      # knuckle size
+    mounting_flat: float = 0.5           # flat width past the disc edge (mm)
+    pivot_clearance: float = 0.6         # radial pin/bore gap (mm)
+    clasp_clearance: Optional[float] = None
+    """Axial gap between cs and ps tabs (mm).
+
+    Leave as ``None`` to use the size-aware default: 0.2 mm for
+    ``Knuckle.SMALL`` (matches the original r0berts FreeCAD value — the
+    tighter fit matters more when the rest of the hinge is small) and
+    0.4 mm for ``HALF`` and ``FULL`` (the relaxed value that prints
+    reliably on a standard 0.4 mm-nozzle FDM).
+    """
+
+    # Pin-engagement constants hand-tuned in the original FreeCAD source.
+    # Leave at defaults unless deliberately tweaking pin feel.
     pin_cyl_extra: float = 1.5
     pin_end_offset: float = 0.5
     pin_short_cyl_factor: float = 1 / 3
-    self_support_ramp: bool = False
 
     def _resolve(self) -> dict:
-        pivot_outer = self.pivot_outer if self.pivot_outer is not None else self.pivot_inner * 2
-        clasp_width = self.clasp_width if self.clasp_width is not None else self.hinge_height / 6
-        clasp_center = self.clasp_center if self.clasp_center is not None else self.hinge_height / 3
-        if self.pivot_clearance >= self.pivot_inner:
-            raise ValueError(f"pivot_clearance ({self.pivot_clearance}) must be < pivot_inner ({self.pivot_inner})")
-        if pivot_outer <= self.pivot_inner:
-            raise ValueError(f"pivot_outer ({pivot_outer}) must be > pivot_inner ({self.pivot_inner})")
-        # When self_support_ramp is enabled, the leaf extends from the disc
-        # bottom (Z=-T) down to Z=-(T+W) at the outer face, with a 45° ramp
-        # from (W, -leaf_height) up to (0, -T). The 45° constraint requires
-        # leaf_height - T == W. The leaf inner face becomes a teepee that
-        # supports the disc from below when the hinge is laid flat in a
-        # clamshell case.
-        leaf_height = self.hinge_thickness + self.hinge_width if self.self_support_ramp else self.hinge_thickness
-        return dict(
-            H=self.hinge_height, W=self.hinge_width, T=self.hinge_thickness,
-            Pi=self.pivot_inner, Po=pivot_outer, Pc=self.pivot_clearance,
-            Cw=clasp_width, Cc=self.clasp_clearance, Cz=clasp_center,
-            pin_cyl_extra=self.pin_cyl_extra, pin_end_offset=self.pin_end_offset,
-            pin_short=self.pin_short_cyl_factor,
-            leaf_height=leaf_height,
-        )
+        if self.case_h <= 0:
+            raise ValueError(f"case_h must be > 0 (got {self.case_h})")
+        if self.hinge_length <= 0:
+            raise ValueError(f"hinge_length must be > 0 (got {self.hinge_length})")
+        if self.stations < 2 or self.stations % 2 != 0:
+            raise ValueError(
+                f"stations must be an even integer ≥ 2 (got {self.stations})"
+            )
+        if self.mounting_flat < 0:
+            raise ValueError(f"mounting_flat must be ≥ 0 (got {self.mounting_flat})")
+
+        if self.knuckle is Knuckle.SMALL:
+            # 1/4 of FULL, floored at 5 mm so the pin & bore stay printable
+            # at any case height. For case_h ≥ 10 mm the ratio dominates;
+            # below that the 5 mm floor kicks in.
+            Po = max(self.case_h / 2, 5.0)
+        else:
+            Po = 2 * self.case_h * self.knuckle.value / 100
+        Ro = Po / 2
+        Pi = Po / 2                                  # bore diameter (= Ro)
+        if Pi <= self.pivot_clearance:
+            raise ValueError(
+                f"bore Ø ({Pi:.2f}) ≤ pivot_clearance ({self.pivot_clearance}); "
+                f"increase case_h or reduce pivot_clearance"
+            )
+
+        Cw = self.hinge_length / self.stations
+        if Cw < 3:
+            warnings.warn(
+                f"clasp_width = {Cw:.2f}mm is below ~3mm; likely too thin for FDM. "
+                f"Reduce stations or increase hinge_length.",
+                stacklevel=2,
+            )
+
+        # Size-aware clasp_clearance default: tighter (0.2) for SMALL,
+        # relaxed (0.4) for HALF/FULL. User can still override.
+        if self.clasp_clearance is None:
+            Cc = 0.2 if self.knuckle is Knuckle.SMALL else 0.4
+        else:
+            Cc = self.clasp_clearance
+
+        return {
+            "case_h": self.case_h,
+            "H": self.hinge_length,
+            "stations": self.stations,
+            "Po": Po,
+            "Ro": Ro,
+            "T": Ro,                                 # T = Ro by construction
+            "Pi": Pi,
+            "Pc": self.pivot_clearance,
+            "W": Ro + self.mounting_flat,
+            "Cw": Cw,
+            "Cc": Cc,
+            "pin_cyl_extra": self.pin_cyl_extra,
+            "pin_end_offset": self.pin_end_offset,
+            "pin_short": self.pin_short_cyl_factor,
+        }
 
 
-def make_hinge_parts(params: HingeParams = None) -> tuple[Compound, Compound]:
-    """Build pip-hinge and return (cylinder_side, pin_side) as separate compounds.
+# ── pocket polylines (parametric in N stations) ───────────────────────────────
 
-    Each may contain multiple solids (the comb pocket can split a leaf into
-    several disconnected pieces, and the pin is 4 capsules). Return them in
-    a Compound to preserve the multi-solid structure.
+def _cs_pocket_polyline(N: int, Cw: float, Cc: float, Xi: float, Xo_cs: float):
+    """Pocket cut for the cs (cylinder-side) leaf. Excludes N/2 cs tabs.
+
+    cs tabs (with bores in them) sit at Y centres spaced 2·Cw apart,
+    symmetric around Y = 0. Each tab is Cw − Cc wide (the Cc/2 margin
+    per side is the printable clearance between meshing cs and ps tabs).
     """
-    p = (params or HingeParams())._resolve()
-    H, W, T = p["H"], p["W"], p["T"]
-    Pi, Po, Pc = p["Pi"], p["Po"], p["Pc"]
-    Cw, Cc, Cz = p["Cw"], p["Cc"], p["Cz"]
-    Lh = p["leaf_height"]
+    k = N // 2
+    half_tab = (Cw - Cc) / 2
+    pad_max = (N + 1) * Cw / 2 + Cc / 2     # extends slightly past H/2
 
-    Ro = Po / 2
-    Ri = Pi / 2
-    Rp = Ri - Pc / 2
-    Xi = Ro + Pc
-    pocket_extrude = Lh + Pc / 2
+    pts = [(Xo_cs, pad_max), (Xo_cs, -pad_max), (Xi, -pad_max)]
+    cs_centres = [(-(k - 1) + 2 * i) * Cw for i in range(k)]
+    for Y_c in cs_centres:                  # ascending Y
+        pts.extend([
+            (Xi,  Y_c - half_tab),
+            (-Xi, Y_c - half_tab),
+            (-Xi, Y_c + half_tab),
+            (Xi,  Y_c + half_tab),
+        ])
+    pts.extend([(Xi, pad_max), (Xo_cs, pad_max)])
+    return Polyline(*pts)
 
-    cs_profile = Polyline(
-        (Ro, 0), (W, 0), (W, -Lh), (0, -T),
-    ) + CenterArc(center=(0, 0), radius=Ro, start_angle=270, arc_size=-270)
-    cs_sketch = Sketch() + Plane.XZ * (make_face(cs_profile) - Circle(Ri))
-    cs_pad = extrude(cs_sketch, amount=H / 2, both=True)
 
-    pad_max = 3.5 * Cw + Cc / 2
-    tab1_o = 2.5 * Cw - Cc / 2
-    tab1_i = 1.5 * Cw + Cc / 2
-    tab0_o = Cw / 2 - Cc / 2
-    Xo_cs = Xi - W
+def _ps_pocket_polyline(N: int, Cw: float, Xi: float, Xo_ps: float):
+    """Pocket cut for the ps (pin-side) leaf. Excludes ps end-caps + middle tabs.
 
-    cs_pocket_profile = Polyline(
-        (Xo_cs,  pad_max), (Xo_cs, -pad_max),
-        ( Xi,   -pad_max),
-        ( Xi,   -tab1_o),  (-Xi, -tab1_o),
-        (-Xi,   -tab1_i),  ( Xi, -tab1_i),
-        ( Xi,   -tab0_o),  (-Xi, -tab0_o),
-        (-Xi,    tab0_o),  ( Xi,  tab0_o),
-        ( Xi,    tab1_i),  (-Xi,  tab1_i),
-        (-Xi,    tab1_o),  ( Xi,  tab1_o),
-        ( Xi,    pad_max),
-        (Xo_cs,  pad_max),
-    )
-    cs_pocket = make_face(cs_pocket_profile)
-    cylinder_side = cs_pad - extrude(cs_pocket, amount=pocket_extrude, both=True)
+    Pattern along Y: ps_end_cap (Cw/2) | cs (Cw) | ps_middle (Cw) | cs | ... | ps_end_cap.
+    The ends are half-width ps caps; in between, full-Cw alternating cs/ps tabs,
+    starting and ending with cs.
+    """
+    k = N // 2
+    ps_outer = (k - 0.5) * Cw                # inner edge of the ps end-caps
+    ps_centres = [(-(k - 2) + 2 * i) * Cw for i in range(k - 1)]
 
-    ps_profile = Polyline(
-        (-Ro, 0), (-W, 0), (-W, -Lh), (0, -T),
-    ) + CenterArc(center=(0, 0), radius=Ro, start_angle=270, arc_size=270)
-    ps_sketch = Sketch() + Plane.XZ * make_face(ps_profile)
-    ps_pad = extrude(ps_sketch, amount=H / 2, both=True)
+    pts = [
+        (-Xi,   -ps_outer),
+        (Xo_ps, -ps_outer),
+        (Xo_ps,  ps_outer),
+        (-Xi,    ps_outer),
+    ]
+    for Y_c in reversed(ps_centres):         # walk back down with notches
+        pts.extend([
+            (-Xi, Y_c + Cw / 2),
+            (Xi,  Y_c + Cw / 2),
+            (Xi,  Y_c - Cw / 2),
+            (-Xi, Y_c - Cw / 2),
+        ])
+    pts.append((-Xi, -ps_outer))
+    return Polyline(*pts)
 
-    ps_tab_outer = 2.5 * Cw
-    ps_tab_mid_o = 1.5 * Cw
-    ps_tab_mid_i = 0.5 * Cw
-    Xo_ps = 4 * Po - Xi
 
-    ps_pocket_profile = Polyline(
-        (-Xi,    -ps_tab_outer),
-        ( Xo_ps, -ps_tab_outer),
-        ( Xo_ps,  ps_tab_outer),
-        (-Xi,     ps_tab_outer),
-        (-Xi,     ps_tab_mid_o),  ( Xi,  ps_tab_mid_o),
-        ( Xi,     ps_tab_mid_i),  (-Xi,  ps_tab_mid_i),
-        (-Xi,    -ps_tab_mid_i),  ( Xi, -ps_tab_mid_i),
-        ( Xi,    -ps_tab_mid_o),  (-Xi, -ps_tab_mid_o),
-        (-Xi,    -ps_tab_outer),
-    )
-    ps_pocket = make_face(ps_pocket_profile)
-    pin_side = ps_pad - extrude(ps_pocket, amount=pocket_extrude, both=True)
+# ── pin segments (parametric in N stations) ───────────────────────────────────
 
-    cyl_long = Cw + p["pin_cyl_extra"]
-    cyl_short = Cw * p["pin_short"]
+def _pin_loops(N: int, Cw: float, Rp: float,
+               pin_cyl_extra: float, pin_end_offset: float, pin_short: float):
+    """2D pin profiles to be revolved around Y axis.
+
+    One long capsule per ps middle tab (N/2 − 1 of them) plus a bullet at each
+    end-cap (always 2). For N = 2 there are no middle tabs, so just 2 bullets.
+    """
+    k = N // 2
+    long_centres = [(-(k - 2) + 2 * i) * Cw for i in range(k - 1)]
+    cyl_long = Cw + pin_cyl_extra
     half_long = cyl_long / 2
-    y_centre_long = Cz / 2
-    y_long_top = y_centre_long + half_long
-    y_long_bot = y_centre_long - half_long
-    y_long_cap_t = y_long_top + Rp
-    y_long_cap_b = y_long_bot - Rp
 
-    loop0 = (
-        Line((Rp, y_long_top), (Rp, y_long_bot))
-        + CenterArc(center=(0, y_long_bot), radius=Rp, start_angle=360, arc_size=-90)
-        + Line((0, y_long_cap_b), (0, y_long_cap_t))
-        + CenterArc(center=(0, y_long_top), radius=Rp, start_angle=90, arc_size=-90)
-    )
+    loops = []
+    for Y_c in long_centres:
+        y_top = Y_c + half_long
+        y_bot = Y_c - half_long
+        y_cap_t = y_top + Rp
+        y_cap_b = y_bot - Rp
+        loops.append(
+            Line((Rp, y_top), (Rp, y_bot))
+            + CenterArc(center=(0, y_bot), radius=Rp, start_angle=360, arc_size=-90)
+            + Line((0, y_cap_b), (0, y_cap_t))
+            + CenterArc(center=(0, y_top), radius=Rp, start_angle=90, arc_size=-90)
+        )
 
-    loop2 = (
-        CenterArc(center=(0, -y_long_bot), radius=Rp, start_angle=0, arc_size=90)
-        + Line((0, -y_long_cap_b), (0, -y_long_cap_t))
-        + CenterArc(center=(0, -y_long_top), radius=Rp, start_angle=270, arc_size=90)
-        + Line((Rp, -y_long_top), (Rp, -y_long_bot))
-    )
+    # End-cap bullets: hemisphere on the inner end (pointing toward the centre),
+    # flat top buried inside the ps end-cap material.
+    end_inner = (k - 0.5) * Cw
+    cyl_short = Cw * pin_short
+    y_short_cyl_b = end_inner - pin_end_offset
+    y_short_cyl_t = y_short_cyl_b + cyl_short
+    y_short_cap_b = y_short_cyl_b - Rp
 
-    y_short_cyl_bot = 2.5 * Cw - p["pin_end_offset"]
-    y_short_cyl_top = y_short_cyl_bot + cyl_short
-    y_short_outer_flat = y_short_cyl_top
-    y_short_cap_bot = y_short_cyl_bot - Rp
-
-    loop1 = (
+    loops.append(                            # +Y end
         Polyline(
-            (0, y_short_outer_flat),
-            (Rp, y_short_outer_flat),
-            (Rp, y_short_cyl_bot),
+            (0, y_short_cyl_t),
+            (Rp, y_short_cyl_t),
+            (Rp, y_short_cyl_b),
         )
-        + CenterArc(center=(0, y_short_cyl_bot), radius=Rp, start_angle=0, arc_size=-90)
-        + Line((0, y_short_cap_bot), (0, y_short_outer_flat))
+        + CenterArc(center=(0, y_short_cyl_b), radius=Rp, start_angle=0, arc_size=-90)
+        + Line((0, y_short_cap_b), (0, y_short_cyl_t))
     )
-    loop3 = (
-        CenterArc(center=(0, -y_short_cyl_bot), radius=Rp, start_angle=0, arc_size=90)
+    loops.append(                            # −Y end (mirror)
+        CenterArc(center=(0, -y_short_cyl_b), radius=Rp, start_angle=0, arc_size=90)
         + Polyline(
-            (0, -y_short_cap_bot),
-            (0, -y_short_outer_flat),
-            (Rp, -y_short_outer_flat),
-            (Rp, -y_short_cyl_bot),
+            (0, -y_short_cap_b),
+            (0, -y_short_cyl_t),
+            (Rp, -y_short_cyl_t),
+            (Rp, -y_short_cyl_b),
         )
     )
+    return loops
 
-    pin_sketch = make_face(loop0) + make_face(loop1) + make_face(loop2) + make_face(loop3)
-    pin_side = pin_side + revolve(pin_sketch, axis=Axis.Y, revolution_arc=-360)
 
-    # The cs boolean subtract sometimes leaves phantom chunks at X ∈ [-Ro, Xi]
-    # — pieces that should have been carved away but survive between the cs
-    # tabs. Filter cs to keep only solids that include the paddle outer
-    # (X > Xi = Ro + Pc), since legitimate cs material is anchored to that
-    # spine. ps's wider pocket doesn't have this problem; keep all ps solids.
-    def _filter_cs(part) -> list:
-        keep = []
-        for solid in part.solids():
-            bb = solid.bounding_box()
-            if bb.max.X > Xi + 0.01:  # touches paddle outer
-                keep.append(solid)
-        return keep
-
-    cs_clean = _filter_cs(cylinder_side)
-
-    def _to_compound(solids) -> Compound:
-        builder = BRep_Builder()
-        occ = TopoDS_Compound()
-        builder.MakeCompound(occ)
-        for solid in solids:
-            builder.Add(occ, solid.wrapped)
-        return Compound(occ)
-
-    return _to_compound(cs_clean), _to_compound(list(pin_side.solids()))
-
+# ── main constructor ──────────────────────────────────────────────────────────
 
 def make_hinge(params: HingeParams = None) -> Compound:
-    p = (params or HingeParams())._resolve()
-    H, W, T = p["H"], p["W"], p["T"]
-    Pi, Po, Pc = p["Pi"], p["Po"], p["Pc"]
-    Cw, Cc, Cz = p["Cw"], p["Cc"], p["Cz"]
-    Lh = p["leaf_height"]
+    """Build the full print-in-place hinge as a 2-body Compound."""
+    if params is None:
+        params = HingeParams(case_h=10.0, hinge_length=60.0)
+    p = params._resolve()
+    case_h, H, N = p["case_h"], p["H"], p["stations"]
+    Ro, T, Po = p["Ro"], p["T"], p["Po"]
+    Pi, Pc, W = p["Pi"], p["Pc"], p["W"]
+    Cw, Cc = p["Cw"], p["Cc"]
 
-    Ro = Po / 2
-    Ri = Pi / 2
-    Rp = Ri - Pc / 2
-    Xi = Ro + Pc
-    pocket_extrude = Lh + Pc / 2
+    Ri = Pi / 2                              # bore radius
+    Rp = Ri - Pc / 2                         # pin radius
+    Xi = Ro + Pc                             # inner X boundary of pocket comb
+    pocket_extrude = case_h + Pc / 2
 
-    cs_profile = Polyline(
-        (Ro, 0), (W, 0), (W, -Lh), (0, -T),
-    ) + CenterArc(center=(0, 0), radius=Ro, start_angle=270, arc_size=-270)
+    # ── cs (cylinder-side) leaf ──────────────────────────────────────────────
+    # Unified polyline: at FULL (T = case_h) the "ramp" segment from
+    # (W, -case_h) to (0, -T) lies flat on the bed; at HALF it slopes up
+    # at 45° (or shallower if mounting_flat > 0).
+    cs_profile = (
+        Polyline((Ro, 0), (W, 0), (W, -case_h), (0, -T))
+        + CenterArc(center=(0, 0), radius=Ro, start_angle=270, arc_size=-270)
+    )
     cs_sketch = Sketch() + Plane.XZ * (make_face(cs_profile) - Circle(Ri))
     cs_pad = extrude(cs_sketch, amount=H / 2, both=True)
-
-    pad_max = 3.5 * Cw + Cc / 2
-    tab1_o = 2.5 * Cw - Cc / 2
-    tab1_i = 1.5 * Cw + Cc / 2
-    tab0_o = Cw / 2 - Cc / 2
-    Xo_cs = Xi - W
-
-    cs_pocket_profile = Polyline(
-        (Xo_cs,  pad_max),
-        (Xo_cs, -pad_max),
-        ( Xi,   -pad_max),
-        ( Xi,   -tab1_o),  (-Xi, -tab1_o),
-        (-Xi,   -tab1_i),  ( Xi, -tab1_i),
-        ( Xi,   -tab0_o),  (-Xi, -tab0_o),
-        (-Xi,    tab0_o),  ( Xi,  tab0_o),
-        ( Xi,    tab1_i),  (-Xi,  tab1_i),
-        (-Xi,    tab1_o),  ( Xi,  tab1_o),
-        ( Xi,    pad_max),
-        (Xo_cs,  pad_max),
-    )
-    cs_pocket = make_face(cs_pocket_profile)
+    # Pocket polygon left edge must stay left of the notch jogs (which go to -Xi),
+    # otherwise the polyline self-intersects and OCC misclassifies the interior.
+    # Old defaults happened to satisfy Xi − W ≤ −Xi; the new API's small W doesn't.
+    Xo_cs = min(Xi - W, -Xi - 1.0)
+    cs_pocket = make_face(_cs_pocket_polyline(N, Cw, Cc, Xi, Xo_cs))
     cylinder_side = cs_pad - extrude(cs_pocket, amount=pocket_extrude, both=True)
 
-    ps_profile = Polyline(
-        (-Ro, 0), (-W, 0), (-W, -Lh), (0, -T),
-    ) + CenterArc(center=(0, 0), radius=Ro, start_angle=270, arc_size=270)
+    # ── ps (pin-side) leaf ───────────────────────────────────────────────────
+    ps_profile = (
+        Polyline((-Ro, 0), (-W, 0), (-W, -case_h), (0, -T))
+        + CenterArc(center=(0, 0), radius=Ro, start_angle=270, arc_size=270)
+    )
     ps_sketch = Sketch() + Plane.XZ * make_face(ps_profile)
     ps_pad = extrude(ps_sketch, amount=H / 2, both=True)
-
-    ps_tab_outer = 2.5 * Cw
-    ps_tab_mid_o = 1.5 * Cw
-    ps_tab_mid_i = 0.5 * Cw
     Xo_ps = 4 * Po - Xi
-
-    ps_pocket_profile = Polyline(
-        (-Xi,    -ps_tab_outer),
-        ( Xo_ps, -ps_tab_outer),
-        ( Xo_ps,  ps_tab_outer),
-        (-Xi,     ps_tab_outer),
-        (-Xi,     ps_tab_mid_o),  ( Xi,  ps_tab_mid_o),
-        ( Xi,     ps_tab_mid_i),  (-Xi,  ps_tab_mid_i),
-        (-Xi,    -ps_tab_mid_i),  ( Xi, -ps_tab_mid_i),
-        ( Xi,    -ps_tab_mid_o),  (-Xi, -ps_tab_mid_o),
-        (-Xi,    -ps_tab_outer),
-    )
-    ps_pocket = make_face(ps_pocket_profile)
+    ps_pocket = make_face(_ps_pocket_polyline(N, Cw, Xi, Xo_ps))
     pin_side = ps_pad - extrude(ps_pocket, amount=pocket_extrude, both=True)
 
-    cyl_long  = Cw + p["pin_cyl_extra"]
-    cyl_short = Cw * p["pin_short"]
-    half_long = cyl_long / 2
-    y_centre_long  = Cz / 2
-    y_long_top    = y_centre_long + half_long
-    y_long_bot    = y_centre_long - half_long
-    y_long_cap_t  = y_long_top + Rp
-    y_long_cap_b  = y_long_bot - Rp
-
-    loop0 = (
-        Line((Rp, y_long_top), (Rp, y_long_bot))
-        + CenterArc(center=(0, y_long_bot), radius=Rp, start_angle=360, arc_size=-90)
-        + Line((0, y_long_cap_b), (0, y_long_cap_t))
-        + CenterArc(center=(0, y_long_top), radius=Rp, start_angle=90, arc_size=-90)
-    )
-
-    loop2 = (
-        CenterArc(center=(0, -y_long_bot), radius=Rp, start_angle=0, arc_size=90)
-        + Line((0, -y_long_cap_b), (0, -y_long_cap_t))
-        + CenterArc(center=(0, -y_long_top), radius=Rp, start_angle=270, arc_size=90)
-        + Line((Rp, -y_long_top), (Rp, -y_long_bot))
-    )
-
-    y_short_cyl_bot    = 2.5 * Cw - p["pin_end_offset"]
-    y_short_cyl_top    = y_short_cyl_bot + cyl_short
-    y_short_outer_flat = y_short_cyl_top
-    y_short_cap_bot    = y_short_cyl_bot - Rp
-
-    loop1 = (
-        Polyline(
-            (0, y_short_outer_flat),
-            (Rp, y_short_outer_flat),
-            (Rp, y_short_cyl_bot),
-        )
-        + CenterArc(center=(0, y_short_cyl_bot), radius=Rp, start_angle=0, arc_size=-90)
-        + Line((0, y_short_cap_bot), (0, y_short_outer_flat))
-    )
-    loop3 = (
-        CenterArc(center=(0, -y_short_cyl_bot), radius=Rp, start_angle=0, arc_size=90)
-        + Polyline(
-            (0, -y_short_cap_bot),
-            (0, -y_short_outer_flat),
-            (Rp, -y_short_outer_flat),
-            (Rp, -y_short_cyl_bot),
-        )
-    )
-
-    pin_sketch = make_face(loop0) + make_face(loop1) + make_face(loop2) + make_face(loop3)
+    # ── pin segments ────────────────────────────────────────────────────────
+    loops = _pin_loops(N, Cw, Rp, p["pin_cyl_extra"], p["pin_end_offset"], p["pin_short"])
+    pin_sketch = make_face(loops[0])
+    for loop in loops[1:]:
+        pin_sketch = pin_sketch + make_face(loop)
     pin_side = pin_side + revolve(pin_sketch, axis=Axis.Y, revolution_arc=-360)
 
+    # ── assemble into a 2-body Compound ─────────────────────────────────────
     builder = BRep_Builder()
     occ = TopoDS_Compound()
     builder.MakeCompound(occ)
     for solid in [*cylinder_side.solids(), *pin_side.solids()]:
         builder.Add(occ, solid.wrapped)
     return Compound(occ)
+
+
+if __name__ == "__main__":
+    out = Path(__file__).parent / "examples"
+    out.mkdir(exist_ok=True)
+    for name, knuckle in [("full", Knuckle.FULL), ("half", Knuckle.HALF)]:
+        h = make_hinge(HingeParams(case_h=10.0, hinge_length=60.0, knuckle=knuckle))
+        stem = out / f"hinge_{name}"
+        export_step(h, str(stem) + ".step")
+        export_stl(h, str(stem) + ".stl")
+        print(f"Exported {stem}.step / .stl")
