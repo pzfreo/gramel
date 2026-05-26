@@ -1,12 +1,15 @@
-"""Prototype: gramel case + pip-hinge piano hinge (alternative to Oral-B reference hinge).
+"""Build the default print-in-place case using the pip-hinge piano hinge.
 
 Builds the case body without hinge, then fuses two pip-hinge piano hinges
 (one near each CX end of the back edge) using build123d boolean union.
 No trimesh round-trip required.
 
-Does NOT modify the Oral-B variant — `tools/assemble_case_with_reference_hinge.py`
-and `gramel/case/printable/case_print_in_place.stl` remain intact. This
-script outputs to `dist/case/case_pip_hinge_print.stl`.
+This is the *default* shipped case
+(`gramel/case/printable/case_print_in_place.stl`). The Oral-B reference
+variant lives at `case_print_in_place_oralb.stl`, built by
+`tools/assemble_case_with_reference_hinge.py`. This script outputs to
+`dist/case/case_pip_hinge_print.stl` for iteration; copy to the
+`printable/` location to ship.
 
 Uses the upstream pip-hinge four-input API with `Knuckle.SMALL`:
 
