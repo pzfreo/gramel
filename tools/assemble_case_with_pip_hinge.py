@@ -99,19 +99,27 @@ def build_and_assemble() -> None:
     Po = resolved["Po"]
 
     hinge_axis_cy = bounds["ext_cy_max"] + W           # leaf outer face sits on wall inner face
+    pz_off = hinge_params.pivot_z_offset               # 0.2 mm by default
 
     print(f"case_h: {case_h:.2f}")
     print(f"knuckle: {KNUCKLE.name} (Po={Po:.2f} mm, leaf W={W:.2f} mm)")
-    print(f"hinge axis at print Y = {hinge_axis_cy:.2f}, Z = {case_h:.2f}")
+    print(f"hinge axis at print Y = {hinge_axis_cy:.2f}, Z = {case_h + pz_off:.2f}")
     print(f"gap between halves in print Y: {2 * W:.2f} mm")
+    print(f"closed seam Z gap: {2 * pz_off:.2f} mm (= 2 × pivot_z_offset)")
 
-    # Rotate lid 180° about (Y=hinge_axis_cy, Z=0) so it lands flat-open
-    # next to the base.
+    # Lift the (closed-orientation) lid by 2·pz_off so when rotated about
+    # the lifted axis it lands flat on the bed. The 2·pz_off gap shows
+    # up at the closed lid-to-base seam — intentional, prevents a high
+    # spot on the seam from springing the front of the case open.
+    lid_lifted = Pos(0, 0, 2 * pz_off) * lid_b3d
+
+    # Rotate the (lifted) lid 180° about the actual hinge axis at
+    # (Y=hinge_axis_cy, Z=pz_off) so it lands flat-open next to the base.
     lid_open = (
-        Pos(0, hinge_axis_cy, 0)
+        Pos(0, hinge_axis_cy, pz_off)
         * Rot(180, 0, 0)
-        * Pos(0, -hinge_axis_cy, 0)
-        * lid_b3d
+        * Pos(0, -hinge_axis_cy, -pz_off)
+        * lid_lifted
     )
 
     # Shift both halves so base bottom sits on the bed (print z=0).
@@ -183,7 +191,7 @@ def build_and_assemble() -> None:
 
     print(f"\n{'angle':>6}  {'inter. vol (mm³)':>20}  {'verdict':<12}")
     print("-" * 50)
-    axis_point = np.array([0.0, hinge_axis_cy, case_h])
+    axis_point = np.array([0.0, hinge_axis_cy, case_h + pz_off])
     axis_dir = np.array([1.0, 0.0, 0.0])
 
     for angle_deg in [180, 150, 120, 90, 60, 30, 0]:
