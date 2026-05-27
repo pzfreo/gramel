@@ -5,6 +5,27 @@ This file is auto-updated by the release workflow on every tagged release.
 
 ---
 
+## v0.1.8 (2026-05-27)
+
+## What's Changed
+* Engrave Chelli Strings logo on the lid top by @pzfreo in https://github.com/pzfreo/gramel/pull/56
+* Update pip-hinge variant to new upstream API + Knuckle.SMALL by @pzfreo in https://github.com/pzfreo/gramel/pull/55
+* pip-hinge: pivot_z_offset as a first-class HingeParams param by @pzfreo in https://github.com/pzfreo/gramel/pull/57
+* README: credit original design by Brian Hart and Shem Mackey by @pzfreo in https://github.com/pzfreo/gramel/pull/58
+* Add estampo.toml for reproducible P1S print pipeline by @pzfreo in https://github.com/pzfreo/gramel/pull/59
+* slice.yml: run full pipeline including pack stage in CI by @pzfreo in https://github.com/pzfreo/gramel/pull/60
+* release: attach sliced case gcode.3mf to every release by @pzfreo in https://github.com/pzfreo/gramel/pull/61
+* Add CHANGELOG.md + auto-update on every release by @pzfreo in https://github.com/pzfreo/gramel/pull/62
+* CLAUDE.md: rules for trusting the user's empirical evidence by @pzfreo in https://github.com/pzfreo/gramel/pull/49
+* release: fix CHANGELOG push — checkout main before pushing by @pzfreo in https://github.com/pzfreo/gramel/pull/63
+
+
+**Full Changelog**: https://github.com/pzfreo/gramel/compare/v0.1.7...v0.1.8
+
+---
+
+---
+
 ## v0.1.7 (2026-05-25)
 
 ## What's Changed
