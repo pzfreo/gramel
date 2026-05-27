@@ -26,9 +26,12 @@ filaments = ["Bambu PLA Basic @base"]   # load black PLA in AMS slot 1
 # Print-in-place overrides — do not change without testing the hinge action.
 # The case is designed supportless; supports will jam the hinge.
 [slicer.orca.overrides]
-enable_support        = "0"   # must be off — ramps are self-supporting by design
-wall_loops            = "3"   # strength + clean hinge gap walls
-sparse_infill_density = "20%"
+enable_support        = "0"       # must be off — ramps are self-supporting by design
+wall_loops            = "5"
+sparse_infill_density = "30%"
+sparse_infill_pattern = "gyroid"
+brim_type             = "outer_only"
+brim_width            = "8"
 
 # Repack sliced output into the .gcode.3mf format Bambu printers require.
 # Requires: pip install bambox  (one-time)
