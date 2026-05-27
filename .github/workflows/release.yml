@@ -34,11 +34,20 @@ jobs:
         # combined drawings PDF, and the version-stamped release zip.
         run: uv run python scripts/build_production.py
 
-      - name: Find release archive
+      - name: Slice case (estampo)
+        uses: estampo/estampo/action@v0
+        with:
+          config: estampo.toml
+          comment: "false"
+
+      - name: Find release archive and rename gcode
         run: |
           ARCHIVE=$(ls gramel-*.zip | head -1)
           echo "ARCHIVE=${ARCHIVE}" >> "$GITHUB_ENV"
           echo "Built bundle: ${ARCHIVE}"
+          TAG="${GITHUB_REF_NAME:-dev}"
+          mv estampo_output/plate_sliced.gcode.3mf "gramel-case-${TAG}.gcode.3mf"
+          echo "GCODE=gramel-case-${TAG}.gcode.3mf" >> "$GITHUB_ENV"
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -50,6 +59,7 @@ jobs:
             dist/gramel_drawings.pdf
             dist/step/gramel_assembly.step
             dist/quotation-request.pdf
+            ${{ env.GCODE }}
 
       - name: Upload artifacts (manual run only — no release created)
         if: github.event_name == 'workflow_dispatch'
@@ -61,3 +71,4 @@ jobs:
             dist/gramel_drawings.pdf
             dist/step/gramel_assembly.step
             dist/quotation-request.pdf
+            ${{ env.GCODE }}
