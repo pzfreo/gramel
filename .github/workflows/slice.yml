@@ -15,4 +15,3 @@ jobs:
       - uses: estampo/estampo/action@v0
         with:
           config: estampo.toml
-          until: gcode-info   # stop before pack (bambox is a local-only step)
