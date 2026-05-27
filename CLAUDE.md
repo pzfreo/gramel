@@ -136,6 +136,73 @@ as a vector intermediate for further editing if needed.
 
 Don't skip the PDF step.
 
+## Trusting the user (rules learned the hard way)
+
+These exist because of failure patterns observed during the print-in-place
+hinge work: arguing with the user's empirical evidence, doubling down on
+wrong analyses after being told so, and re-running analyses to verify
+what the user had just told me. Read before doing any 3D / geometry /
+physical-artifact work in this repo.
+
+1. **Empirical evidence outranks my analysis. Always.** If the user says
+   "I've printed this and it works", that is ground truth. If my analysis
+   disagrees, the analysis is wrong — not the reality. Stop the analysis,
+   trust the report.
+
+2. **One "you're wrong" from the user = mandatory stop and recalibrate.**
+   Not "let me check one more thing." Stop, ask what they want me to do,
+   do it. No contrarian follow-ups. No more "but the data shows…".
+
+3. **Do not run an analysis to verify what the user has just told me.**
+   If they say the orientation is X, the orientation is X. Building a
+   z-distribution to "check" is disrespectful and usually produces a
+   wrong answer that I then defend.
+
+4. **For 3D / spatial geometry, my intuition is often wrong.** Defer to
+   the user's spatial judgment. They can see the object; I'm reasoning
+   from bounding boxes and triangle centroids.
+
+5. **For physical artifacts, ask before building.** Two questions on hour
+   1 will save hours of wasted modelling:
+   - "Does the reference part work as-is, or does it need a separate
+     metal part (pin, magnet, fastener)?"
+   - "In print/use orientation, what's on top — feature A or feature B?"
+
+6. **Sanity-check the output artifact before declaring done.** Two STL
+   files shipped for a print-in-place hinge should have failed an
+   obvious "would a slicer treat this correctly?" check before I
+   declared the task complete. Look at what you're handing over.
+
+7. **Stretch goal + pragmatic fallback: timebox the stretch and offer
+   the fallback explicitly.** When a goal is "build a reusable parametric
+   X" but a working reference Y exists, the stretch attempt is worth
+   making — that's research, not waste. But after ~3 iterations without
+   convergence, surface the situation to the user: "Parametric attempt
+   isn't converging; the reference is right there and would unblock the
+   downstream work. Want me to ship the reference now and keep the
+   parametric attempt as a separate open thread, or keep iterating?"
+   Don't silently keep iterating, and don't silently drop the stretch
+   goal.
+
+## Open research: reusable parametric print-in-place hinge
+
+The user's longer-term goal is a **reusable parametric print-in-place
+hinge** that could be dropped into multiple future projects. The
+attempts so far (in commits before the case-design PR; the modules
+themselves were dropped from main) didn't converge — central knuckle
+floated free, geometry didn't survive rotation, Hausdorff distance
+plateaued around 17–28%. This is an open thread, not a closed one.
+If revisiting:
+
+- Don't try to replicate the OralB hinge geometry — its print-in-place
+  behaviour is not yet understood by me. Start from first principles of
+  what makes a PIP hinge work (knuckle clearance, pin geometry,
+  supportless overhangs).
+- The user has printed the OralB hinge multiple times and it works as
+  PIP. That is the ground truth to design *toward*, not to argue with.
+- Validate by actually printing, not by Hausdorff distance to the
+  reference mesh.
+
 ## Workflow rules (also in global CLAUDE.md, repeated here)
 
 - Branch per change. Never commit to main, never auto-merge.
