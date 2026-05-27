@@ -21,7 +21,7 @@ bed_type = "Textured PEI Plate"   # physical plate on P1S — do not remove
 [slicer.orca]
 printer   = "Bambu Lab P1S 0.4 nozzle"
 process   = "0.20mm Standard @BBL X1C"
-filaments = ["Bambu PLA Basic @base"]   # load black PLA in AMS slot 1
+filaments = ["Bambu PLA Basic @BBL X1C"]   # load black PLA in AMS slot 1
 
 # Print-in-place overrides — do not change without testing the hinge action.
 # The case is designed supportless; supports will jam the hinge.
