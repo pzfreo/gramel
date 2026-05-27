@@ -1,0 +1,33 @@
+# estampo.toml — reproducible print pipeline for the gramel case
+# Run: estampo run
+# Docs: https://github.com/estampo/estampo
+
+name = "gramel-case"
+output_dir = "estampo_output"
+
+[pipeline]
+stages = ["load", "arrange", "plate", "slice"]
+
+[plate]
+size = [256, 256]   # Bambu P1S bed (mm)
+padding = 5.0
+
+[slicer]
+engine = "orca"
+bed_type = "Textured PEI Plate"
+
+[slicer.orca]
+printer  = "Bambu Lab P1S 0.4 nozzle"
+process  = "0.20mm Standard @BBL P1S"
+filaments = ["Bambu PLA Basic @base"]   # load black PLA in slot 1
+
+# Print-in-place overrides — do not change without testing the hinge action.
+# The case is designed supportless; supports will jam the hinge.
+[slicer.orca.overrides]
+enable_support        = "0"   # must be off — ramps are self-supporting by design
+wall_loops            = "3"   # strength + clean hinge gap walls
+sparse_infill_density = "20%"
+
+[[parts]]
+file   = "gramel/case/printable/case_print_in_place.stl"
+orient = "flat"   # STL is already in print orientation (base on bed, lid flat-open)
