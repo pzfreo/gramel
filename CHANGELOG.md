@@ -5,6 +5,18 @@ This file is auto-updated by the release workflow on every tagged release.
 
 ---
 
+## v0.1.9 (2026-05-27)
+
+## What's Changed
+* fix: use @BBL X1C filament profile instead of @base by @pzfreo in https://github.com/pzfreo/gramel/pull/64
+
+
+**Full Changelog**: https://github.com/pzfreo/gramel/compare/v0.1.8...v0.1.9
+
+---
+
+---
+
 ## v0.1.8 (2026-05-27)
 
 ## What's Changed
