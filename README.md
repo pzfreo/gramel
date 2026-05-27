@@ -4,6 +4,7 @@ Parametric CAD model of a double-blade violin purfling cutter, written in
 [build123d](https://github.com/gumyr/build123d) with all dimensions driven
 from a single pydantic parameter tree.
 
+Based on an original design by **Brian Hart** and **Shem Mackey**.
 Reverse-engineered from a physical original; intended outputs are:
 
 1. An **FDM prototype STEP** with real helical threads, sliced and printed
