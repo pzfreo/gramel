@@ -5,6 +5,18 @@ This file is auto-updated by the release workflow on every tagged release.
 
 ---
 
+## v0.1.10 (2026-05-27)
+
+## What's Changed
+* fix: use Generic PLA @base instead of Bambu PLA Basic by @pzfreo in https://github.com/pzfreo/gramel/pull/65
+
+
+**Full Changelog**: https://github.com/pzfreo/gramel/compare/v0.1.9...v0.1.10
+
+---
+
+---
+
 ## v0.1.9 (2026-05-27)
 
 ## What's Changed
