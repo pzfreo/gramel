@@ -1,0 +1,43 @@
+# estampo.toml — reproducible print pipeline for the gramel case
+# Run: estampo run
+# Docs: https://github.com/estampo/estampo
+
+name = "gramel-case"
+output_dir = "estampo_output"
+
+[pipeline]
+# gcode-info prints time + filament usage; pack repacks for Bambu AMS
+stages = ["load", "arrange", "plate", "slice", "gcode-info", "pack"]
+
+[plate]
+size = [256, 256]   # Bambu P1S bed (mm)
+padding = 5.0
+
+[slicer]
+engine   = "orca"
+version  = "2.3.1"                # pin for reproducibility
+bed_type = "Textured PEI Plate"   # physical plate on P1S — do not remove
+
+[slicer.orca]
+printer   = "Bambu Lab P1S 0.4 nozzle"
+process   = "0.20mm Standard @BBL X1C"
+filaments = ["Bambu PLA Basic @base"]   # load black PLA in AMS slot 1
+
+# Print-in-place overrides — do not change without testing the hinge action.
+# The case is designed supportless; supports will jam the hinge.
+[slicer.orca.overrides]
+enable_support        = "0"   # must be off — ramps are self-supporting by design
+wall_loops            = "3"   # strength + clean hinge gap walls
+sparse_infill_density = "20%"
+
+# Repack sliced output into the .gcode.3mf format Bambu printers require.
+# Requires: pip install bambox  (one-time)
+[pack]
+command = "bambox repack {sliced_3mf}"
+output  = "{sliced_3mf}"
+
+[[parts]]
+# STL is exported in print orientation (base on bed, lid flat-open beside it)
+# so orient=upright preserves that; flat would auto-rotate and break the layout.
+file   = "gramel/case/printable/case_print_in_place.stl"
+orient = "upright"

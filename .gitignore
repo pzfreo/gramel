@@ -21,3 +21,6 @@ dist/
 # Claude Code harness state
 .claude/
 gramel-*.zip
+
+# estampo sliced output
+estampo_output/
