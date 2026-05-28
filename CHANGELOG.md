@@ -5,6 +5,19 @@ This file is auto-updated by the release workflow on every tagged release.
 
 ---
 
+## v0.1.12 (2026-05-28)
+
+## What's Changed
+* fix: increase brim_object_gap to 0.25 mm to stop brim fusing to part by @pzfreo in https://github.com/pzfreo/gramel/pull/67
+* fix: revert brim_object_gap to 0.15 mm now that acceleration is fixed by @pzfreo in https://github.com/pzfreo/gramel/pull/68
+
+
+**Full Changelog**: https://github.com/pzfreo/gramel/compare/v0.1.11...v0.1.12
+
+---
+
+---
+
 ## v0.1.11 (2026-05-28)
 
 ## What's Changed
