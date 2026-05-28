@@ -5,6 +5,18 @@ This file is auto-updated by the release workflow on every tagged release.
 
 ---
 
+## v0.1.11 (2026-05-28)
+
+## What's Changed
+* fix: make brim easier to remove from the case by @pzfreo in https://github.com/pzfreo/gramel/pull/66
+
+
+**Full Changelog**: https://github.com/pzfreo/gramel/compare/v0.1.10...v0.1.11
+
+---
+
+---
+
 ## v0.1.10 (2026-05-27)
 
 ## What's Changed
