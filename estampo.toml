@@ -32,7 +32,7 @@ sparse_infill_density = "30%"
 sparse_infill_pattern = "gyroid"
 brim_type             = "outer_only"
 brim_width            = "8"
-brim_object_gap       = "0.25"    # 0.1 fused, 0.15 still fused — 0.25 gives enough clearance after first-layer squish
+brim_object_gap       = "0.15"    # 0.1 fused; acceleration fix (initial_layer_acceleration=500) is the real fix, 0.15 is sufficient
 initial_layer_flow_ratio = "1"    # match Bambu Studio — full flow on layer 1 so brim grips the bed more than the part
 initial_layer_acceleration = "500"  # BS uses M204 S500 for brim; Orca defaults to 10000 causing blobs that fuse brim to part — needs G-code verification
 
