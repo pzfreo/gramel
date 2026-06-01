@@ -217,9 +217,12 @@ def build_shank_drawing(
     # face-view bore callouts.
     slot_inner_x = s_left + slot_d
     slot_mid_y = s_bot + (s_thread_top - s_bot) * 0.7
+    # Label sits in the gap between the face view (to the left) and the side
+    # view: -20 pushed its left end ~2 mm onto the face view outline; -10
+    # centres the ~20 mm label in the ~40 mm gap, clearing both views.
     add_leader(
         (slot_inner_x, slot_mid_y),
-        (s_left - 20, slot_mid_y),
+        (s_left - 10, slot_mid_y),
         f"slot {dim_label(slot_d)} deep, flat floor",
     )
 
