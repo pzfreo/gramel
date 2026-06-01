@@ -30,6 +30,7 @@ DRAWING_MODULES = [
 ]
 
 _MIN_LEN = 3.5  # mm — ignore glyph strokes / arrowhead edges below this
+MIN_RUN = 1.5   # mm — minimum collinear overlap to call two lines redundant
 
 
 def _label_box(result):
@@ -93,6 +94,24 @@ def _box_inside(i, o):
     return i[0] >= o[0] and i[1] >= o[1] and i[2] <= o[2] and i[3] <= o[3]
 
 
+def _collinear_overlap(a, b, tol=0.15):
+    """Length (mm) over which segments a and b lie on the same line and overlap."""
+    import math
+    (ax0, ay0), (ax1, ay1) = a
+    (bx0, by0), (bx1, by1) = b
+    dax, day = ax1 - ax0, ay1 - ay0
+    la = math.hypot(dax, day)
+    if la < 1e-9:
+        return 0.0
+    ux, uy = dax / la, day / la
+    if (abs((bx0 - ax0) * uy - (by0 - ay0) * ux) > tol
+            or abs((bx1 - ax0) * uy - (by1 - ay0) * ux) > tol):
+        return 0.0
+    pb0 = (bx0 - ax0) * ux + (by0 - ay0) * uy
+    pb1 = (bx1 - ax0) * ux + (by1 - ay0) * uy
+    return max(0.0, min(la, max(pb0, pb1)) - max(0.0, min(pb0, pb1)))
+
+
 def _as_compound(x):
     if isinstance(x, (list, tuple)):
         kids = [c for c in x if hasattr(c, "edges")]
@@ -101,7 +120,12 @@ def _as_compound(x):
 
 
 def scan_drawing(module_name, params=None):
-    """Build one drawing and return a list of interference message strings."""
+    """Build one drawing and return ``(errors, warnings)`` message lists.
+
+    Errors are real readability problems (label/line/part collisions, labels off
+    the frame). Warnings are redundant collinear lines (e.g. chain dims sharing
+    a witness line) — often legitimate, advisory only.
+    """
     params = params or PurflingCutterParams()
     mod = importlib.import_module(f"gramel.parts.{module_name}")
     build_fn = next(getattr(mod, n) for n in dir(mod)
@@ -126,11 +150,11 @@ def scan_drawing(module_name, params=None):
     finally:
         mod.dim_linear, mod.leader = orig_dim, orig_leader
 
+    # Keep every annotation, even those with no label box (e.g. some dims) —
+    # their structural lines still matter for the line-based checks.
     anns = []
     for r in captured:
         box = _label_box(r)
-        if box is None:
-            continue
         src = getattr(r, "lines", None) or getattr(r, "shape", None)
         anns.append((getattr(r, "label_str", "?"), box, _segments(src, box)))
 
@@ -145,35 +169,54 @@ def scan_drawing(module_name, params=None):
         except Exception:
             frame_box = None
 
-    issues = []
-    for i, (name_i, box_i, segs_i) in enumerate(anns):
+    # ERRORS — real readability problems a drawing should not ship with.
+    errors = []
+    for i, (name_i, box_i, _segs_i) in enumerate(anns):
+        if box_i is None:
+            continue
         for name_j, box_j, _ in anns[i + 1:]:
-            if _box_overlap(box_i, box_j):
-                issues.append(f'label↔label : "{name_i}" & "{name_j}" overlap')
-        for j, (name_j, box_j, _) in enumerate(anns):
-            if i != j and any(_seg_hits_box(p, q, box_j) for (p, q) in segs_i):
-                issues.append(f'line↔label  : "{name_i}" line pierces "{name_j}" label')
+            if box_j is not None and _box_overlap(box_i, box_j):
+                errors.append(f'label↔label : "{name_i}" & "{name_j}" overlap')
         if any(_seg_hits_box(p, q, box_i) for (p, q) in part_segs):
-            issues.append(f'part↔label  : a part edge crosses "{name_i}"')
+            errors.append(f'part↔label  : a part edge crosses "{name_i}"')
         if frame_box is not None and not _box_inside(box_i, frame_box):
-            issues.append(f'label↔frame : "{name_i}" extends outside the frame')
-    return issues
+            errors.append(f'label↔frame : "{name_i}" extends outside the frame')
+    for i, (name_i, _bi, segs_i) in enumerate(anns):
+        for j, (name_j, box_j, _) in enumerate(anns):
+            if i != j and box_j is not None and any(_seg_hits_box(p, q, box_j) for (p, q) in segs_i):
+                errors.append(f'line↔label  : "{name_i}" line pierces "{name_j}" label')
+
+    # WARNINGS — redundant collinear lines (e.g. chain dims that share a witness
+    # line). Often legitimate; advisory so an author/LLM can reduce them.
+    warnings = []
+    for i in range(len(anns)):
+        name_i, _, segs_i = anns[i]
+        for j in range(i + 1, len(anns)):
+            name_j, _, segs_j = anns[j]
+            if any(_collinear_overlap(p, q) > MIN_RUN for p in segs_i for q in segs_j):
+                warnings.append(f'line↔line   : "{name_i}" & "{name_j}" share a collinear line')
+        if any(_collinear_overlap(p, q) > MIN_RUN for p in segs_i for q in part_segs):
+            warnings.append(f'line↔part   : "{name_i}" runs along a part edge')
+    return errors, warnings
 
 
 def scan_all(params=None):
-    """Return {module_name: [issue, ...]} for every part drawing."""
+    """Return {module_name: (errors, warnings)} for every part drawing."""
     return {m: scan_drawing(m, params) for m in DRAWING_MODULES}
 
 
 def main():
-    total = 0
-    for module, issues in scan_all().items():
-        total += len(issues)
-        print(f"\n### {module}: {len(issues)} issue(s)")
-        for s in issues:
-            print(f"     {s}")
-    print(f"\n==== TOTAL: {total} interference issue(s) ====")
-    return 1 if total else 0
+    n_err = n_warn = 0
+    for module, (errors, warnings) in scan_all().items():
+        n_err += len(errors)
+        n_warn += len(warnings)
+        print(f"\n### {module}: {len(errors)} error(s), {len(warnings)} warning(s)")
+        for s in errors:
+            print(f"  ERROR  {s}")
+        for s in warnings:
+            print(f"  warn   {s}")
+    print(f"\n==== TOTAL: {n_err} error(s), {n_warn} warning(s) ====")
+    return 1 if n_err else 0
 
 
 if __name__ == "__main__":

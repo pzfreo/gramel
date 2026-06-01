@@ -22,6 +22,9 @@ _spec.loader.exec_module(check_interference)
 
 
 @pytest.mark.parametrize("module", check_interference.DRAWING_MODULES)
-def test_drawing_has_no_interference(module):
-    issues = check_interference.scan_drawing(module)
-    assert issues == [], f"{module}: " + "; ".join(issues)
+def test_drawing_has_no_interference_errors(module):
+    # Errors are real collisions (label/line/part overlaps, off-frame labels).
+    # Redundant collinear lines (chain dims sharing a witness line) are warnings,
+    # often legitimate, so they do not fail the suite — see scan_drawing().
+    errors, _warnings = check_interference.scan_drawing(module)
+    assert errors == [], f"{module}: " + "; ".join(errors)
