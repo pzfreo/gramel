@@ -203,10 +203,13 @@ def build_depth_lock_bolt_drawing(
         (f_right + 12, f_bot - 10),
         f"{dim_label(chamfer)} × 45° chamfer",
     )
-    # Ra 1.6 on the thread (mating surface)
+    # Ra 1.6 on the thread (mating surface). Anchored 8 mm below the tip
+    # chamfer's elbow (f_bot − 10): both land bottom-right, and the Ra
+    # label's text box otherwise crosses the chamfer leader line once
+    # runner font metrics widen the text (caught by test_interference).
     add_leader(
         (x_thread_mid, fy - SCALE * thread_d / 2),
-        (x_thread_mid + 4, f_bot - 10),
+        (x_thread_mid + 4, f_bot - 18),
         "Ra 1.6 on thread",
     )
 
