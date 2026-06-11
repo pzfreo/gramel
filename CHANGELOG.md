@@ -5,6 +5,20 @@ This file is auto-updated by the release workflow on every tagged release.
 
 ---
 
+## v0.1.13 (2026-06-11)
+
+## What's Changed
+* fix: shank slot-leader overlap + geometry-precise interference guard by @pzfreo in https://github.com/pzfreo/gramel/pull/69
+* Update release workflow actions to node24-runtime versions by @pzfreo in https://github.com/pzfreo/gramel/pull/70
+* Move Ra label clear of tip-chamfer leader on depth-lock bolt by @pzfreo in https://github.com/pzfreo/gramel/pull/71
+
+
+**Full Changelog**: https://github.com/pzfreo/gramel/compare/v0.1.12...v0.1.13
+
+---
+
+---
+
 ## v0.1.12 (2026-05-28)
 
 ## What's Changed
