@@ -145,23 +145,31 @@ def test_captive_screw_defaults_to_M2x6_stock() -> None:
     assert p.captive_screw.thread_length == 6.0
 
 
-def test_default_tap_depth_satisfies_captive_bearing() -> None:
-    """thread_length (6.0) = dp.thickness (3.0) + axial_play (0.2) + tap_depth (2.8)."""
+def test_journal_bearing_geometry_defaults() -> None:
+    """Integral-journal bearing: play = journal_length − plate_thickness; the
+    tap is deliberately deep (≥ screw thread); the journal leaves ≥1 mm wall
+    around the M2 tap."""
     p = PurflingCutterParams()
-    assert p.drive_screw.left_face_tap_depth == pytest.approx(2.8)
-    expected = (
-        p.drive_plate.thickness
-        + p.captive_bearing.axial_play
-        + p.drive_screw.left_face_tap_depth
+    assert p.bearing_journal_length - p.drive_plate.thickness == pytest.approx(
+        p.captive_bearing.axial_play
     )
-    assert p.captive_screw.thread_length == pytest.approx(expected)
+    # tap deep enough that the head seats on the journal end before bottoming
+    assert p.drive_screw.left_face_tap_depth >= p.captive_screw.thread_length
+    # ≥1 mm wall around the M2 tap (M2 major radius = 1.0)
+    wall = p.drive_screw.bearing_journal_diameter / 2 - 1.0
+    assert wall >= 1.0 - 1e-9
 
 
-def test_violation_captive_bearing_mismatch() -> None:
-    """Changing one of (thread_length, plate thickness, axial play, tap depth) without
-    the others must trip the model validator."""
-    with pytest.raises(ValidationError, match="Captive-bearing relationship"):
-        PurflingCutterParams(captive_screw={"thread_length": 8.0})
+def test_violation_journal_tap_wall_too_thin() -> None:
+    """A journal too small to leave the ≥1 mm wall around the M2 tap is rejected."""
+    with pytest.raises(ValidationError, match="Journal tap wall"):
+        PurflingCutterParams(drive_screw={"bearing_journal_diameter": 3.0})
+
+
+def test_violation_washer_too_small_to_retain() -> None:
+    """A washer that doesn't overhang the plate bearing hole can't retain the plate."""
+    with pytest.raises(ValidationError, match="outer_diameter"):
+        PurflingCutterParams(captive_washer={"outer_diameter": 4.0})
 
 
 # ---------------------------------------------------------------------------

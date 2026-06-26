@@ -21,6 +21,7 @@ from build123d import Part, Pos
 from gramel.parameters import PurflingCutterParams
 from gramel.parts.blade import build_blade
 from gramel.parts.blade_retainer import build_blade_retainer
+from gramel.parts.captive_screw import build_captive_screw
 from gramel.parts.channel_spacer import build_channel_spacer
 from gramel.parts.depth_lock_bolt import build_depth_lock_bolt
 from gramel.parts.drive_plate import build_drive_plate
@@ -28,8 +29,8 @@ from gramel.parts.grub_screw import build_grub_screw
 from gramel.parts.push_rod import build_push_rod
 from gramel.parts.shaft import build_shaft
 from gramel.parts.shank import build_shank
-from gramel.parts.captive_screw import build_captive_screw
 from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
+from gramel.parts.washer import build_washer
 
 # ---------------------------------------------------------------------------
 # Fixtures — CNC mode (smooth cylinders) and a spacer present for testing
@@ -129,13 +130,9 @@ def test_captive_screw_bbox(cnc_params: PurflingCutterParams) -> None:
     part = build_captive_screw(cnc_params)
     bb = part.bounding_box()
     assert part.volume > 30
-    # Captive screw layout along +X: head + thread = head_t + thread_len
+    # Captive screw layout along +X: head + thread = head_t + thread_len (stock M2×6)
     head_t = cnc_params.captive_screw.head_thickness
-    thread_len = (
-        cnc_params.drive_plate.thickness
-        + cnc_params.captive_bearing.axial_play
-        + cnc_params.drive_screw.left_face_tap_depth
-    )
+    thread_len = cnc_params.captive_screw.thread_length
     assert pytest.approx(head_t + thread_len, abs=0.05) == bb.size.X
 
 
@@ -182,7 +179,14 @@ def test_thumbwheel_drive_screw_bbox(cnc_params: PurflingCutterParams) -> None:
     assert part.volume > 300
     tw = cnc_params.thumbwheel
     ds = cnc_params.drive_screw
-    expected_x = tw.boss_length + tw.thickness + ds.unthreaded_length + ds.length
+    # +X stack (boss→thread tip) plus the integral journal projecting −X.
+    expected_x = (
+        tw.boss_length
+        + tw.thickness
+        + ds.unthreaded_length
+        + ds.length
+        + cnc_params.bearing_journal_length
+    )
     assert pytest.approx(expected_x, abs=0.1) == bb.size.X
     assert pytest.approx(tw.diameter, rel=0.01) == bb.size.Y
 
@@ -252,27 +256,24 @@ def test_shaft_flat_does_not_meet_top(cnc_params: PurflingCutterParams) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_captive_bearing_axial_play(cnc_params: PurflingCutterParams) -> None:
-    """Captive screw is deliberately over-length: it bottoms on the thumbwheel
-    tap before its head clamps the drive plate, leaving exactly
-    `axial_play` of slack. The captive screw build expresses that
-    relationship; this test asserts it holds.
+def test_journal_bearing_axial_play(cnc_params: PurflingCutterParams) -> None:
+    """Integral-journal bearing: the drive plate floats on the journal by
+    exactly `axial_play` because the journal is machined that much longer
+    than the plate is thick. The journal projects off the thumbwheel boss
+    (−X) face by its full length.
     """
     p = cnc_params
-    captive = build_captive_screw(p)
-    head_t = p.captive_screw.head_thickness
-    # Thread portion length per build_captive_screw = plate + axial_play + tap_depth.
-    expected_thread_len = (
-        p.drive_plate.thickness + p.captive_bearing.axial_play + p.drive_screw.left_face_tap_depth
+    # Play is the journal-length-minus-plate-thickness float.
+    assert p.bearing_journal_length - p.drive_plate.thickness == pytest.approx(
+        p.captive_bearing.axial_play
     )
-    assert pytest.approx(
-        head_t + expected_thread_len, abs=0.05
-    ) == captive.bounding_box().size.X
-    # The captive bearing only exists if the captive screw is longer than the
-    # depth that bottoms on the tap — otherwise the plate clamps fully.
-    assert (
-        p.drive_plate.thickness + p.captive_bearing.axial_play
-        < captive.bounding_box().size.X
+    # The journal extends the thumbwheel/drive-screw piece's −X end by its length
+    # (boss face is the local-X=0 datum).
+    tw = build_thumbwheel_drive_screw(p)
+    assert pytest.approx(-p.bearing_journal_length, abs=0.05) == tw.bounding_box().min.X
+    # The plate's bearing hole rides on the journal with a running clearance.
+    assert p.plate_bearing_hole_diameter == pytest.approx(
+        p.drive_screw.bearing_journal_diameter + p.drive_screw.bearing_journal_clearance
     )
 
 
@@ -325,6 +326,7 @@ def test_drive_screw_engages_shank_tap(cnc_params: PurflingCutterParams) -> None
         ("drive_plate", build_drive_plate),
         ("depth_lock_bolt", build_depth_lock_bolt),
         ("thumbwheel_drive_screw", build_thumbwheel_drive_screw),
+        ("washer", build_washer),
     ],
 )
 def test_part_builds_and_has_nonzero_volume(
@@ -432,6 +434,56 @@ def test_drive_plate_tenon_fits_shaft_end_slot(cnc_params: PurflingCutterParams)
     assert vol < INTERFERENCE_TOL, (
         f"drive plate (tenon) interferes with shaft by {vol:.4f} mm³"
     )
+
+
+def test_journal_bearing_assembled_works(cnc_params: PurflingCutterParams) -> None:
+    """The integral journal bearing works in the ASSEMBLED position:
+
+      1. The journal passes through the plate's bearing hole without binding
+         (no solid overlap → running clearance, and it proves the hole is
+         sized/aligned to the journal — a too-small hole would interfere).
+      2. The plate is NOT clamped: it floats by exactly `axial_play` between
+         the boss-face shoulder and the journal-end washer. (This is the
+         failure that bit the real part — a clamped plate would show zero
+         float here.)
+      3. The washer retains the plate (OD overhangs the bearing hole), and
+         the journal spans the full plate thickness so the plate is supported.
+
+    Parts are placed exactly as build_assembly() positions them.
+    """
+    p = cnc_params
+    sp = p.shank
+    crossbore_z = sp.length - sp.crossbore_position_from_top
+    tapped_z = sp.length - p.tapped_bore_position_from_top
+    shaft_x_off = -p.shaft.length / 2
+    plate_thick = p.drive_plate.thickness
+
+    plate = Pos(shaft_x_off - plate_thick / 2, 0, crossbore_z) * build_drive_plate(p)
+    tw = Pos(shaft_x_off, 0, tapped_z) * build_thumbwheel_drive_screw(p)
+    journal_end_x = shaft_x_off - p.bearing_journal_length
+    washer_t = p.captive_washer.thickness
+    washer = Pos(journal_end_x - washer_t / 2, 0, tapped_z) * build_washer(p)
+
+    # 1. No binding: journal rides in the plate hole with clearance.
+    bind = _intersection_volume(tw, plate)
+    assert bind < INTERFERENCE_TOL, (
+        f"thumbwheel/journal interferes with the drive plate by {bind:.4f} mm³ — "
+        f"bearing hole too small or misaligned"
+    )
+
+    # 2. Plate floats by axial_play (not clamped) — gap between the plate's
+    #    outboard face and the washer's inboard face.
+    assert _intersection_volume(washer, plate) < INTERFERENCE_TOL, (
+        "retaining washer overlaps the plate — the bearing is clamped, no float"
+    )
+    float_gap = plate.bounding_box().min.X - washer.bounding_box().max.X
+    assert float_gap == pytest.approx(p.captive_bearing.axial_play, abs=1e-3), (
+        f"plate axial float {float_gap:.3f} ≠ design play {p.captive_bearing.axial_play}"
+    )
+
+    # 3. Washer retains the plate, and the journal spans the full plate.
+    assert p.captive_washer.outer_diameter > p.plate_bearing_hole_diameter
+    assert p.bearing_journal_length >= plate_thick
 
 
 def test_shaft_passes_through_shank_crossbore(cnc_params: PurflingCutterParams) -> None:
