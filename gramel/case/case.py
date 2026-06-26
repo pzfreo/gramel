@@ -92,6 +92,15 @@ def _tool_pocket(cutter: PurflingCutterParams, case: CaseParams) -> Part:
 
     pocket = Part()
 
+    # Assembled tool, used below for (a) the cutter trough's case-Y extent and
+    # (b) the depth-lock knob pocket depth. The bolt knob hangs below the shank
+    # by an amount that depends on the push-rod length (the bolt sits as low as
+    # the rod allows at lock), so take the tool's real lowest point rather than
+    # assuming the knob bottoms on the shank.
+    from gramel.assembly import build_assembly
+
+    centred_bb = build_assembly(cutter).bounding_box()
+
     # --- Shank pocket ----------------------------------------------------
     # Case X: 0..shank.length (= along shank long axis)
     # Case Y: ±shank.width/2 (shank's X = shaft direction = case Y)
@@ -105,11 +114,16 @@ def _tool_pocket(cutter: PurflingCutterParams, case: CaseParams) -> Part:
     )
 
     # --- Depth-lock knob pocket -----------------------------------------
-    # Knob axis along CX. CX range -knob.knob_thickness..0 plus clearance both sides.
+    # The knob, plus the bolt collar/thread below it, hang below the shank down
+    # to the tool's lowest point (centred_bb.min.Z in tool Z = case X). Reach
+    # the pocket down to there with clearance, rather than assuming the knob
+    # bottoms on the shank (which the push-rod preload margin prevents).
     knob = cutter.depth_lock
     knob_r = knob.knob_diameter / 2 + tc
-    knob_cx_extent = knob.knob_thickness + 2 * tc
-    knob_cx_centre = -knob.knob_thickness / 2 - tc
+    knob_cx_min = centred_bb.min.Z - tc
+    knob_cx_max = 0.0  # up to the shank bottom
+    knob_cx_extent = knob_cx_max - knob_cx_min
+    knob_cx_centre = (knob_cx_min + knob_cx_max) / 2
     # Cylinder along CX → axis must be along X. Build with Rot(0, 90, 0) of a Z-axis cylinder.
     pocket += Pos(knob_cx_centre, 0, 0) * Rot(0, 90, 0) * Cylinder(
         radius=knob_r, height=knob_cx_extent
@@ -122,9 +136,6 @@ def _tool_pocket(cutter: PurflingCutterParams, case: CaseParams) -> Part:
     # case Y. Travel adds ±cutter_x_travel to that range.
     # In tool frame the cutter Z (vertical) spans from below-shaft to above-
     # thumbwheel-disc; that becomes case X extent for the cutter trough.
-    from gramel.assembly import build_assembly
-
-    centred_bb = build_assembly(cutter).bounding_box()
     # tool X bounds → case Y bounds, ± travel + clearance
     cutter_cy_min = centred_bb.min.X - case.cutter_x_travel - tc
     cutter_cy_max = centred_bb.max.X + case.cutter_x_travel + tc
