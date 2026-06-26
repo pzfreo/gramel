@@ -180,7 +180,7 @@ def build_assembly(
 
     # Push rod top bears on the shaft's −Z flat
     rod_top_z = crossbore_z - params.shaft_outer_diameter / 2 + params.shaft.flat_depth
-    rod_bottom_z = rod_top_z - params.depth_lock.push_rod_length
+    rod_bottom_z = rod_top_z - params.push_rod_length
     ex_rod = ex(EX_ROD)
     rod = Pos(ex_rod[0], ex_rod[1], rod_bottom_z + ex_rod[2]) * rod_local
 

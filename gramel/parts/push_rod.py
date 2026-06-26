@@ -16,8 +16,9 @@ from gramel.parameters import PurflingCutterParams
 def build_push_rod(params: PurflingCutterParams) -> Part:
     """Build the depth-lock push rod."""
     dl = params.depth_lock
-    body: Part = Pos(0, 0, dl.push_rod_length / 2) * Cylinder(
-        radius=dl.push_rod_diameter / 2, height=dl.push_rod_length
+    length = params.push_rod_length
+    body: Part = Pos(0, 0, length / 2) * Cylinder(
+        radius=dl.push_rod_diameter / 2, height=length
     )
     return body
 

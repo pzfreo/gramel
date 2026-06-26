@@ -26,7 +26,7 @@ from gramel import threads
 # Metadata helper
 # ---------------------------------------------------------------------------
 
-Status = Literal["ESTIMATE", "MEASURED", "DERIVED"]
+Status = Literal["ESTIMATE", "MEASURED", "DERIVED", "DESIGN"]
 
 
 def _spec(ref: str, status: Status = "ESTIMATE", units: str = "mm") -> dict[str, Any]:
@@ -371,11 +371,11 @@ class DepthLockParams(BaseModel):
         description="Steel push-rod diameter. ⌀4.5 in a ⌀5 bore (M6 tap drill = 5.0, so the smooth section above the tap is also 5.0) gives 0.25 mm radial clearance — comfortable sliding fit.",
         json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="MEASURED"),
     )
-    push_rod_length: float = Field(
-        default=45.0,
+    lock_preload_margin: float = Field(
+        default=3.0,
         gt=0,
-        description="Steel push-rod length. Sits above the bolt; pushed up against the shaft to lock.",
-        json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="MEASURED"),
+        description="Clamp-travel headroom for the depth lock: how far the bolt can still advance after the push rod first contacts the shaft's −Z flat, before the knob bottoms on the shank's bottom face. This remaining travel is what gets converted into clamping preload, and it's how far the bolt sits proud at lock. Deliberately generous (≥1 mm wanted; 3 mm set) — a too-long rod that leaves the bolt slightly proud is preferred over a just-right rod that bottoms the knob with no clamp force. The push-rod length is derived from it — see PurflingCutterParams.push_rod_length. (Earlier the rod length was a hard-coded 45 mm MEASURED value, which left only ~0.4 mm of headroom — too short in practice.)",
+        json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="DESIGN"),
     )
 
 
@@ -852,6 +852,35 @@ class PurflingCutterParams(BaseModel):
         crossbore region so it can press on the shaft). So no clearance term.
         """
         return self.shank.length - self.shank.crossbore_position_from_top
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def push_rod_length(self) -> float:
+        """
+        Depth-lock push-rod length — DERIVED, not measured.
+
+        The rod spans from the depth-lock bolt's tip up to the shaft's −Z
+        flat. Geometry in the shank frame (Z = 0 at the shank bottom face):
+
+          rod top (contact on the shaft flat):
+              shaft_flat_z = depth_lock_bore_depth
+                             − shaft_outer_diameter/2 + shaft.flat_depth
+          bolt tip at full advance (knob bottomed on the shank bottom face):
+              bolt_tip = bolt_collar_length + bolt_thread_length
+
+        At full advance the rod is made `lock_preload_margin` longer than the
+        just-touching length, so it contacts the shaft *before* the knob
+        hard-stops; the remaining bolt travel becomes clamping preload:
+
+              push_rod_length = shaft_flat_z − bolt_tip + lock_preload_margin
+        """
+        shaft_flat_z = (
+            self.depth_lock_bore_depth
+            - self.shaft_outer_diameter / 2
+            + self.shaft.flat_depth
+        )
+        bolt_tip = self.depth_lock.bolt_collar_length + self.depth_lock.bolt_thread_length
+        return shaft_flat_z - bolt_tip + self.depth_lock.lock_preload_margin
 
     @computed_field  # type: ignore[prop-decorator]
     @property
