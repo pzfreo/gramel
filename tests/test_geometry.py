@@ -436,6 +436,56 @@ def test_drive_plate_tenon_fits_shaft_end_slot(cnc_params: PurflingCutterParams)
     )
 
 
+def test_journal_bearing_assembled_works(cnc_params: PurflingCutterParams) -> None:
+    """The integral journal bearing works in the ASSEMBLED position:
+
+      1. The journal passes through the plate's bearing hole without binding
+         (no solid overlap → running clearance, and it proves the hole is
+         sized/aligned to the journal — a too-small hole would interfere).
+      2. The plate is NOT clamped: it floats by exactly `axial_play` between
+         the boss-face shoulder and the journal-end washer. (This is the
+         failure that bit the real part — a clamped plate would show zero
+         float here.)
+      3. The washer retains the plate (OD overhangs the bearing hole), and
+         the journal spans the full plate thickness so the plate is supported.
+
+    Parts are placed exactly as build_assembly() positions them.
+    """
+    p = cnc_params
+    sp = p.shank
+    crossbore_z = sp.length - sp.crossbore_position_from_top
+    tapped_z = sp.length - p.tapped_bore_position_from_top
+    shaft_x_off = -p.shaft.length / 2
+    plate_thick = p.drive_plate.thickness
+
+    plate = Pos(shaft_x_off - plate_thick / 2, 0, crossbore_z) * build_drive_plate(p)
+    tw = Pos(shaft_x_off, 0, tapped_z) * build_thumbwheel_drive_screw(p)
+    journal_end_x = shaft_x_off - p.bearing_journal_length
+    washer_t = p.captive_washer.thickness
+    washer = Pos(journal_end_x - washer_t / 2, 0, tapped_z) * build_washer(p)
+
+    # 1. No binding: journal rides in the plate hole with clearance.
+    bind = _intersection_volume(tw, plate)
+    assert bind < INTERFERENCE_TOL, (
+        f"thumbwheel/journal interferes with the drive plate by {bind:.4f} mm³ — "
+        f"bearing hole too small or misaligned"
+    )
+
+    # 2. Plate floats by axial_play (not clamped) — gap between the plate's
+    #    outboard face and the washer's inboard face.
+    assert _intersection_volume(washer, plate) < INTERFERENCE_TOL, (
+        "retaining washer overlaps the plate — the bearing is clamped, no float"
+    )
+    float_gap = plate.bounding_box().min.X - washer.bounding_box().max.X
+    assert float_gap == pytest.approx(p.captive_bearing.axial_play, abs=1e-3), (
+        f"plate axial float {float_gap:.3f} ≠ design play {p.captive_bearing.axial_play}"
+    )
+
+    # 3. Washer retains the plate, and the journal spans the full plate.
+    assert p.captive_washer.outer_diameter > p.plate_bearing_hole_diameter
+    assert p.bearing_journal_length >= plate_thick
+
+
 def test_shaft_passes_through_shank_crossbore(cnc_params: PurflingCutterParams) -> None:
     """The shaft slides through the shank's crossbore. They share a nominal
     diameter; with a real H7/g6 fit the shaft is slightly smaller, but the
