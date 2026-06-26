@@ -2,13 +2,15 @@
 A4 landscape technical drawing of the integral thumbwheel + drive screw —
 CNC handoff package.
 
-The part is a turned stepped cylinder: boss (⌀6) + knurled disc
-(⌀10) + unthreaded collar (⌀5) + M3 thread, all from one piece of
-brass, plus an M2 tap from the −X face for the captive-screw captive
-bearing.
+The part is a turned stepped cylinder: integral journal (⌀4, bearing) +
+boss (⌀6, thrust face) + knurled disc (⌀10) + unthreaded collar (⌀5) +
+M3 thread, all from one piece of brass, plus a deep M2 tap down the
+journal centre. The drive plate rides on the journal; a retaining washer
++ M2 screw cap the journal end face (the screw head seats there, so the
+bearing float is set by the journal length, not the tap depth).
 
 Layout: side view of the X–Z profile across the top, left end view
-showing the boss + M2 tap on the right, iso below. All views at 1:1.
+showing the journal end + M2 tap on the right, iso below.
 """
 
 from __future__ import annotations
@@ -73,25 +75,30 @@ def build_thumbwheel_drawing(
     collar_len = ds.unthreaded_length
     thread_d = 2 * threads.major_radius(ds.thread)
     thread_len = ds.length
-    overall_len = boss_len + disc_t + collar_len + thread_len  # 23.5
+    journal_d = ds.bearing_journal_diameter               # ⌀4 — plate bearing journal
+    journal_len = params.bearing_journal_length            # 3.2 (= plate thickness + 0.2 float)
+    plus_x_len = boss_len + disc_t + collar_len + thread_len  # 23.5 (boss face → thread tip)
+    total_len = journal_len + plus_x_len                   # 28.7 (journal end → thread tip)
 
     tap_thread = ds.left_face_tap                          # M2
     tap_pitch = threads.pitch(tap_thread)
-    tap_depth = ds.left_face_tap_depth                     # 2.8 mm
-    chip_relief = ds.left_face_tap_chip_relief             # 1.0 mm chip-relief well below the tap
+    tap_depth = ds.left_face_tap_depth                     # 7 mm — deep; head seats on journal end
+    chip_relief = ds.left_face_tap_chip_relief             # extra drilled depth for chip relief
 
-    # Step boundaries along the local +X axis (from −X end at X=0):
-    x_boss_end = boss_len                # 0.5
-    x_disc_end = boss_len + disc_t       # 2.5
-    x_collar_end = x_disc_end + collar_len  # 5.5
-    x_thread_end = overall_len           # 23.5
+    # Step boundaries along local +X (boss −X face at X=0; journal projects −X):
+    x_jstart = -journal_len                  # −3.2 journal end face (−X-most)
+    x_boss_face = 0.0                         # journal base = boss −X face = thrust shoulder
+    x_disc_end = boss_len + disc_t            # 2.5
+    x_collar_end = x_disc_end + collar_len    # 5.5
+    x_thread_end = x_collar_end + thread_len  # 23.5 (+X face / thread tip)
+    center_x = (x_jstart + x_thread_end) / 2
 
-    centroid = (overall_len / 2, 0, 0)
+    centroid = (center_x, 0, 0)
     far = 1000.0
 
     # --- Project the views --------------------------------------------------
     # Front view: camera at -Y, up=+Z → world X = page X (+1), world Z = page Y (+1).
-    front_v, front_h = project_view(part, (overall_len / 2, -far, 0), (0, 0, 1), centroid)
+    front_v, front_h = project_view(part, (center_x, -far, 0), (0, 0, 1), centroid)
     # Left end view: camera at -X, up=+Z → world Y = page X (-1), world Z = page Y (+1).
     end_v, end_h = project_view(part, (-far, 0, 0), (0, 0, 1), (0, 0, 0))
     # Iso view.
@@ -149,42 +156,46 @@ def build_thumbwheel_drawing(
         annotation_lines.append(result.lines)
         annotation_text.append(result.text)
 
-    # World X → page X = fx + SCALE*(worldX − overall_len/2)  (centred at fx)
+    # World X → page X = fx + SCALE*(worldX − center_x)  (centred at fx)
     fx, fy = layout.front
-    f_left = fx - SCALE * overall_len / 2                    # world X = 0 (−X face)
-    f_right = fx + SCALE * overall_len / 2                   # world X = overall_len (+X face)
-    f_disc_end = fx + SCALE * (x_disc_end - overall_len / 2)
-    f_collar_end = fx + SCALE * (x_collar_end - overall_len / 2)
+    f_jstart = fx + SCALE * (x_jstart - center_x)           # journal end (−X-most)
+    f_boss_face = fx + SCALE * (x_boss_face - center_x)     # journal base / boss −X face
+    f_collar_end = fx + SCALE * (x_collar_end - center_x)
+    f_right = fx + SCALE * (x_thread_end - center_x)        # thread tip (+X face)
     f_top = fy + SCALE * disc_d / 2
     f_bot = fy - SCALE * disc_d / 2
 
-    # Chained dims above the part: head section (5.5) + thread (18) = overall (23.5).
-    # At SCALE 2 each dim path is wide enough for its label to fit inline.
-    add_dim((f_left, f_top), (f_collar_end, f_top), "above", 5, dim_label(x_collar_end, min_decimals=1))
+    # Chained dims above: head (5.5) | thread (20); total (28.7) above. The
+    # journal length is too short for an inline dim — it's on its leader below.
+    add_dim((f_boss_face, f_top), (f_collar_end, f_top), "above", 5, dim_label(x_collar_end, min_decimals=1))
     add_dim((f_collar_end, f_top), (f_right, f_top), "above", 5, dim_label(thread_len, min_decimals=1))
-    add_dim((f_left, f_top), (f_right, f_top), "above", 13, dim_label(overall_len, min_decimals=1))
+    add_dim((f_jstart, f_top), (f_right, f_top), "above", 13, dim_label(total_len, min_decimals=1))
 
-    # Disc diameter — Y dim on left side of the front view (path = 20 page units).
-    add_dim((f_left - 2, f_bot), (f_left - 2, f_top), "left", 8, f"⌀{dim_label(disc_d)}")
+    # Disc diameter — Y dim on the far left of the front view.
+    add_dim((f_jstart - 2, f_bot), (f_jstart - 2, f_top), "left", 8, f"⌀{dim_label(disc_d)}")
 
     # Mid-X positions in PAGE coords (apply SCALE)
-    x_boss_mid = fx + SCALE * (boss_len / 2 - overall_len / 2)
-    x_disc_mid = fx + SCALE * ((boss_len + disc_t / 2) - overall_len / 2)
-    x_collar_mid = fx + SCALE * ((x_disc_end + x_collar_end) / 2 - overall_len / 2)
-    x_thread_mid = fx + SCALE * ((x_collar_end + x_thread_end) / 2 - overall_len / 2)
+    x_journal_mid = fx + SCALE * (-journal_len / 2 - center_x)
+    x_boss_mid = fx + SCALE * (boss_len / 2 - center_x)
+    x_disc_mid = fx + SCALE * ((boss_len + disc_t / 2) - center_x)
+    x_collar_mid = fx + SCALE * ((x_disc_end + x_collar_end) / 2 - center_x)
+    x_thread_mid = fx + SCALE * ((x_collar_end + x_thread_end) / 2 - center_x)
 
-    # Leaders fan into clear zones: far-left (boss), below (3×), above (knurl + thread spec).
-
-    # FAR LEFT: combined boss spec
+    # Journal — the new bearing feature — leader up-left.
     add_leader(
-        (x_boss_mid, fy),
-        (f_left - 18, fy - 14),
-        f"⌀{dim_label(boss_d)} × {dim_label(boss_len)} boss",
+        (x_journal_mid, fy + SCALE * journal_d / 2),
+        (f_jstart - 6, f_top + 18),
+        f"⌀{dim_label(journal_d)} × {dim_label(journal_len)} journal (bearing dia)",
     )
 
-    # BELOW the part — three callouts staggered along Y so labels
-    # don't overlap (labels are wider than the X spacing between
-    # their feature anchors).
+    # FAR LEFT-BELOW: boss spec (the thrust shoulder)
+    add_leader(
+        (x_boss_mid, fy),
+        (f_jstart - 6, fy - 16),
+        f"⌀{dim_label(boss_d)} × {dim_label(boss_len)} boss (thrust face)",
+    )
+
+    # BELOW the part — disc / collar / thread callouts staggered along Y.
     add_leader(
         (x_disc_mid, f_bot),
         (x_disc_mid - 8, f_bot - 8),
@@ -220,19 +231,24 @@ def build_thumbwheel_drawing(
         f"{dim_label(ds.tip_chamfer)} × 45° chamfer",
     )
 
-    # --- Left end view: boss + M2 tap visible -----------------------
+    # --- Left end view: journal end face + deep M2 tap ----------------
     ex, ey = layout.left_end
-    # Tap callout to the UPPER-RIGHT of the end view, away from the
-    # front-view dim chain and clear of the notes block (X ≤ 38.5).
+    # Callouts to the UPPER-RIGHT of the end view, clear of the front-view
+    # dim chain and the notes block (X ≤ 38.5).
     add_leader(
         (ex, ey),
-        (ex + 4, ey + 14),
-        f"{tap_thread}×{tap_pitch} × {dim_label(tap_depth)} deep",
+        (ex + 4, ey + 18),
+        f"⌀{dim_label(journal_d)} journal",
     )
     add_leader(
         (ex, ey),
-        (ex + 4, ey + 9),
-        f"drill {dim_label(tap_depth + chip_relief)} (chip relief)",
+        (ex + 4, ey + 13),
+        f"{tap_thread}×{tap_pitch} × {dim_label(tap_depth)} deep tap",
+    )
+    add_leader(
+        (ex, ey),
+        (ex + 4, ey + 8),
+        f"drill {dim_label(tap_depth + chip_relief)}; head seats on journal end",
     )
 
     # --- Iso view label -----------------------------------------------------

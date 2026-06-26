@@ -2,8 +2,9 @@
 A4 landscape technical drawing of the drive plate — CNC handoff package.
 
 The plate is a small egg-shaped brass disk that stands vertically up from
-the shaft's outboard end, with two through-holes (mount + captive screw)
-and an anti-rotation slot milled across the back face at the shaft end.
+the shaft's outboard end, with two through-holes (a mount-screw hole and a
+journal bearing hole that rides on the drive-screw journal) and an
+anti-rotation slot milled across the back face at the shaft end.
 
 Layout: face view (camera at +X, showing the back face with the slot
 solid) at upper-left, side edge view to its right, iso below. 3:1 scale —
@@ -67,7 +68,7 @@ def build_drive_plate_drawing(
     thickness = dp.thickness             # 3.0
     gap = params.shank.crossbore_to_tapped_bore_gap  # 9.5
     mount_d = dp.mount_hole_diameter     # 2.4
-    captive_d = dp.captive_clearance_hole_diameter  # 2.6
+    bearing_d = params.plate_bearing_hole_diameter  # ⌀4.2 — rides on the drive-screw journal
     tenon_depth = dp.tenon_depth         # 1.5 — tenon X projection from back face
     tenon_height = dp.tenon_height       # 3.0 — tenon Z extent
     # Tenon Y extent follows the plate's egg outline at the tenon's Z range
@@ -179,12 +180,12 @@ def build_drive_plate_drawing(
         (f_big_right[0] + 14, f_big_centre[1] - 4),
         f"⌀{dim_label(mount_d)} mount",
     )
-    # Captive bearing hole (small boss, Z=gap) — leader to the right.
-    # Larger than the mount hole — the plate rides on this hole as a bearing.
+    # Journal bearing hole (small boss, Z=gap) — leader to the right.
+    # The plate rides on the drive-screw's integral journal through this hole.
     add_leader(
         f_small_centre,
         (face_xy(-r_small, gap)[0] + 14, f_small_centre[1] + 4),
-        f"⌀{dim_label(captive_d)} captive bearing",
+        f"⌀{dim_label(bearing_d)} journal bearing",
     )
 
     # Tenon Z height — leader on the right side (label too wide for inline dim).
