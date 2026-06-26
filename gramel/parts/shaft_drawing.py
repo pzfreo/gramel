@@ -182,6 +182,17 @@ def build_shaft_drawing(
         (t_left - 8, t_bot - 14),
         f"end slot {dim_label(slot_x_depth)} deep",
     )
+    # Blade-slot POSITION along the shaft: dimension the slot's inboard (−X)
+    # wall from the +X end face. (The outboard wall is end_to_slot = 4 mm from
+    # the +X end, but 4 mm is too short for an inline dim at 1:1 — locate the
+    # inboard wall; the 6.4 slot width on the leader gives the outboard wall.)
+    add_dim(
+        (slot_x_start, t_bot),
+        (t_right, t_bot),
+        "below",
+        6,
+        dim_label(end_to_slot + slot_w, min_decimals=1),
+    )
 
     # --- Front view dims ----------------------------------------------------
     fx, fy = layout.front
