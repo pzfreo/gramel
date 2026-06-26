@@ -109,10 +109,10 @@ def build_drive_plate(params: PurflingCutterParams) -> Part:
     # Mount hole at shaft end: standard M2 clearance (~0.2 mm radial). Goes
     # through the plate AND the tenon — the mount screw must reach the tap
     # in the shaft's end face past the tenon engagement.
-    # Captive hole at thumb end: deliberately sloppy (~0.3 mm radial) so the
-    # captive bearing doesn't bind.
+    # Thumb-end hole: the journal BEARING hole — the plate rides on the
+    # drive-screw's integral journal (journal ⌀ + running clearance).
     mount_r = dp.mount_hole_diameter / 2
-    captive_r = dp.captive_clearance_hole_diameter / 2
+    captive_r = params.plate_bearing_hole_diameter / 2
     mount_hole = (
         Pos(0, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=mount_r, height=thickness * 3)
     )

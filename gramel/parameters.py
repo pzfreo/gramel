@@ -505,10 +505,10 @@ class DriveScrewParams(BaseModel):
         json_schema_extra=_spec("§4.4.40", status="MEASURED", units=""),
     )
     left_face_tap_depth: float = Field(
-        default=2.8,
+        default=7.0,
         gt=0,
-        description="Depth of the tap for the captive screw, into the −X face of the boss / thumbwheel. Set to match a stock M2 × 6 screw: thread_len (6) − drive_plate.thickness (3) − captive_bearing.axial_play (0.2) = 2.8 mm. Was 4 mm originally, then 3 mm; now derived from the screw's stock thread length so the captive bearing axial play comes out right.",
-        json_schema_extra=_spec("§4.4.40", status="DERIVED"),
+        description="Depth of the M2 tap bored down the centre of the bearing journal (from the journal end face inward). In the integral-journal bearing the retaining screw's HEAD seats on the journal end face (the play is set by journal_length − plate.thickness, not by the screw bottoming), so the tap is deliberately DEEP — ≥ the captive-screw thread length — so the head always seats before the screw bottoms. Tapping deeper is harmless here (the opposite of the old tap-bottoming scheme, which a too-deep tap broke).",
+        json_schema_extra=_spec("§4.4.40", status="DESIGN"),
     )
     left_face_tap_chip_relief: float = Field(
         default=1.0,
@@ -527,6 +527,18 @@ class DriveScrewParams(BaseModel):
         gt=0,
         description="Outer diameter of the unthreaded section. Larger than M3 major (3 mm) so it provides a positive shoulder against the inboard face of the shank tapped bore at maximum-margin.",
         json_schema_extra=_spec("§4.4 (unthreaded section — design addition)", status="MEASURED"),
+    )
+    bearing_journal_diameter: float = Field(
+        default=4.0,
+        gt=0,
+        description="Diameter of the integral bearing journal turned on the thumbwheel boss (−X) face. The drive plate's thumb-end hole rides on this journal. ⌀4.0 leaves a 1.0 mm wall around the M2 retaining tap ((4 − M2 major 2)/2), matching the tool's ≥1 mm tapped-bore wall rule. Must be < boss_diameter so the boss face forms a thrust shoulder for the plate.",
+        json_schema_extra=_spec("§4.4 (journal bearing — design addition)", status="DESIGN"),
+    )
+    bearing_journal_clearance: float = Field(
+        default=0.2,
+        gt=0,
+        description="Diametral running clearance between the bearing journal and the drive plate's bearing hole (plate hole = journal diameter + this). A loose journal-bearing fit so the plate floats and the drive screw turns freely.",
+        json_schema_extra=_spec("§4.4 (journal bearing — design addition)", status="DESIGN"),
     )
 
 
@@ -639,11 +651,12 @@ class DrivePlateParams(BaseModel):
 
 
 class CaptiveScrewParams(BaseModel):
-    """§4.5 items 50, 52 — captive screw (any stock M2 pan-head will do).
+    """§4.5 items 50, 52 — captive (retaining) screw for the journal bearing.
 
-    Length is a stock dimension (default M2 × 6 mm). The drive-screw left-face
-    tap depth is what bends to maintain the captive-bearing axial play —
-    not the screw length, which is what you can buy off the shelf.
+    A stock M2 pan-head. In the integral-journal bearing it threads into the
+    deep tap down the journal centre and clamps the retaining washer against
+    the journal end face (metal-to-metal). The play is set by the journal
+    length, NOT by how this screw bottoms, so it can be torqued fully.
     """
 
     thread: str = Field(
@@ -654,13 +667,13 @@ class CaptiveScrewParams(BaseModel):
     thread_length: float = Field(
         default=6.0,
         gt=0,
-        description="Length of the threaded portion (head excluded), in mm. Default 6 mm = stock M2 × 6 brass screw. The drive-screw left-face tap depth derives from this so the captive-bearing axial play (0.2 mm) stays right.",
+        description="Length of the threaded portion (head excluded), in mm. Default 6 mm = stock M2 × 6 brass screw. The journal tap (drive_screw.left_face_tap_depth) is cut deeper than this so the head seats positively on the journal end face before the screw bottoms.",
         json_schema_extra=_spec("§4.5.51", status="MEASURED"),
     )
     head_diameter: float = Field(
         default=4.0,
         gt=0,
-        description="Head diameter (measured). Must exceed drive_plate.clearance_hole_diameter.",
+        description="Head diameter (measured). Clamps the retaining washer; the washer (not the head) is what overhangs and retains the plate's bearing hole.",
         json_schema_extra=_spec("§4.5.52", status="MEASURED"),
     )
     head_thickness: float = Field(
@@ -706,30 +719,60 @@ class MountScrewParams(BaseModel):
 
 class CaptiveBearingParams(BaseModel):
     """
-    §4.5 item 53 — the signature mechanism of this tool.
+    §4.5 item 53 — the signature mechanism of this tool: an integral
+    journal bearing.
 
-    The captive screw is deliberately over-length. It bottoms on the thumbwheel's
-    left-face tap *before* its head clamps the drive plate, leaving the plate
-    captive in axial play between the captive-screw head (outboard) and the
-    thumbwheel left face (inboard).
+    A journal (drive_screw.bearing_journal_diameter) is turned on the
+    thumbwheel boss face. The drive plate's thumb-end hole rides on it. A
+    retaining washer + M2 screw caps the journal end, capturing the plate
+    on the journal with a small axial float. The axial play is set purely
+    by two precise turned/milled lengths:
 
-    Geometric relationship (enforced by PurflingCutterParams model validator):
+        axial_play = bearing_journal_length − drive_plate.thickness
+                   = (drive_plate.thickness + axial_play) − drive_plate.thickness
 
-        captive_screw.thread_length
-            = drive_plate.thickness
-            + captive_bearing.axial_play
-            + drive_screw.left_face_tap_depth
-
-    The screw length is the *given* (stock part); the tap depth is the dial we
-    twist to keep axial_play at its design value.
+    i.e. the journal is machined `axial_play` longer than the plate is thick.
+    This replaces the older "captive screw bottoms in a shallow tap" scheme,
+    whose play was the fragile leftover of three stacked dimensions and which
+    a too-deep tap destroyed. Tap depth no longer affects the play.
     """
 
     axial_play: float = Field(
         default=0.2,
         gt=0,
         le=0.5,
-        description="Designed axial bearing clearance. Measured 0.2 mm — the non-binding gap that lets the drive plate float between the captive-screw head and the thumbwheel's left face while the drive screw rotates freely.",
-        json_schema_extra=_spec("§4.5.53", status="MEASURED"),
+        description="Designed axial bearing float — the non-binding gap that lets the drive plate slide on the journal while the drive screw rotates freely. Realised as bearing_journal_length − drive_plate.thickness, so it's set by two CNC length dims (robust to ±0.05 mm general tolerance) rather than a screw bottoming in a tap.",
+        json_schema_extra=_spec("§4.5.53", status="DESIGN"),
+    )
+
+
+class WasherParams(BaseModel):
+    """Retaining washer for the journal bearing — stock M2 flat washer.
+
+    Clamped by the captive screw against the bearing journal's end face; its
+    outer diameter overhangs the plate's bearing hole to retain the plate on
+    the journal. Its thickness does NOT affect the axial play (the play is the
+    journal-length-minus-plate-thickness float on the journal, inboard of the
+    washer).
+    """
+
+    outer_diameter: float = Field(
+        default=5.0,
+        gt=0,
+        description="Washer OD (stock M2 flat washer). Must exceed the plate bearing hole so it retains the plate.",
+        json_schema_extra=_spec("§4.5 (retaining washer — design addition)", status="MEASURED"),
+    )
+    inner_diameter: float = Field(
+        default=2.2,
+        gt=0,
+        description="Washer bore — M2 clearance.",
+        json_schema_extra=_spec("§4.5 (retaining washer — design addition)", status="MEASURED"),
+    )
+    thickness: float = Field(
+        default=0.3,
+        gt=0,
+        description="Washer thickness (stock M2). Does not affect the bearing play.",
+        json_schema_extra=_spec("§4.5 (retaining washer — design addition)", status="MEASURED"),
     )
 
 
@@ -763,6 +806,7 @@ class PurflingCutterParams(BaseModel):
     captive_screw: CaptiveScrewParams = Field(default_factory=CaptiveScrewParams)
     mount_screw: MountScrewParams = Field(default_factory=MountScrewParams)
     captive_bearing: CaptiveBearingParams = Field(default_factory=CaptiveBearingParams)
+    captive_washer: WasherParams = Field(default_factory=WasherParams)
 
     # --- Mating-pair derivations (cutting_pair + process) ------------------
 
@@ -828,6 +872,25 @@ class PurflingCutterParams(BaseModel):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
+    def bearing_journal_length(self) -> float:
+        """Length of the integral bearing journal along X. Machined `axial_play`
+        longer than the plate is thick, so the plate floats by exactly the
+        axial play on the journal between the boss-face shoulder and the
+        journal-end washer."""
+        return self.drive_plate.thickness + self.captive_bearing.axial_play
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def plate_bearing_hole_diameter(self) -> float:
+        """Diameter of the drive plate's thumb-end hole that rides on the
+        journal = journal diameter + diametral running clearance."""
+        return (
+            self.drive_screw.bearing_journal_diameter
+            + self.drive_screw.bearing_journal_clearance
+        )
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def drive_screw_tip_to_slot_clearance(self) -> float:
         """
         Axial (X) clearance between the drive-screw thread tip and the inboard
@@ -836,22 +899,21 @@ class PurflingCutterParams(BaseModel):
         The drive screw, drive plate, shaft and blades are all coupled and
         translate together, so this clearance is FIXED — it does not change
         with the edge-margin setting. Measuring from the shaft's −X (drive)
-        end:
+        end (the journal bearing puts the thumbwheel boss face flush at the
+        plate / shaft end, so the screw stack starts there):
 
             shaft end → slot near wall = shaft.length − end_to_slot − blade_slot_width
-            shaft end → screw tip      = axial_play + drive_screw_total_length
+            shaft end → screw tip      = drive_screw_total_length
 
         It must stay positive (with margin), or the engaged drive-screw tip
-        fouls a bone-less blade dropped into the slot. The shaft length is set
-        to give the design value (1.5 mm).
+        fouls a bone-less blade dropped into the slot.
         """
         slot_near = (
             self.shaft.length
             - self.shaft.end_to_slot_distance
             - self.shaft.blade_slot_width
         )
-        screw_tip = self.captive_bearing.axial_play + self.drive_screw_total_length
-        return slot_near - screw_tip
+        return slot_near - self.drive_screw_total_length
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -1003,25 +1065,50 @@ class PurflingCutterParams(BaseModel):
     # --- Cross-component invariant validators -------------------------------
 
     @model_validator(mode="after")
-    def _validate_captive_bearing(self) -> "PurflingCutterParams":
-        """The captive-screw length, drive-plate thickness, axial play, and tap
-        depth must satisfy the captive-bearing relationship — otherwise the
-        plate either gets clamped (axial_play < design) or floats free
-        (axial_play > design).
+    def _validate_journal_bearing(self) -> "PurflingCutterParams":
+        """Integrity of the integral-journal drive-screw bearing:
+
+        1. **Tap wall.** The M2 retaining tap down the journal centre must
+           leave ≥ the standard tapped-bore wall (1× thread major radius,
+           1 mm floor) of brass around it.
+        2. **Thrust shoulder.** The journal must be smaller than the boss so
+           the boss face forms a thrust shoulder for the plate.
+        3. **Washer retention.** The washer OD must exceed the plate's
+           bearing hole, or it can't retain the plate.
+        4. **Tap depth.** The journal tap must be at least as deep as the
+           captive-screw thread, so the head seats on the journal end face
+           before the screw bottoms (that positive seat is what makes the
+           play independent of tap depth).
         """
-        expected_thread_len = (
-            self.drive_plate.thickness
-            + self.captive_bearing.axial_play
-            + self.drive_screw.left_face_tap_depth
-        )
-        if abs(self.captive_screw.thread_length - expected_thread_len) > 1e-6:
+        journal_d = self.drive_screw.bearing_journal_diameter
+        tap_major_r = threads.major_radius(self.drive_screw.left_face_tap)
+        wall = journal_d / 2 - tap_major_r
+        min_wall = max(1.0, tap_major_r)
+        if wall < min_wall - 1e-6:
             raise ValueError(
-                f"Captive-bearing relationship violated: captive_screw.thread_length "
-                f"({self.captive_screw.thread_length:.3f}) ≠ drive_plate.thickness "
-                f"({self.drive_plate.thickness}) + axial_play ({self.captive_bearing.axial_play}) "
-                f"+ left_face_tap_depth ({self.drive_screw.left_face_tap_depth}) "
-                f"= {expected_thread_len:.3f}. Adjust left_face_tap_depth to "
-                f"{self.captive_screw.thread_length - self.drive_plate.thickness - self.captive_bearing.axial_play:.3f}."
+                f"Journal tap wall ({wall:.3f}) < min {min_wall:.3f} mm. "
+                f"Increase drive_screw.bearing_journal_diameter (now {journal_d})."
+            )
+
+        if journal_d >= self.thumbwheel.boss_diameter:
+            raise ValueError(
+                f"bearing_journal_diameter ({journal_d}) must be < "
+                f"thumbwheel.boss_diameter ({self.thumbwheel.boss_diameter}) so the "
+                f"boss face forms a thrust shoulder for the plate."
+            )
+
+        if self.captive_washer.outer_diameter <= self.plate_bearing_hole_diameter:
+            raise ValueError(
+                f"captive_washer.outer_diameter ({self.captive_washer.outer_diameter}) must "
+                f"exceed plate_bearing_hole_diameter ({self.plate_bearing_hole_diameter:.3f}) "
+                f"to retain the plate."
+            )
+
+        if self.drive_screw.left_face_tap_depth < self.captive_screw.thread_length - 1e-6:
+            raise ValueError(
+                f"left_face_tap_depth ({self.drive_screw.left_face_tap_depth}) must be "
+                f"≥ captive_screw.thread_length ({self.captive_screw.thread_length}) so the "
+                f"screw head seats on the journal end before the screw bottoms."
             )
         return self
 
@@ -1172,4 +1259,5 @@ __all__ = [
     "SpacerParams",
     "Status",
     "ThumbwheelParams",
+    "WasherParams",
 ]

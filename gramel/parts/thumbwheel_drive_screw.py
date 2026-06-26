@@ -82,26 +82,39 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
             Pos(x_thread, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=thread_r, height=thread_len)
         )
 
-    body = boss + disc + unthreaded + thread
+    body: Part = boss + disc + unthreaded + thread  # type: ignore[assignment]
 
-    # --- Captive-screw tap from the −X face inward -------------------------
-    # The hole is drilled deeper than the tap by `left_face_tap_chip_relief`
-    # so chips clear into the unthreaded well at the bottom. Shop uses a
-    # standard plug tap (no bottoming tap). The screw still bottoms on the
-    # tap face at left_face_tap_depth, so captive-bearing geometry is
-    # unaffected.
+    # --- Integral bearing journal on the boss (−X) face -------------------
+    # Turned stub the drive plate's thumb-end hole rides on; capped by a
+    # washer + screw. The plate floats by `axial_play` on it (the journal is
+    # machined that much longer than the plate is thick). The boss face (⌀6)
+    # around the ⌀4 journal is the thrust shoulder.
+    journal_r = ds.bearing_journal_diameter / 2
+    journal_len = params.bearing_journal_length
+    journal = (
+        Pos(-journal_len / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=journal_r, height=journal_len)
+    )
+    body = body + journal
+
+    # --- Captive-screw tap, bored down the journal centre from its end ----
+    # Deliberately DEEP: the retaining screw's head seats on the journal end
+    # face, so the bearing play does NOT depend on tap depth (the opposite of
+    # the old tap-bottoming scheme). Drilled deeper than tapped for chip
+    # relief (left_face_tap_chip_relief).
     tap_drill_r = threads.tap_drill_radius(ds.left_face_tap)
     drill_depth = ds.left_face_tap_depth + ds.left_face_tap_chip_relief
     tap = (
-        Pos(drill_depth / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=tap_drill_r, height=drill_depth)
+        Pos(-journal_len + drill_depth / 2, 0, 0)
+        * Rot(0, 90, 0)
+        * Cylinder(radius=tap_drill_r, height=drill_depth)
     )
-    body = body - tap
+    body = body - tap  # type: ignore[assignment]
 
     # --- Lead-in chamfer on the drive-screw +X tip (CNC path only) ---------
     if ds.tip_chamfer > 0 and not params.process.prototype:
         try:
             tip_face = body.faces().sort_by(Axis.X).last
-            body = body.chamfer(ds.tip_chamfer, None, list(tip_face.edges()))  # type: ignore[assignment]
+            body = body.chamfer(ds.tip_chamfer, None, list(tip_face.edges()))
         except Exception:
             pass
 
@@ -116,11 +129,11 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
                 if e.geom_type == GeomType.CIRCLE and abs(e.radius - disc_r) < 0.05
             ]
             if disc_edges:
-                body = body.chamfer(tw.disc_edge_chamfer, None, disc_edges)  # type: ignore[assignment]
+                body = body.chamfer(tw.disc_edge_chamfer, None, disc_edges)
         except Exception:
             pass
 
-    return body  # type: ignore[return-value]
+    return body
 
 
 def main() -> None:

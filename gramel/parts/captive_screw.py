@@ -1,15 +1,13 @@
 """
-Captive screw — the small M2 fastener that captures the drive plate against
-the thumbwheel's left face. The deliberately-over-length screw bottoms
-on the thumbwheel tap *before* its head clamps the drive plate,
-leaving the captive-bearing axial play.
+Captive (retaining) screw — the small stock M2 fastener for the journal
+bearing. It threads into the deep tap down the bearing journal's centre and
+clamps the retaining washer against the journal end face. The bearing axial
+play is set by the journal length (not by this screw), so the screw can be
+torqued fully.
 
 Local frame:
   X: along the screw axis. X = 0 = head's outboard (−X) face;
      +X = inboard (toward the thumbwheel).
-
-Length (head to tip) = drive_plate.thickness + captive_bearing.axial_play
-                       + drive_screw.left_face_tap_depth.
 """
 
 from build123d import (
@@ -24,14 +22,9 @@ from gramel.parameters import PurflingCutterParams
 
 
 def build_captive_screw(params: PurflingCutterParams) -> Part:
-    """Build the captive screw.
-
-    Thread length now comes directly from the CaptiveScrewParams field (the
-    stock-screw dimension). The PurflingCutterParams model validator enforces
-    that thread_length == drive_plate.thickness + axial_play + tap_depth,
-    so the captive-bearing axial play is preserved by adjusting the tap
-    depth rather than the screw length.
-    """
+    """Build the captive (retaining) screw — stock M2, thread length from the
+    CaptiveScrewParams field. It clamps the washer on the journal end; the
+    journal tap is cut deeper than the thread so the head seats positively."""
     cs = params.captive_screw
 
     head_d = cs.head_diameter

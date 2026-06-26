@@ -25,16 +25,17 @@ from build123d import Compound, Pos
 from gramel.parameters import PurflingCutterParams
 from gramel.parts.blade import build_blade
 from gramel.parts.blade_retainer import build_blade_retainer
+from gramel.parts.captive_screw import build_captive_screw
 from gramel.parts.channel_spacer import build_channel_spacer
 from gramel.parts.depth_lock_bolt import build_depth_lock_bolt
 from gramel.parts.drive_plate import build_drive_plate
 from gramel.parts.grub_screw import build_grub_screw
+from gramel.parts.mount_screw import build_mount_screw
 from gramel.parts.push_rod import build_push_rod
 from gramel.parts.shaft import build_shaft
 from gramel.parts.shank import build_shank
-from gramel.parts.captive_screw import build_captive_screw
-from gramel.parts.mount_screw import build_mount_screw
 from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
+from gramel.parts.washer import build_washer
 
 
 def build_assembly(
@@ -71,7 +72,8 @@ def build_assembly(
     EX_STACK = (25, 0, 0)         # blades + retainers + spacer move with shaft
     EX_GRUB = (55, 0, 0)
     EX_PLATE = (-25, 0, 0)
-    EX_CAPTIVE = (-50, 0, 0)
+    EX_CAPTIVE = (-55, 0, 0)
+    EX_WASHER = (-45, 0, 0)
     EX_TW = (-25, 0, 0)
     EX_BOLT = (0, 0, -35)
     EX_ROD = (0, 0, -15)
@@ -155,10 +157,29 @@ def build_assembly(
     ex_plate = ex(EX_PLATE)
     plate = Pos(plate_x + ex_plate[0], ex_plate[1], crossbore_z + ex_plate[2]) * plate_local
 
-    # --- Captive screw + thumbwheel/drive screw: captive bearing ---------
+    # --- Thumbwheel/drive screw: journal bearing -------------------------
+    # The boss face sits flush at the plate's back face; the integral journal
+    # projects through the plate's bearing hole and is capped by a washer +
+    # retaining screw clamped on the journal end face.
+    tw_local = build_thumbwheel_drive_screw(params)
+    tw_x = shaft_x_off  # boss face flush at the plate back face / shaft −X end
+    ex_tw = ex(EX_TW)
+    tw = Pos(tw_x + ex_tw[0], ex_tw[1], tapped_z + ex_tw[2]) * tw_local
+
+    journal_end_x = tw_x - params.bearing_journal_length  # −X end of the journal
+
+    # --- Retaining washer: on the journal end ----------------------------
+    washer_local = build_washer(params)
+    washer_t = params.captive_washer.thickness
+    ex_wash = ex(EX_WASHER)
+    washer = Pos(
+        journal_end_x - washer_t / 2 + ex_wash[0], ex_wash[1], tapped_z + ex_wash[2]
+    ) * washer_local
+
+    # --- Captive (retaining) screw: head clamps the washer on journal end -
     captive_local = build_captive_screw(params)
     head_t = params.captive_screw.head_thickness
-    captive_x = plate_x - plate_thick / 2 - head_t  # local X=0 (head −X face)
+    captive_x = journal_end_x - washer_t - head_t  # local X=0 (head −X face)
     ex_captive = ex(EX_CAPTIVE)
     captive = Pos(captive_x + ex_captive[0], ex_captive[1], tapped_z + ex_captive[2]) * captive_local
 
@@ -167,12 +188,6 @@ def build_assembly(
     mount_head_t = params.mount_screw.head_thickness
     mount_x = plate_x - plate_thick / 2 - mount_head_t  # head −X face
     mount = Pos(mount_x + ex_captive[0], ex_captive[1], crossbore_z + ex_captive[2]) * mount_local
-
-    tw_local = build_thumbwheel_drive_screw(params)
-    # Boss −X face sits axial_play inboard of the plate's back face
-    tw_x = shaft_x_off + params.captive_bearing.axial_play
-    ex_tw = ex(EX_TW)
-    tw = Pos(tw_x + ex_tw[0], ex_tw[1], tapped_z + ex_tw[2]) * tw_local
 
     # --- Depth-lock bolt + push rod (fully advanced) --------------------
     rod_local = build_push_rod(params)
@@ -200,6 +215,7 @@ def build_assembly(
             *stack,
             grub,
             plate,
+            washer,
             captive,
             mount,
             tw,
