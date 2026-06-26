@@ -288,10 +288,10 @@ class ShaftParams(BaseModel):
         json_schema_extra=_spec("§4.2.17", status="MEASURED"),
     )
     length: float = Field(
-        default=35.0,
+        default=37.6,
         gt=0,
-        description="Total shaft length (measured on the original).",
-        json_schema_extra=_spec("§4.2.18", status="MEASURED"),
+        description="Total shaft length. Extended from the measured 35 mm to 37.6 mm so the blade slot moves outboard far enough that the engaged drive-screw thread tip clears the slot's inboard (near) wall by 1.5 mm — otherwise a bone-less blade dropped into the slot fouls the screw (see PurflingCutterParams.drive_screw_tip_to_slot_clearance). Moving the slot outboard also raises the max edge-margin, which is what's needed for double purfling.",
+        json_schema_extra=_spec("§4.2.18", status="DESIGN"),
     )
     drive_plate_mount_thread: str = Field(
         default="M2",
@@ -488,9 +488,9 @@ class DriveScrewParams(BaseModel):
         json_schema_extra=_spec("§4.4.38", status="MEASURED"),
     )
     length: float = Field(
-        default=18.0,
+        default=20.0,
         gt=0,
-        description="Threaded length of the drive screw. With the measured shaft.length=35 mm, an 18 mm thread gives ~10 mm engagement at edge margin = 1 mm and full bore engagement at the neutral position. (Earlier the shaft was modelled at 45 mm by mistake, which forced 28 mm — that's been corrected.)",
+        description="Threaded length of the M3 drive screw. 20 mm matches the as-supplied part (total thumbwheel+screw = boss 0.5 + disc 2 + unthreaded 3 + thread 20 = 25.5 mm). NOTE: the thread length does NOT set the maximum edge-margin — that is limited by the unthreaded shoulder seating on the shank's back face. The long thread governs the minimum-margin (retracted) travel, and its tip must clear the blade slot (see shaft.length and drive_screw_tip_to_slot_clearance).",
         json_schema_extra=_spec("§4.4.39", status="MEASURED"),
     )
     tip_chamfer: float = Field(
@@ -816,6 +816,45 @@ class PurflingCutterParams(BaseModel):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
+    def drive_screw_total_length(self) -> float:
+        """Total length of the integral thumbwheel + drive-screw piece along X,
+        from the boss (−X) face to the thread tip (+X)."""
+        return (
+            self.thumbwheel.boss_length
+            + self.thumbwheel.thickness
+            + self.drive_screw.unthreaded_length
+            + self.drive_screw.length
+        )
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def drive_screw_tip_to_slot_clearance(self) -> float:
+        """
+        Axial (X) clearance between the drive-screw thread tip and the inboard
+        (near) wall of the blade slot.
+
+        The drive screw, drive plate, shaft and blades are all coupled and
+        translate together, so this clearance is FIXED — it does not change
+        with the edge-margin setting. Measuring from the shaft's −X (drive)
+        end:
+
+            shaft end → slot near wall = shaft.length − end_to_slot − blade_slot_width
+            shaft end → screw tip      = axial_play + drive_screw_total_length
+
+        It must stay positive (with margin), or the engaged drive-screw tip
+        fouls a bone-less blade dropped into the slot. The shaft length is set
+        to give the design value (1.5 mm).
+        """
+        slot_near = (
+            self.shaft.length
+            - self.shaft.end_to_slot_distance
+            - self.shaft.blade_slot_width
+        )
+        screw_tip = self.captive_bearing.axial_play + self.drive_screw_total_length
+        return slot_near - screw_tip
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def crossbore_diameter(self) -> float:
         """§4.3.20 — modelled crossbore diameter for boolean geometry.
 
@@ -983,6 +1022,24 @@ class PurflingCutterParams(BaseModel):
                 f"+ left_face_tap_depth ({self.drive_screw.left_face_tap_depth}) "
                 f"= {expected_thread_len:.3f}. Adjust left_face_tap_depth to "
                 f"{self.captive_screw.thread_length - self.drive_plate.thickness - self.captive_bearing.axial_play:.3f}."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _validate_drive_screw_blade_clearance(self) -> "PurflingCutterParams":
+        """The engaged drive-screw thread tip must clear the inboard wall of
+        the blade slot by at least `min_clearance`, or a bone-less blade
+        dropped into the slot fouls the screw. The shaft length is the lever
+        (it moves the slot outboard relative to the screw tip).
+        """
+        min_clearance = 1.5  # mm, axial — design value, set via shaft.length
+        clearance = self.drive_screw_tip_to_slot_clearance
+        if clearance < min_clearance - 1e-6:
+            raise ValueError(
+                f"drive_screw_tip_to_slot_clearance ({clearance:.3f}) < min "
+                f"{min_clearance:.3f} mm. The engaged drive-screw tip would foul a "
+                f"bone-less blade in the slot. Lengthen shaft.length (currently "
+                f"{self.shaft.length}) or shorten the drive-screw stack."
             )
         return self
 
