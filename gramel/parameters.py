@@ -484,7 +484,7 @@ class DriveScrewParams(BaseModel):
     thread_pitch: float = Field(
         default=0.5,
         gt=0,
-        description="Drive-screw thread pitch. Fine pitch for adjustment resolution.",
+        description="Drive-screw thread pitch = 0.5 mm — the STANDARD COARSE pitch for M3 (M3 'fine' would be 0.35). The drive screw and shank tapped bore are therefore cut and gauged with standard M3 taps and dies (~2 turns/mm of edge-margin feed). NOTE: earlier mislabelled 'fine pitch', which risks a 0.35 part that won't mate with a 0.5 one.",
         json_schema_extra=_spec("§4.4.38", status="MEASURED"),
     )
     length: float = Field(
