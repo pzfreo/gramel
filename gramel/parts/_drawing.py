@@ -108,10 +108,11 @@ STANDARD_NOTES: tuple[str, ...] = (
     "2. Threads per ISO 6410; class 6H/6g unless noted",
     "3. Surface finish Ra 3.2 unless noted",
     "4. All dimensions in mm",
-    "5. Material: Brass (CuZn37 / C26800 equivalent)",
-    "6. Break all sharp edges 0.3 max",
-    "7. Threads: cut & gauge with standard taps/dies",
+    "5. Break all sharp edges 0.3 max",
+    "6. Threads: cut & gauge with standard taps/dies",
 )
+# Material is per-part — it lives in each drawing's title block, not here
+# (parts span brass, stainless, copper and tool steel).
 
 
 # ---------------------------------------------------------------------------

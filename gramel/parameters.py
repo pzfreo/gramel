@@ -574,6 +574,12 @@ class ThumbwheelParams(BaseModel):
         description="Knurl pattern style.",
         json_schema_extra=_spec("§4.4.43", units=""),
     )
+    knurl_pitch: float = Field(
+        default=0.8,
+        gt=0,
+        description="Knurl pitch (tooth spacing). Coarsened from the original 0.5 mm: a 0.5 mm knurl gives small, sharp teeth that are fragile and not very grippy — 0.8 mm gives blunter, more durable teeth that also grip better. (On the 303-stainless wheel durability is less of an issue, but the coarser pitch still grips better than the fine one.)",
+        json_schema_extra=_spec("§4.4.43 (pitch — design addition)", status="DESIGN"),
+    )
     disc_edge_chamfer: float = Field(
         default=0.3,
         ge=0,

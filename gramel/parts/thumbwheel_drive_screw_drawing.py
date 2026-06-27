@@ -4,8 +4,10 @@ CNC handoff package.
 
 The part is a turned stepped cylinder: integral journal (Ø4, bearing) +
 boss (Ø6, thrust face) + knurled disc (Ø10) + unthreaded collar (Ø5) +
-M3 thread, all from one piece of brass, plus a deep M2 tap down the
-journal centre. The drive plate rides on the journal; a retaining washer
+M3 thread, all from one piece of 303 stainless steel, plus a deep M2 tap
+down the journal centre. Stainless (vs the original brass) for a durable
+knurl, stronger M3 thread, and a longer-wearing journal bearing. The drive
+plate rides on the journal; a retaining washer
 + M2 screw cap the journal end face (the screw head seats there, so the
 bearing float is set by the journal length, not the tap depth).
 
@@ -216,7 +218,7 @@ def build_thumbwheel_drawing(
     add_leader(
         (x_disc_mid, f_top),
         (x_disc_mid - 12, f_top + 28),
-        "straight knurl, 0.5 pitch",
+        f"{tw.knurl} knurl, {dim_label(tw.knurl_pitch)} pitch",
     )
     add_leader(
         (x_thread_mid, fy + SCALE * thread_d / 2),
@@ -262,7 +264,7 @@ def build_thumbwheel_drawing(
         drawing_no="GRM-03",
         scale="2:1",
         sheet="1/1",
-        material="Brass (CuZn37 / C26800)",
+        material="303 stainless (1.4305)",
         drawn_by="P. Fremantle",
         drawn_date=date.today().isoformat(),
     )

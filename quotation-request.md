@@ -10,7 +10,8 @@ I am seeking quotations for CNC machining of a small precision hand tool used by
 
 Each set consists of:
 
-- Five machined brass parts
+- Four machined brass parts
+- One machined 303 stainless-steel part (GRM-03, thumbwheel + drive screw)
 - One mild steel push rod (cut to length only)
 
 Please quote for the following quantities:
@@ -29,7 +30,7 @@ The tool is assembled from the supplied parts; an assembly drawing and individua
 |--------|--------|--------|--------|
 | GRM-01 | Shank | Brass (CZ121 / C36000) | 1 |
 | GRM-02 | Shaft | Brass (CZ121 / C36000) | 1 |
-| GRM-03 | Thumbwheel with integral drive screw | Brass (CZ121 / C36000) | 1 |
+| GRM-03 | Thumbwheel with integral drive screw | 303 stainless (1.4305) | 1 |
 | GRM-04 | Drive plate | Brass (CZ121 / C36000) | 1 |
 | GRM-05 | Depth-lock bolt with knurled knob | Brass (CZ121 / C36000) | 1 |
 | GRM-06 | Bone-shaped blade retainer | Copper sheet (annealed) | 4 |
@@ -74,7 +75,16 @@ If any feature appears unnecessarily expensive to manufacture, I would welcome s
 
 ---
 
-## Notes on the non-brass parts (GRM-06, GRM-07, push rod)
+## Notes on the non-brass parts (GRM-03, GRM-06, GRM-07, push rod)
+
+### GRM-03 Thumbwheel + integral drive screw (1 per tool)
+
+Same geometry and machining as a brass turned part, but in **303 free-machining
+stainless (1.4305)** rather than brass. Stainless was chosen for a durable
+knurl, a stronger M3 × 0.5 thread, and a longer-wearing journal bearing (the
+brass version's fine knurl and thread were fragile). No special process — turn,
+knurl, single-point/roll the M3 thread, and tap the M2 hole as you would in
+brass; 303 machines cleanly. Passivate or leave bright as preferred.
 
 ### GRM-06 Bone-shaped copper blade retainer (4 per tool)
 
