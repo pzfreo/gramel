@@ -173,7 +173,7 @@ def build_shank_drawing(
     s_left_for_face = sx_for_face - width / 2
     leader_label_x = (f_right + s_left_for_face) / 2
     tap_face_y = f_top - tap_x_from_top
-    add_leader((fx, cb_face_y), (leader_label_x, cb_face_y - 4), f"⌀{dim_label(cb_d)} H7")
+    add_leader((fx, cb_face_y), (leader_label_x, cb_face_y - 4), f"Ø{dim_label(cb_d)} H7")
     add_leader((fx, tap_face_y), (leader_label_x, tap_face_y + 3), f"{ds_thread}×{ds_pitch} thru")
 
     # Side view: page X = world X (width), page Y = world Z (length).
@@ -207,10 +207,10 @@ def build_shank_drawing(
 
     # Depth-lock bore-section callouts — leaders pointing RIGHT.
     side_label_x = s_right + 16
-    add_leader((sx, (s_bot + s_collar_top) / 2), (side_label_x, (s_bot + s_collar_top) / 2), f"⌀{dim_label(dl_collar_d)}")
+    add_leader((sx, (s_bot + s_collar_top) / 2), (side_label_x, (s_bot + s_collar_top) / 2), f"Ø{dim_label(dl_collar_d)}")
     add_leader((sx, (s_collar_top + s_thread_top) / 2), (side_label_x, (s_collar_top + s_thread_top) / 2), f"{dl_thread}×1")
     push_rod_mid_y = (s_thread_top + cb_side_y) / 2
-    add_leader((sx, push_rod_mid_y), (side_label_x, push_rod_mid_y), f"⌀{dim_label(dl_d)} H8")
+    add_leader((sx, push_rod_mid_y), (side_label_x, push_rod_mid_y), f"Ø{dim_label(dl_d)} H8")
 
     # Relief slot depth callout — leader pointing LEFT from the slot's
     # inner edge in the side view to a label in the empty gap below the

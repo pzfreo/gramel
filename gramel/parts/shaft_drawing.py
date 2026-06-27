@@ -203,7 +203,7 @@ def build_shaft_drawing(
     # Flat depth (0.6 mm) — leader because it's too small to dim inline.
     add_leader((f_left + 4, f_bot), (f_left + 4, f_bot - 14), f"flat {dim_label(flat_depth)} deep")
     # Surface finish + g6 fit on the OD.
-    add_leader((fx, f_top), (fx + 18, f_top + 14), f"⌀{dim_label(od)} {shaft_fit}")
+    add_leader((fx, f_top), (fx + 18, f_top + 14), f"Ø{dim_label(od)} {shaft_fit}")
     add_leader((fx - 18, f_top), (fx - 8, f_top + 14), "Ra 1.6")
     # Mount tap on the −X end face.
     add_leader(
@@ -220,7 +220,7 @@ def build_shaft_drawing(
 
     # --- Right end view -----------------------------------------------------
     ex, ey = layout.end
-    # Diameter callout lives on the front view as ⌀8.0 g6 — no need to repeat.
+    # Diameter callout lives on the front view as Ø8.0 g6 — no need to repeat.
     # Grub-screw tap callout points up-right to clear the notes block (X ≥ 38.5).
     add_leader(
         (ex, ey),

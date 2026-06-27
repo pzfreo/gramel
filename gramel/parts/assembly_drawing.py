@@ -67,7 +67,7 @@ BOM: tuple[tuple[str, str, str, str], ...] = (
     ("3", "Thumbwheel + drive screw", "GRM-03", "1"),
     ("4", "Drive plate", "GRM-04", "1"),
     ("5", "Depth-lock bolt + knob", "GRM-05", "1"),
-    ("6", "Push rod, ⌀4.5 × 45", "—", "1"),
+    ("6", "Push rod, Ø4.5 × 45", "—", "1"),
     ("7", "Captive screw, M2 × 6", "stock", "1"),
     ("8", "Mount screw, M2", "stock", "1"),
     ("9", "Grub screw, M4", "stock", "1"),
