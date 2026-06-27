@@ -2,8 +2,8 @@
 A4 landscape technical drawing of the integral thumbwheel + drive screw —
 CNC handoff package.
 
-The part is a turned stepped cylinder: integral journal (⌀4, bearing) +
-boss (⌀6, thrust face) + knurled disc (⌀10) + unthreaded collar (⌀5) +
+The part is a turned stepped cylinder: integral journal (Ø4, bearing) +
+boss (Ø6, thrust face) + knurled disc (Ø10) + unthreaded collar (Ø5) +
 M3 thread, all from one piece of brass, plus a deep M2 tap down the
 journal centre. The drive plate rides on the journal; a retaining washer
 + M2 screw cap the journal end face (the screw head seats there, so the
@@ -44,7 +44,7 @@ SCALE = 2.0  # 2:1 drawing scale — part is small enough that 1:1 leaves leader
 class ViewPlacement:
     """View centroids on the sheet (frame coords). Part rendered at 2:1.
 
-    At 2:1 the part is 47 mm long × ⌀20 wide on the page. Front view takes
+    At 2:1 the part is 47 mm long × Ø20 wide on the page. Front view takes
     the upper-left; left end view sits to its right; iso below.
     """
 
@@ -75,7 +75,7 @@ def build_thumbwheel_drawing(
     collar_len = ds.unthreaded_length
     thread_d = 2 * threads.major_radius(ds.thread)
     thread_len = ds.length
-    journal_d = ds.bearing_journal_diameter               # ⌀4 — plate bearing journal
+    journal_d = ds.bearing_journal_diameter               # Ø4 — plate bearing journal
     journal_len = params.bearing_journal_length            # 3.2 (= plate thickness + 0.2 float)
     plus_x_len = boss_len + disc_t + collar_len + thread_len  # 23.5 (boss face → thread tip)
     total_len = journal_len + plus_x_len                   # 28.7 (journal end → thread tip)
@@ -172,7 +172,7 @@ def build_thumbwheel_drawing(
     add_dim((f_jstart, f_top), (f_right, f_top), "above", 13, dim_label(total_len, min_decimals=1))
 
     # Disc diameter — Y dim on the far left of the front view.
-    add_dim((f_jstart - 2, f_bot), (f_jstart - 2, f_top), "left", 8, f"⌀{dim_label(disc_d)}")
+    add_dim((f_jstart - 2, f_bot), (f_jstart - 2, f_top), "left", 8, f"Ø{dim_label(disc_d)}")
 
     # Mid-X positions in PAGE coords (apply SCALE)
     x_journal_mid = fx + SCALE * (-journal_len / 2 - center_x)
@@ -185,14 +185,14 @@ def build_thumbwheel_drawing(
     add_leader(
         (x_journal_mid, fy + SCALE * journal_d / 2),
         (f_jstart - 6, f_top + 18),
-        f"⌀{dim_label(journal_d)} × {dim_label(journal_len)} journal (bearing dia)",
+        f"Ø{dim_label(journal_d)} × {dim_label(journal_len)} journal (bearing dia)",
     )
 
     # FAR LEFT-BELOW: boss spec (the thrust shoulder)
     add_leader(
         (x_boss_mid, fy),
         (f_jstart - 6, fy - 16),
-        f"⌀{dim_label(boss_d)} × {dim_label(boss_len)} boss (thrust face)",
+        f"Ø{dim_label(boss_d)} × {dim_label(boss_len)} boss (thrust face)",
     )
 
     # BELOW the part — disc / collar / thread callouts staggered along Y.
@@ -204,7 +204,7 @@ def build_thumbwheel_drawing(
     add_leader(
         (x_collar_mid, fy - SCALE * collar_d / 2),
         (x_collar_mid + 4, f_bot - 14),
-        f"⌀{dim_label(collar_d)} collar",
+        f"Ø{dim_label(collar_d)} collar",
     )
     add_leader(
         (x_thread_mid + 6, fy - SCALE * thread_d / 2),
@@ -238,7 +238,7 @@ def build_thumbwheel_drawing(
     add_leader(
         (ex, ey),
         (ex + 4, ey + 18),
-        f"⌀{dim_label(journal_d)} journal",
+        f"Ø{dim_label(journal_d)} journal",
     )
     add_leader(
         (ex, ey),

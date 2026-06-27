@@ -24,3 +24,9 @@ gramel-*.zip
 
 # estampo sliced output
 estampo_output/
+
+# stray drawing artifacts at repo root (real outputs go to dist/ or /tmp;
+# check_interference renders a DXF to CWD when run manually)
+/GRM-*.pdf
+/GRM-*.svg
+/GRM-*.dxf

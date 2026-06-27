@@ -63,12 +63,12 @@ def build_drive_plate_drawing(
     plate = build_drive_plate(params)
     dp = params.drive_plate
 
-    r_big = dp.shaft_end_radius          # 4.5 → ⌀9
-    r_small = dp.thumb_end_radius        # 3.0 → ⌀6
+    r_big = dp.shaft_end_radius          # 4.5 → Ø9
+    r_small = dp.thumb_end_radius        # 3.0 → Ø6
     thickness = dp.thickness             # 3.0
     gap = params.shank.crossbore_to_tapped_bore_gap  # 9.5
     mount_d = dp.mount_hole_diameter     # 2.4
-    bearing_d = params.plate_bearing_hole_diameter  # ⌀4.2 — rides on the drive-screw journal
+    bearing_d = params.plate_bearing_hole_diameter  # Ø4.2 — rides on the drive-screw journal
     tenon_depth = dp.tenon_depth         # 1.5 — tenon X projection from back face
     tenon_height = dp.tenon_height       # 3.0 — tenon Z extent
     # Tenon Y extent follows the plate's egg outline at the tenon's Z range
@@ -165,27 +165,27 @@ def build_drive_plate_drawing(
     add_leader(
         f_big_left,
         (f_big_left[0] - 14, f_big_left[1] - 6),
-        f"⌀{dim_label(2 * r_big)}",
+        f"Ø{dim_label(2 * r_big)}",
     )
     # Small boss diameter via leader
     add_leader(
         face_xy(r_small, gap),
         (face_xy(r_small, gap)[0] - 12, face_xy(r_small, gap)[1] + 6),
-        f"⌀{dim_label(2 * r_small)}",
+        f"Ø{dim_label(2 * r_small)}",
     )
 
     # Mount hole (big boss, Z=0) — leader to the right
     add_leader(
         f_big_centre,
         (f_big_right[0] + 14, f_big_centre[1] - 4),
-        f"⌀{dim_label(mount_d)} mount",
+        f"Ø{dim_label(mount_d)} mount",
     )
     # Journal bearing hole (small boss, Z=gap) — leader to the right.
     # The plate rides on the drive-screw's integral journal through this hole.
     add_leader(
         f_small_centre,
         (face_xy(-r_small, gap)[0] + 14, f_small_centre[1] + 4),
-        f"⌀{dim_label(bearing_d)} journal bearing",
+        f"Ø{dim_label(bearing_d)} journal bearing",
     )
 
     # Tenon Z height — leader on the right side (label too wide for inline dim).

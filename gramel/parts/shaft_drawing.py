@@ -182,6 +182,17 @@ def build_shaft_drawing(
         (t_left - 8, t_bot - 14),
         f"end slot {dim_label(slot_x_depth)} deep",
     )
+    # Blade-slot POSITION along the shaft: dimension the slot's inboard (−X)
+    # wall from the +X end face. (The outboard wall is end_to_slot = 4 mm from
+    # the +X end, but 4 mm is too short for an inline dim at 1:1 — locate the
+    # inboard wall; the 6.4 slot width on the leader gives the outboard wall.)
+    add_dim(
+        (slot_x_start, t_bot),
+        (t_right, t_bot),
+        "below",
+        6,
+        dim_label(end_to_slot + slot_w, min_decimals=1),
+    )
 
     # --- Front view dims ----------------------------------------------------
     fx, fy = layout.front
@@ -192,7 +203,7 @@ def build_shaft_drawing(
     # Flat depth (0.6 mm) — leader because it's too small to dim inline.
     add_leader((f_left + 4, f_bot), (f_left + 4, f_bot - 14), f"flat {dim_label(flat_depth)} deep")
     # Surface finish + g6 fit on the OD.
-    add_leader((fx, f_top), (fx + 18, f_top + 14), f"⌀{dim_label(od)} {shaft_fit}")
+    add_leader((fx, f_top), (fx + 18, f_top + 14), f"Ø{dim_label(od)} {shaft_fit}")
     add_leader((fx - 18, f_top), (fx - 8, f_top + 14), "Ra 1.6")
     # Mount tap on the −X end face.
     add_leader(
@@ -209,7 +220,7 @@ def build_shaft_drawing(
 
     # --- Right end view -----------------------------------------------------
     ex, ey = layout.end
-    # Diameter callout lives on the front view as ⌀8.0 g6 — no need to repeat.
+    # Diameter callout lives on the front view as Ø8.0 g6 — no need to repeat.
     # Grub-screw tap callout points up-right to clear the notes block (X ≥ 38.5).
     add_leader(
         (ex, ey),

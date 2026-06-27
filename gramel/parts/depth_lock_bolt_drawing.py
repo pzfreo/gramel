@@ -2,9 +2,9 @@
 A4 landscape technical drawing of the depth-lock bolt + knurled knob —
 CNC handoff package.
 
-Turned brass part: ⌀10 knurled knob → ⌀6.25 collar → M6 × 1 thread with a
+Turned brass part: Ø10 knurled knob → Ø6.25 collar → M6 × 1 thread with a
 45° lead-in chamfer at the tip. Single setup on a lathe. 2:1 scale (the
-bolt is only 32 × ⌀10 mm — 1:1 would crowd the callouts).
+bolt is only 32 × Ø10 mm — 1:1 would crowd the callouts).
 
 Layout: front view (side profile of the bolt) at upper-left, end view
 (circular cross-section looking down the bolt axis) to its right, iso
@@ -35,7 +35,7 @@ from gramel.parts._drawing import (
 from gramel.parts.depth_lock_bolt import build_depth_lock_bolt
 
 
-SCALE = 2.0  # 2:1 — bolt is 32 mm tall × ⌀10
+SCALE = 2.0  # 2:1 — bolt is 32 mm tall × Ø10
 
 
 @dataclass
@@ -166,7 +166,7 @@ def build_depth_lock_bolt_drawing(
     add_dim((f_left, f_top), (f_right, f_top), "above", 13, dim_label(overall_len, min_decimals=1))
 
     # Knob diameter dim on the left side of the front view
-    add_dim((f_left, f_bot), (f_left, f_top), "left", 8, f"⌀{dim_label(knob_d)}")
+    add_dim((f_left, f_bot), (f_left, f_top), "left", 8, f"Ø{dim_label(knob_d)}")
 
     # Mid-X positions for leader callouts
     x_knob_mid = fx + SCALE * (knob_t / 2 - overall_len / 2)
@@ -185,11 +185,11 @@ def build_depth_lock_bolt_drawing(
         (f_left - 12, f_bot - 12),
         f"{dim_label(knob_chamfer)} × 45° chamfer",
     )
-    # Collar diameter (⌀6.25)
+    # Collar diameter (Ø6.25)
     add_leader(
         (x_collar_mid, fy + SCALE * collar_d / 2),
         (x_collar_mid + 4, f_top + 24),
-        f"⌀{dim_label(collar_d)} collar",
+        f"Ø{dim_label(collar_d)} collar",
     )
     # M6 thread spec
     add_leader(
