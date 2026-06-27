@@ -5,6 +5,23 @@ This file is auto-updated by the release workflow on every tagged release.
 
 ---
 
+## v0.1.14 (2026-06-27)
+
+## What's Changed
+* Derive depth-lock push-rod length from geometry, err long by @pzfreo in https://github.com/pzfreo/gramel/pull/72
+* Extend shaft for drive-screw/blade clearance; model real 25.5 mm screw by @pzfreo in https://github.com/pzfreo/gramel/pull/73
+* Drive-screw captive bearing: integral journal + washer by @pzfreo in https://github.com/pzfreo/gramel/pull/75
+* Drawings: thumbwheel + drive plate for the journal bearing (closes #74) by @pzfreo in https://github.com/pzfreo/gramel/pull/76
+* Shaft drawing: call out the blade-slot position by @pzfreo in https://github.com/pzfreo/gramel/pull/77
+* Thumbwheel + drive screw → 303 stainless (was brass) by @pzfreo in https://github.com/pzfreo/gramel/pull/78
+
+
+**Full Changelog**: https://github.com/pzfreo/gramel/compare/v0.1.13...v0.1.14
+
+---
+
+---
+
 ## v0.1.13 (2026-06-11)
 
 ## What's Changed
