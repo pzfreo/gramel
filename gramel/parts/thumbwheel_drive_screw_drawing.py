@@ -218,7 +218,7 @@ def build_thumbwheel_drawing(
     add_leader(
         (x_disc_mid, f_top),
         (x_disc_mid - 12, f_top + 28),
-        "straight knurl, 0.5 pitch",
+        f"{tw.knurl} knurl, {dim_label(tw.knurl_pitch)} pitch",
     )
     add_leader(
         (x_thread_mid, fy + SCALE * thread_d / 2),
