@@ -25,11 +25,14 @@ later — this draft just leaves smooth bores at tap-drill diameter.
 """
 
 from build123d import (
+    Axis,
     Box,
     Cylinder,
+    GeomType,
     Part,
     Pos,
     Rot,
+    SortBy,
 )
 
 from gramel import threads
@@ -44,8 +47,23 @@ def build_shaft(params: PurflingCutterParams) -> Part:
     radius = od / 2
 
     # --- Main cylinder along X --------------------------------------------
-    # Default Cylinder is along Z; Rot(0, 90, 0) rotates Z → X.
-    body = Pos(length / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=radius, height=length)
+    # Default Cylinder is along Z; Rot(0, 90, 0) rotates Z → X. Wrap in Part()
+    # so `body` is a plain Part, not a Cylinder instance — otherwise .chamfer()
+    # below tries to rebuild a Cylinder (which needs a height arg) and throws.
+    body = Part() + Pos(length / 2, 0, 0) * Rot(0, 90, 0) * Cylinder(radius=radius, height=length)
+
+    # --- Chamfer the +X end OD corner (the grub-screw / blade end) ---------
+    # Done HERE, before the flat/slot/bore cuts, so it's a clean full-circle
+    # cone. Chamfering the flatted arc later caps out ~1.1 mm; on the full
+    # circle the only limit is the grub bore (chamfer inner edge must stay
+    # outside it), so larger chamfers build cleanly.
+    if shaft.end_chamfer > 0:
+        try:
+            end_face = body.faces().sort_by(Axis.X).last
+            rim = end_face.edges().filter_by(GeomType.CIRCLE).sort_by(SortBy.RADIUS).last
+            body = body.chamfer(shaft.end_chamfer, None, [rim])  # type: ignore[assignment]
+        except Exception:
+            pass  # leave un-chamfered if the edge can't be resolved
 
     # --- Flat on the −Z underside, full length ----------------------------
     # Subtract a slab that covers the lower portion of the cylinder along the

@@ -293,6 +293,12 @@ class ShaftParams(BaseModel):
         description="Total shaft length. Extended from the measured 35 mm to 37.6 mm so the blade slot moves outboard far enough that the engaged drive-screw thread tip clears the slot's inboard (near) wall by 1.5 mm — otherwise a bone-less blade dropped into the slot fouls the screw (see PurflingCutterParams.drive_screw_tip_to_slot_clearance). Moving the slot outboard also raises the max edge-margin, which is what's needed for double purfling.",
         json_schema_extra=_spec("§4.2.18", status="DESIGN"),
     )
+    end_chamfer: float = Field(
+        default=1.5,
+        ge=0,
+        description="45° chamfer on the OUTER (OD) corner of the +X end face — the grub-screw / blade end. Breaks the sharp rim so it's a clean lead-in and comfortable to handle. Capped by the M4 grub TAP: the chamfer inner edge is at r = 4 − chamfer, and must stay outside the M4 thread crest (Ø4, r=2) or it eats the thread mouth. 1.5 mm → inner Ø5, a 0.5 mm land to the thread (2 mm would land exactly on the Ø4 crest — no seat). Applied to the full-circle end before the flat/bore cuts so it builds cleanly. 0 disables.",
+        json_schema_extra=_spec("§4.2 (end chamfer — design addition)", status="DESIGN"),
+    )
     drive_plate_mount_thread: str = Field(
         default="M2",
         description="Thread for the single central screw mounting the drive plate to the shaft's outboard end face. Spec called for two screws; this scale (~7.9 mm shaft) doesn't fit two M2 screws, so we go with one + use the shaft's existing −Z flat as the anti-rotation feature (the drive plate has a matching D-shaped hole that mates with the shaft cross-section).",
