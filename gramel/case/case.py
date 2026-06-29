@@ -76,6 +76,34 @@ def _tool_to_case(part: Part) -> Part:
 # ---------------------------------------------------------------------------
 
 
+def cutter_travel_offsets(cutter: PurflingCutterParams) -> tuple[float, float]:
+    """Shaft X-travel limits (tool frame) as signed offsets from the centred
+    (build_assembly default) position:
+
+      retract_off ≤ 0 — shaft pulled back until the blade slot's inboard edge
+        reaches the shank working face (blades/bones can't enter the crossbore).
+      insert_off  ≥ 0 — shaft pushed in until the drive-screw thread is fully
+        engaged (its root reaches the shank back face).
+
+    These are the real, asymmetric end-stops of the edge-margin adjustment, so
+    the case sizes the cutter trough + blade well to them rather than to a
+    symmetric ±guess.
+    """
+    from gramel.parts.shank import build_shank
+
+    sb = build_shank(cutter).bounding_box()
+    working_face, back_face = sb.max.X, sb.min.X
+    sp = cutter.shaft
+    slot_inboard = -sp.length / 2 + sp.length - sp.end_to_slot_distance - sp.blade_slot_width
+    thread_root = (
+        -sp.length / 2
+        + cutter.thumbwheel.boss_length
+        + cutter.thumbwheel.thickness
+        + cutter.drive_screw.unthreaded_length
+    )
+    return (working_face - slot_inboard, back_face - thread_root)
+
+
 def _tool_pocket(cutter: PurflingCutterParams, case: CaseParams) -> Part:
     """Build the union of all clearance volumes the tool needs inside the case.
 
@@ -85,6 +113,9 @@ def _tool_pocket(cutter: PurflingCutterParams, case: CaseParams) -> Part:
     """
     sk = cutter.shank
     tc = case.tool_clearance
+    # Real asymmetric shaft travel + a small safety margin (case.cutter_x_travel)
+    retract_off, insert_off = cutter_travel_offsets(cutter)
+    margin = case.cutter_x_travel
 
     # Crossbore Z in tool frame = case X of the shaft centre
     crossbore_cx = sk.length - sk.crossbore_position_from_top  # 66 default
@@ -137,8 +168,8 @@ def _tool_pocket(cutter: PurflingCutterParams, case: CaseParams) -> Part:
     # In tool frame the cutter Z (vertical) spans from below-shaft to above-
     # thumbwheel-disc; that becomes case X extent for the cutter trough.
     # tool X bounds → case Y bounds, ± travel + clearance
-    cutter_cy_min = centred_bb.min.X - case.cutter_x_travel - tc
-    cutter_cy_max = centred_bb.max.X + case.cutter_x_travel + tc
+    cutter_cy_min = centred_bb.min.X + retract_off - margin - tc
+    cutter_cy_max = centred_bb.max.X + insert_off + margin + tc
     cutter_cy_extent = cutter_cy_max - cutter_cy_min
     cutter_cy_centre = (cutter_cy_min + cutter_cy_max) / 2
 
@@ -178,8 +209,8 @@ def _tool_pocket(cutter: PurflingCutterParams, case: CaseParams) -> Part:
     # Blade CY range (= tool X = slot X position ± travel)
     slot_x_min_centred = -cutter.shaft.length / 2 + cutter.shaft.length - cutter.shaft.end_to_slot_distance - cutter.shaft.blade_slot_width
     slot_x_max_centred = slot_x_min_centred + cutter.shaft.blade_slot_width
-    blade_cy_min = slot_x_min_centred - case.cutter_x_travel - bc
-    blade_cy_max = slot_x_max_centred + case.cutter_x_travel + bc
+    blade_cy_min = slot_x_min_centred + retract_off - margin - bc
+    blade_cy_max = slot_x_max_centred + insert_off + margin + bc
     blade_cy_extent = blade_cy_max - blade_cy_min
     blade_cy_centre = (blade_cy_max + blade_cy_min) / 2
 

@@ -11,7 +11,7 @@ from typing import Literal
 from build123d import Compound, Rot
 
 from gramel.assembly import build_assembly
-from gramel.case.case import build_case
+from gramel.case.case import build_case, cutter_travel_offsets
 from gramel.case.parameters import CaseParams
 from gramel.parameters import PurflingCutterParams
 
@@ -47,17 +47,23 @@ def build_case_with_tool(
 Position = Literal["min_x_min_drop", "min_x_max_drop", "max_x_min_drop", "max_x_max_drop"]
 
 
-def position_params(case: CaseParams, position: Position) -> tuple[float, float]:
-    """Return (shaft_x_offset, blade_drop) for one of the four extreme positions."""
-    travel = case.cutter_x_travel
+def position_params(
+    cutter: PurflingCutterParams, case: CaseParams, position: Position
+) -> tuple[float, float]:
+    """Return (shaft_x_offset, blade_drop) for one of the four extreme positions.
+
+    Uses the real asymmetric travel stops (retract / insert) from the geometry,
+    not a symmetric ±guess.
+    """
+    retract_off, insert_off = cutter_travel_offsets(cutter)
     if position == "min_x_min_drop":
-        return (-travel, case.blade_drop_min)
+        return (retract_off, case.blade_drop_min)
     if position == "min_x_max_drop":
-        return (-travel, case.blade_drop_max)
+        return (retract_off, case.blade_drop_max)
     if position == "max_x_min_drop":
-        return (+travel, case.blade_drop_min)
+        return (insert_off, case.blade_drop_min)
     if position == "max_x_max_drop":
-        return (+travel, case.blade_drop_max)
+        return (insert_off, case.blade_drop_max)
     raise ValueError(f"Unknown position: {position}")
 
 
@@ -84,7 +90,7 @@ def check_4_positions(
     from operator import add
 
     for pos in positions:
-        sx, drop = position_params(case, pos)
+        sx, drop = position_params(cutter, case, pos)
         tool = build_assembly(
             cutter,
             shaft_x_offset=sx,

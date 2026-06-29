@@ -122,7 +122,7 @@ def _sandwich_geometry(
     # band below the shifted shank, clear of the corners and the cutter trough.
     shank_front = -(sk.width / 2 + case.tool_clearance) + params.tool_inset
     bay_cx_min = bb.min.X + params.tool_inset + 6.0   # under the shank, past the knob/corner
-    bay_cx_max = bay_cx_min + params.allen_key_long_arm + 2 * params.spare_clearance
+    bay_cx_max = bay_cx_min + params.spares_bay_length
     bay_cy_max = shank_front - mw                      # min wall below the tool
     bay_cy_min = bay_cy_max - params.spares_bay_depth
 

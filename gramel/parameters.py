@@ -231,9 +231,9 @@ class GrubScrewParams(BaseModel):
         json_schema_extra=_spec("§4.2.15", status="MEASURED", units=""),
     )
     length: float = Field(
-        default=10.0,
+        default=5.0,
         gt=0,
-        description="Total threaded length of the grub screw. M4 × 10 mm.",
+        description="Total threaded length of the grub screw. M4 × 5 mm — fully inserted, sitting flush (not proud) of the shaft's +X end face when its nose clamps the stack. (The earlier M4 × 10 was a placeholder that stuck ~4.4 mm out past the end face.)",
         json_schema_extra=_spec("§4.2 (grub screw length — not numbered)", status="MEASURED"),
     )
     max_nose_advance: float = Field(

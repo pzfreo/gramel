@@ -54,9 +54,9 @@ class CaseParams(BaseModel):
     # --- Cutter extension and blade drop ranges ------------------------------
 
     cutter_x_travel: float = Field(
-        default=5.0,
+        default=1.0,
         ge=0,
-        description="Half-range of shaft X travel from centred (in tool frame). ±5 mm covers the drive-screw thread travel.",
+        description="Extra clearance margin (mm) added BEYOND the geometrically-derived shaft-travel stops (see case.cutter_travel_offsets), on each side of the cutter trough and blade well. The real travel is asymmetric and derived from the mechanism — retract bounded by the blade slot reaching the shank working face, insert by the drive-screw thread fully engaging — so this is just a small safety buffer, not the travel itself.",
         json_schema_extra=_meta(),
     )
     blade_drop_min: float = Field(
@@ -288,8 +288,14 @@ class SandwichCaseParams(BaseModel):
         description="Clearance added around the spares when sizing the single key+blades pocket.",
         json_schema_extra=_meta(),
     )
+    spares_bay_length: float = Field(
+        default=52.0,
+        gt=0,
+        description="CX length of the SINGLE spares pocket (along the shaft axis). Must be ≥ the Allen key long arm so the key lies in it.",
+        json_schema_extra=_meta(),
+    )
     spares_bay_depth: float = Field(
-        default=24.0,
+        default=20.0,
         gt=0,
         description="CY depth of the SINGLE spares pocket that holds the Allen key + spare blades together (mm).",
         json_schema_extra=_meta(),
