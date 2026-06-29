@@ -122,7 +122,7 @@ def test_blade_retainer_bbox(cnc_params: PurflingCutterParams) -> None:
 def test_grub_screw_bbox(cnc_params: PurflingCutterParams) -> None:
     part = build_grub_screw(cnc_params)
     bb = part.bounding_box()
-    assert part.volume > 100
+    assert part.volume > 50  # M4 × 5 mm cylinder ≈ 63 mm³
     assert pytest.approx(cnc_params.grub_screw.length, abs=0.05) == bb.size.X
 
 
