@@ -71,6 +71,7 @@ def build_shaft_drawing(
     slot_w = sp.blade_slot_width      # X dimension (along shaft) — 6 mm
     slot_y = sp.blade_slot_length     # Y dimension (across) — 5 mm
     end_to_slot = sp.end_to_slot_distance  # 4 mm; also grub-screw tap depth
+    end_chamfer = sp.end_chamfer           # 45° chamfer on the +X end OD rim
     # The shaft now has a slot in the −X end face (the tenon lives on the
     # drive plate), so these are the SLOT dims — same values, mirror role.
     slot_x_depth = params.drive_plate.tenon_depth    # 1.5 mm into the end face
@@ -217,6 +218,15 @@ def build_shaft_drawing(
     f_slot_top = fy + slot_z_height / 2
     f_slot_bot = fy - slot_z_height / 2
     add_dim((f_left, f_slot_bot), (f_left, f_slot_top), "left", 6, dim_label(slot_z_height, min_decimals=1))
+    # Chamfer on the +X end OD rim (the grub-screw / blade end). Leader down
+    # to the lower-right — the top of the front view is busy (Ø, Ra callouts).
+    if end_chamfer > 0:
+        f_right = fx + length / 2
+        add_leader(
+            (f_right, f_bot + 2),
+            (f_right + 8, f_bot - 12),
+            f"{dim_label(end_chamfer)} × 45° chamfer",
+        )
 
     # --- Right end view -----------------------------------------------------
     ex, ey = layout.end
