@@ -207,4 +207,135 @@ class CaseParams(BaseModel):
     )
 
 
-__all__ = ["CaseParams"]
+class SandwichCaseParams(BaseModel):
+    """Parameters for the "Option B" sandwich case.
+
+    A SECOND, independent case design, parallel to the carved-pocket
+    `CaseParams` clamshell. Concept (ported from pzfreo/gibson-peg-turner
+    tuner_case_v2):
+
+      * SHELL  — two thin-walled clamshell leaves: a plain rectangular
+                 protective box, no carved tool pocket. Reuses the validated
+                 gramel teardrop print-in-place hinge and lid logo; magnets
+                 sit in corner bosses (thin walls can't embed them in-wall).
+      * INSERT — a separate flat tray that slides into the shell. It carries
+                 a silhouette pocket for the ASSEMBLED tool (the validated
+                 `_tool_pocket` cut, so part fit is identical to the existing
+                 case) plus a spares bay (spare blades + a 2 mm hex Allen key).
+
+    The shell's Z cavity = insert + `foam_thickness` of foam ABOVE and BELOW
+    (a foam / insert / foam sandwich), so the tool — including the exposed
+    blades — is cushioned top and bottom. Foam is supplied/cut by the user.
+    """
+
+    model_config = ConfigDict(validate_assignment=True)
+
+    # Shell hinge / magnets / logo / wall / clearances are shared with the
+    # carved-pocket case — reuse that parameter set wholesale rather than
+    # duplicating ~20 fields. The sandwich-specific knobs are below.
+    shell: CaseParams = Field(default_factory=CaseParams)
+
+    # --- Sandwich Z stack ---------------------------------------------------
+
+    foam_thickness: float = Field(
+        default=5.0,
+        gt=0,
+        description="Foam thickness ABOVE and BELOW the insert (mm). The shell's Z cavity = tool depth + 2 × this. Zero Z margin by design so the foam grips the tool top and bottom.",
+        json_schema_extra=_meta(),
+    )
+    slide_clearance: float = Field(
+        default=0.4,
+        gt=0,
+        description="X/Y slide-fit clearance between the insert and the shell bore.",
+        json_schema_extra=_meta(),
+    )
+    insert_rim: float = Field(
+        default=3.0,
+        gt=0,
+        description="Border of solid insert material around the tool-pocket footprint (mm). Gives the insert a frame and room for the spares bay.",
+        json_schema_extra=_meta(),
+    )
+    min_insert_wall: float = Field(
+        default=2.5,
+        gt=0,
+        description="Minimum insert material between the tool pocket, the spares bay, and the outer edges (mm). Drives how far the tool storage is moved inward and how much the case is expanded.",
+        json_schema_extra=_meta(),
+    )
+    tool_inset: float = Field(
+        default=12.0,
+        ge=0,
+        description="Distance the tool storage is moved inward (+CY, toward the hinge) to open a clean front band for the spares bay, expanding the case to suit.",
+        json_schema_extra=_meta(),
+    )
+    front_relief: float = Field(
+        default=1.5,
+        gt=0,
+        description="Depth (mm) the insert's front (−CY) top edge is relieved ABOVE the seam so the closing lid's tilting front wall doesn't pinch it (gibson tuner_case_v2 fix). Below the seam the insert stays full size and located.",
+        json_schema_extra=_meta(),
+    )
+
+    # --- Spares bay ---------------------------------------------------------
+
+    spare_blades: int = Field(
+        default=2,
+        ge=0,
+        description="Number of spare-blade pockets in the spares bay.",
+        json_schema_extra=_meta(units=""),
+    )
+    spare_clearance: float = Field(
+        default=0.4,
+        gt=0,
+        description="Clearance added around the spares when sizing the single key+blades pocket.",
+        json_schema_extra=_meta(),
+    )
+    spares_bay_depth: float = Field(
+        default=24.0,
+        gt=0,
+        description="CY depth of the SINGLE spares pocket that holds the Allen key + spare blades together (mm).",
+        json_schema_extra=_meta(),
+    )
+
+    # --- Allen key (2 mm hex L-key for the M4 grub screw) -------------------
+
+    allen_key_af: float = Field(
+        default=2.0,
+        gt=0,
+        description="Allen key across-flats size (mm). 2 mm hex drives the M4 grub screw that clamps the blade stack.",
+        json_schema_extra=_meta(),
+    )
+    allen_key_long_arm: float = Field(
+        default=50.0,
+        gt=0,
+        description="Length of the Allen key's long arm (mm). Runs along CX in the spares bay.",
+        json_schema_extra=_meta(),
+    )
+    allen_key_short_arm: float = Field(
+        default=18.0,
+        gt=0,
+        description="Length of the Allen key's short arm (mm). Bends across CY at the low-CX end of the bay.",
+        json_schema_extra=_meta(),
+    )
+    allen_key_clearance: float = Field(
+        default=0.6,
+        gt=0,
+        description="Clearance added to the Allen key across-flats when sizing its channel.",
+        json_schema_extra=_meta(),
+    )
+    allen_channel_depth: float = Field(
+        default=3.0,
+        gt=0,
+        description="Depth of the floored L-shaped Allen-key channel (mm).",
+        json_schema_extra=_meta(),
+    )
+
+    # --- Magnet corner bosses (thin-wall shell) -----------------------------
+
+    magnet_boss_radius: float = Field(
+        default=4.5,
+        gt=0,
+        description="Radius of the cylindrical boss that hosts a magnet pocket on the thin shell wall (mm). Must clear magnet_diameter/2 + magnet_pocket_clearance with wall around it.",
+        json_schema_extra=_meta(),
+    )
+
+
+__all__ = ["CaseParams", "SandwichCaseParams"]

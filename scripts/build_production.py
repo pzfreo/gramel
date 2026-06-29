@@ -11,6 +11,9 @@ Outputs to ``dist/``:
       GRM-04_drive_plate.step
       GRM-05_depth_lock_bolt.step
       gramel_assembly.step
+    case/                              ← FDM sandwich-case STEPs (PETG, print-in-place)
+      gramel_case_shell.step
+      gramel_case_insert.step
     drawings/                          ← per-drawing SVG + PDF
       GRM-00_assembly.svg / .pdf
       GRM-01_shank.svg    / .pdf
@@ -43,8 +46,11 @@ from markdown_pdf import MarkdownPdf, Section
 from pypdf import PdfWriter
 
 from gramel.assembly import build_assembly
+from gramel.case.parameters import SandwichCaseParams
+from gramel.case.sandwich import build_insert as build_case_insert
+from gramel.case.sandwich import build_print_shell as build_case_shell
 from gramel.parameters import PurflingCutterParams
-from gramel.parts._drawing import export_dxf_drawing, export_drawing
+from gramel.parts._drawing import export_drawing, export_dxf_drawing
 from gramel.parts.assembly_drawing import build_assembly_drawing
 from gramel.parts.blade import build_blade
 from gramel.parts.blade_drawing import build_blade_drawing
@@ -104,6 +110,25 @@ def build_steps(params: PurflingCutterParams) -> None:
     asm_path = out / "gramel_assembly.step"
     export_step(asm, str(asm_path))
     print(f"  {asm_path.relative_to(DIST.parent)}  (volume = {asm.volume:.1f} mm³)")
+
+
+def build_case_steps(params: PurflingCutterParams) -> None:
+    """Export the FDM sandwich-case STEPs (print-in-place shell + insert).
+
+    The tool pocket is sized from the CNC tool (``params`` already has
+    ``prototype=False``), since the case holds the finished brass tool.
+    """
+    out = DIST / "case"
+    out.mkdir(parents=True, exist_ok=True)
+    case = SandwichCaseParams()
+    targets = {
+        "gramel_case_shell": build_case_shell(params, case),
+        "gramel_case_insert": build_case_insert(params, case),
+    }
+    for name, shape in targets.items():
+        path = out / f"{name}.step"
+        export_step(shape, str(path))
+        print(f"  {path.relative_to(DIST.parent)}  (volume = {shape.volume:.1f} mm³)")
 
 
 def build_drawings(params: PurflingCutterParams) -> tuple[list[Path], list[Path]]:
@@ -184,7 +209,8 @@ def bundle_zip(version: str) -> Path:
     """Pack the shop-handoff bundle.
 
     Includes everything the shop needs and nothing they don't:
-      - step/        all per-part STEPs + gramel_assembly.step
+      - step/        all per-part STEPs + gramel_assembly.step (CNC brass)
+      - case/        FDM sandwich-case STEPs (shell + insert, print-in-place)
       - dxf/         per-drawing DXFs (for shops that prefer DXF)
       - gramel_drawings.pdf       combined drawings PDF
       - quotation-request.pdf     RFQ as PDF
@@ -196,6 +222,8 @@ def bundle_zip(version: str) -> Path:
     archive = DIST.parent / f"gramel-{version}.zip"
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
         for step in sorted((DIST / "step").glob("*.step")):
+            zf.write(step, step.relative_to(DIST))
+        for step in sorted((DIST / "case").glob("gramel_case_*.step")):
             zf.write(step, step.relative_to(DIST))
         for dxf in sorted((DIST / "dxf").glob("*.dxf")):
             zf.write(dxf, dxf.relative_to(DIST))
@@ -213,6 +241,9 @@ def main() -> None:
     print()
     print("STEP files:")
     build_steps(params)
+    print()
+    print("Case STEP files (FDM):")
+    build_case_steps(params)
     print()
     print("Drawings (SVG + PDF + DXF):")
     pdfs, _ = build_drawings(params)
