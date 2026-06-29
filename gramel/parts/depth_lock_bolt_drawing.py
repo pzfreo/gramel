@@ -177,7 +177,7 @@ def build_depth_lock_bolt_drawing(
     add_leader(
         (x_knob_mid, f_top),
         (x_knob_mid - 6, f_top + 24),
-        "straight knurl, 0.5 pitch",
+        f"straight knurl, {dim_label(dl.knurl_pitch)} pitch",
     )
     # Knob bottom chamfer — leader pointing at the −X (knob) end face
     add_leader(

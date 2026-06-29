@@ -365,6 +365,12 @@ class DepthLockParams(BaseModel):
         description="Large chamfer on the bottom (−Z) edge of the knurled knob. The bottom is the hand-facing end; the chamfer bevels the otherwise-sharp circumference so the knob is comfortable to grip and visually finished.",
         json_schema_extra=_spec("§4.3 (chamfer — design addition)", status="MEASURED"),
     )
+    knurl_pitch: float = Field(
+        default=0.8,
+        gt=0,
+        description="Knurl pitch (tooth spacing) on the knob, as a drawing callout (the knurl decoration itself is not modelled). 0.8 mm matches the thumbwheel: blunter, more durable, grippier teeth than the original fine 0.5 mm knurl.",
+        json_schema_extra=_spec("§4.3 (knurl pitch — design addition)", status="DESIGN"),
+    )
     push_rod_diameter: float = Field(
         default=4.5,
         gt=0,
@@ -577,7 +583,7 @@ class ThumbwheelParams(BaseModel):
     knurl_pitch: float = Field(
         default=0.8,
         gt=0,
-        description="Knurl pitch (tooth spacing). Coarsened from the original 0.5 mm: a 0.5 mm knurl gives small, sharp teeth that are fragile and not very grippy — 0.8 mm gives blunter, more durable teeth that also grip better. (On the 303-stainless wheel durability is less of an issue, but the coarser pitch still grips better than the fine one.)",
+        description="Knurl pitch (tooth spacing). Coarsened from the original 0.5 mm: on the brass wheel a 0.5 mm knurl gives small, sharp teeth that are fragile and not very grippy — 0.8 mm gives blunter, more durable teeth that also grip better.",
         json_schema_extra=_spec("§4.4.43 (pitch — design addition)", status="DESIGN"),
     )
     disc_edge_chamfer: float = Field(

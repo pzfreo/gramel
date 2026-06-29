@@ -213,7 +213,7 @@ In priority order.
 | Shank | Free-machining brass (CZ121 / C36000) | Matches original. |
 | Shaft | Free-machining brass | Brass to match the original. |
 | Drive plate | Brass | Small cosmetic part. |
-| Thumbwheel + drive screw (integral) | 303 stainless steel | Stainless (not brass) for a durable knurl, stronger M3 thread, and longer-wearing journal bearing. Knurl finish on thumbwheel. |
+| Thumbwheel + drive screw (integral) | Brass | Brass to match the original. Knurl finish on thumbwheel. |
 | Depth-lock knob + bolt | Brass for knob; steel bolt OR brass throughout | Original is likely brass throughout. Steel bolt with a brass knob silver-soldered on is an alternative. |
 | Captive screw | Stainless steel | Any stock M2 pan-head — the role is purely to retain the drive plate. |
 | Grub screw | Stainless or hardened steel | Standard part — slotted, socket, or knurled head per original. |
