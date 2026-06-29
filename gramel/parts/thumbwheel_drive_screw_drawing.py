@@ -36,7 +36,6 @@ from gramel.parts._drawing import (
 )
 from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
 
-
 SCALE = 2.0  # 2:1 drawing scale — part is small enough that 1:1 leaves leaders cramped
 
 

@@ -12,8 +12,8 @@ Public API:
     build_case_with_tool — case + tool at a specified extension state
 """
 
-from gramel.case.parameters import CaseParams
-from gramel.case.case import build_case
 from gramel.case.assembly import build_case_with_tool
+from gramel.case.case import build_case
+from gramel.case.parameters import CaseParams
 
 __all__ = ["CaseParams", "build_case", "build_case_with_tool"]

@@ -131,8 +131,9 @@ def check_open_closed_self_interference(
     In OPEN state: lid rotated 180° about the hinge axis. Base and lid should
     have NO overlap — the case can't actually open if they do.
     """
-    from gramel.case.case import _case_bounds
     from build123d import Pos, Rot
+
+    from gramel.case.case import _case_bounds
 
     case_geom = build_case(cutter, case)
     base, lid = case_geom.children

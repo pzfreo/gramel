@@ -33,7 +33,6 @@ from gramel.parts._drawing import (
 )
 from gramel.parts.blade import build_blade
 
-
 SCALE = 5.0  # 5:1 — 23 × 3.6 mm blade
 
 
