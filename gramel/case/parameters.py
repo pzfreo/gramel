@@ -288,8 +288,14 @@ class SandwichCaseParams(BaseModel):
         description="Clearance added around the spares when sizing the single key+blades pocket.",
         json_schema_extra=_meta(),
     )
+    spares_bay_length: float = Field(
+        default=52.0,
+        gt=0,
+        description="CX length of the SINGLE spares pocket (along the shaft axis). Must be ≥ the Allen key long arm so the key lies in it.",
+        json_schema_extra=_meta(),
+    )
     spares_bay_depth: float = Field(
-        default=24.0,
+        default=20.0,
         gt=0,
         description="CY depth of the SINGLE spares pocket that holds the Allen key + spare blades together (mm).",
         json_schema_extra=_meta(),
