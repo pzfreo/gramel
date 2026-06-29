@@ -60,7 +60,7 @@ STEP file:
 | `blade.py`, `channel_spacer.py`, `blade_retainer.py` | Blade stack | Two single-bevel blades, optional channel-width shim, four bone-shaped copper retainers |
 | `grub_screw.py` | M4 × 10 | Clamps the blade stack against the shaft slot |
 | `drive_plate.py` | Brass | Egg-shaped plate linking shaft to drive screw |
-| `thumbwheel_drive_screw.py` | 303 stainless (integral) | Knurled thumbwheel + M3 × 0.5 drive screw |
+| `thumbwheel_drive_screw.py` | Brass (integral) | Knurled thumbwheel + M3 × 0.5 drive screw |
 | `captive_screw.py` | M2 captive screw | Captures the drive plate against the thumbwheel boss |
 | `depth_lock_bolt.py` | M6 knurled bolt | Clamps the shaft via a push rod |
 | `push_rod.py` | Steel rod | Translates the M6 bolt's advance to the shaft underside |

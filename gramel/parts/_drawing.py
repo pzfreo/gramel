@@ -112,7 +112,7 @@ STANDARD_NOTES: tuple[str, ...] = (
     "6. Threads: cut & gauge with standard taps/dies",
 )
 # Material is per-part — it lives in each drawing's title block, not here
-# (parts span brass, stainless, copper and tool steel).
+# (parts span brass, copper and steel).
 
 
 # ---------------------------------------------------------------------------

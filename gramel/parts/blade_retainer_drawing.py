@@ -25,13 +25,11 @@ from gramel.parts._drawing import (
     notes_block_lines,
     notes_block_text,
     page_frame,
-    placed_text,
     project_view,
     title_block_lines,
     title_block_text,
 )
 from gramel.parts.blade_retainer import build_blade_retainer
-
 
 SCALE = 5.0  # 5:1 — the part is only 10 × 5.5 × 0.75 mm
 

@@ -15,18 +15,21 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from build123d import Compound, Draft, Part, Shape, Wire
-from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped]
+from build123d import Compound, Draft, Shape, Wire
+
+# `leader` is unused here (the assembly drawing has no leader callouts) but is
+# imported to satisfy the interference harness, which patches mod.leader on
+# every drawing module (tools/check_interference.py).
+from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped]  # noqa: F401
 
 from gramel.assembly import build_assembly
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
-    dim_label,
-    FX_MAX,
     NB_X_MAX,
     NB_X_MIN,
     NB_Y_MAX,
     NB_Y_MIN,
+    dim_label,
     export_drawing,
     line_segment,
     page_frame,

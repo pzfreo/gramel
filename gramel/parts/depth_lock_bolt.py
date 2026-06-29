@@ -19,7 +19,6 @@ to avoid cross-threading. Knurl decoration not modelled.
 """
 
 from build123d import Axis, Cylinder, Part, Pos
-from build123d.topology import Solid
 
 from gramel import threads
 from gramel.parameters import PurflingCutterParams
@@ -39,7 +38,6 @@ def build_depth_lock_bolt(params: PurflingCutterParams) -> Part:
 
     z_collar_start = knob_t
     z_thread_start = knob_t + collar_len
-    z_thread_end = z_thread_start + bolt_len
 
     knob = Pos(0, 0, knob_t / 2) * Cylinder(radius=knob_r, height=knob_t)
     collar = Pos(0, 0, z_collar_start + collar_len / 2) * Cylinder(

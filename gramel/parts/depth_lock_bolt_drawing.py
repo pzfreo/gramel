@@ -34,7 +34,6 @@ from gramel.parts._drawing import (
 )
 from gramel.parts.depth_lock_bolt import build_depth_lock_bolt
 
-
 SCALE = 2.0  # 2:1 — bolt is 32 mm tall × Ø10
 
 
@@ -79,7 +78,6 @@ def build_depth_lock_bolt_drawing(
     # Step boundaries along the bolt's local +Z axis (Z=0 at knob bottom)
     z_knob_end = knob_t
     z_collar_end = knob_t + collar_len
-    z_thread_end = overall_len
 
     # Centroid for projection — middle of the bolt
     centroid = (0, 0, overall_len / 2)
@@ -177,7 +175,7 @@ def build_depth_lock_bolt_drawing(
     add_leader(
         (x_knob_mid, f_top),
         (x_knob_mid - 6, f_top + 24),
-        "straight knurl, 0.5 pitch",
+        f"straight knurl, {dim_label(dl.knurl_pitch)} pitch",
     )
     # Knob bottom chamfer — leader pointing at the −X (knob) end face
     add_leader(

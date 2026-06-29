@@ -34,7 +34,6 @@ from gramel.parts._drawing import (
 )
 from gramel.parts.drive_plate import build_drive_plate
 
-
 SCALE = 3.0  # 3:1 — the plate is small (9 × 17 mm face)
 
 
@@ -152,9 +151,6 @@ def build_drive_plate_drawing(
     # Big boss outline (centre at (Y=0, Z=0)), small boss (Y=0, Z=gap)
     f_big_centre = face_xy(0, 0)
     f_small_centre = face_xy(0, gap)
-    f_big_bot = face_xy(0, z_min)
-    f_big_top = face_xy(0, 0 + r_big)      # top of big circle (Z = r_big)
-    f_small_top = face_xy(0, z_max)
     f_big_left = face_xy(r_big, 0)         # world Y=+4.5 → page -X side
     f_big_right = face_xy(-r_big, 0)
 
@@ -207,7 +203,6 @@ def build_drive_plate_drawing(
 
     s_front = side_xy(-thickness / 2, 0)   # −X face (outboard, captive-screw head side)
     s_back = side_xy(thickness / 2, 0)     # +X face (tenon root face)
-    s_top = side_xy(0, z_max)
     s_bot = side_xy(0, z_min)
 
     # Thickness dim (3 mm) — below the part, measured between the two
