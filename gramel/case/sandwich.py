@@ -116,7 +116,12 @@ def _sandwich_geometry(
     # along the front (−CY) edge for the spares bay, and expand the case to suit.
     pocket = _tool_pocket(cutter, case).translate((0, params.tool_inset, 0))
     bb = pocket.bounding_box()
-    stack_h = bb.size.Z  # tool depth incl. clearance (~12 mm)
+    # Insert thickness: make it `tool_proud` THINNER than the tool's actual Z
+    # height so the tool stands proud of the insert faces and the foam clamps it
+    # (no Z jiggle). The pocket bbox is tool + 2*tool_clearance in Z, so back out
+    # the real tool height before subtracting.
+    tool_z = bb.size.Z - 2 * case.tool_clearance
+    stack_h = tool_z - params.tool_proud
 
     # SINGLE spares pocket (Allen key + spare blades together) in the front
     # (−CY) band below the shifted shank. Slide it down toward the knob-end
