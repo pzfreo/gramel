@@ -374,6 +374,7 @@ dependencies = [
     { name = "build123d-drafting-helpers" },
     { name = "cairosvg" },
     { name = "markdown-pdf" },
+    { name = "pip-hinge" },
     { name = "pydantic" },
     { name = "pypdf" },
 ]
@@ -395,6 +396,7 @@ requires-dist = [
     { name = "build123d-drafting-helpers", specifier = ">=0.1.1" },
     { name = "cairosvg" },
     { name = "markdown-pdf", specifier = ">=1.3" },
+    { name = "pip-hinge", specifier = ">=0.1.0" },
     { name = "pydantic", specifier = ">=2.10" },
     { name = "pypdf", specifier = ">=5.0" },
 ]
@@ -778,6 +780,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/be/42/025cfe05d1be22dbfdb4f264fe9de1ccda83f66e4fc3aac94748e784af04/pillow-12.2.0-cp312-cp312-win32.whl", hash = "sha256:58f62cc0f00fd29e64b29f4fd923ffdb3859c9f9e6105bfc37ba1d08994e8940", size = 6378489, upload-time = "2026-04-01T14:43:34.601Z" },
     { url = "https://files.pythonhosted.org/packages/5d/7b/25a221d2c761c6a8ae21bfa3874988ff2583e19cf8a27bf2fee358df7942/pillow-12.2.0-cp312-cp312-win_amd64.whl", hash = "sha256:7f84204dee22a783350679a0333981df803dac21a0190d706a50475e361c93f5", size = 7084129, upload-time = "2026-04-01T14:43:37.213Z" },
     { url = "https://files.pythonhosted.org/packages/10/e1/542a474affab20fd4a0f1836cb234e8493519da6b76899e30bcc5d990b8b/pillow-12.2.0-cp312-cp312-win_arm64.whl", hash = "sha256:af73337013e0b3b46f175e79492d96845b16126ddf79c438d7ea7ff27783a414", size = 2463612, upload-time = "2026-04-01T14:43:39.421Z" },
+]
+
+[[package]]
+name = "pip-hinge"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "build123d" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/91/a4/28d9825563ed8fb340b0143ac3a357ce8407b93f057b1d2cb798563dedc6/pip_hinge-0.1.0.tar.gz", hash = "sha256:eedcf5a048b3530ee5b62870173c1c4ecac4ab86baf9a03fc7a717cbfcf69285", size = 361831, upload-time = "2026-06-26T05:48:43.568Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/02/e1/81fbe255bb06fe3e2ff9646b13a7fc3e4462b2dd743455e5572a596c205f/pip_hinge-0.1.0-py3-none-any.whl", hash = "sha256:932b91ed98d487f177514b76e96532c19f0524457cbc68ae66ab922112196537", size = 12272, upload-time = "2026-06-26T05:48:42.374Z" },
 ]
 
 [[package]]
