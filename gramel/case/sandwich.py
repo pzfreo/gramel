@@ -155,7 +155,7 @@ def _sandwich_geometry(
     insert_cy = ins_cy_max - ins_cy_min
     int_cx_min, int_cx_max = ins_cx_min - sc, ins_cx_max + sc
     int_cy_min, int_cy_max = ins_cy_min - sc, ins_cy_max + sc
-    cav_cz = stack_h + 2 * params.foam_thickness
+    cav_cz = stack_h + 2 * params.foam_thickness + params.cavity_z_clearance
     int_cz_min, int_cz_max = -cav_cz / 2, cav_cz / 2
 
     w = case.wall_thickness

@@ -249,6 +249,12 @@ class SandwichCaseParams(BaseModel):
         description="The insert is built this much THINNER (mm) in Z than the tool's actual height, so the tool stands proud of the insert faces (half of this per side, as the insert is centred on the seam) and the foam clamps it firmly — no Z jiggle.",
         json_schema_extra=_meta(),
     )
+    cavity_z_clearance: float = Field(
+        default=1.0,
+        ge=0,
+        description="Extra Z room in the closed cavity beyond insert + 2×foam (total; 0.5 mm per side). A build/closing allowance so the foam–insert–foam stack isn't jammed and the lid latches.",
+        json_schema_extra=_meta(),
+    )
     slide_clearance: float = Field(
         default=0.4,
         gt=0,
