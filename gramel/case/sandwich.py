@@ -116,34 +116,46 @@ def _sandwich_geometry(
     # along the front (−CY) edge for the spares bay, and expand the case to suit.
     pocket = _tool_pocket(cutter, case).translate((0, params.tool_inset, 0))
     bb = pocket.bounding_box()
-    stack_h = bb.size.Z  # tool depth incl. clearance (~12 mm)
+    # Insert thickness: make it `tool_proud` THINNER than the tool's actual Z
+    # height so the tool stands proud of the insert faces and the foam clamps it
+    # (no Z jiggle). The pocket bbox is tool + 2*tool_clearance in Z, so back out
+    # the real tool height before subtracting.
+    tool_z = bb.size.Z - 2 * case.tool_clearance
+    stack_h = tool_z - params.tool_proud
 
-    # SINGLE spares pocket (Allen key + spare blades together), in the front
-    # band below the shifted shank, clear of the corners and the cutter trough.
+    # SINGLE spares pocket (Allen key + spare blades together) in the front
+    # (−CY) band below the shifted shank. Slide it down toward the knob-end
+    # magnet (the −CX front corner) so the strip just past it — in front of the
+    # shallow SHANK, not the deep drive train — is free for the relocated second
+    # magnet. Start the bay a min-wall past the knob magnet's boss.
+    boss_r = params.magnet_boss_radius
+    s = boss_r / math.sqrt(2)
+    sc = params.slide_clearance
     shank_front = -(sk.width / 2 + case.tool_clearance) + params.tool_inset
-    bay_cx_min = bb.min.X + params.tool_inset + 6.0   # under the shank, past the knob/corner
+    knob_mag_cx = (bb.min.X - rim - sc) + s              # −CX front-corner boss centre
+    bay_cx_min = knob_mag_cx + boss_r + mw
     bay_cx_max = bay_cx_min + params.spares_bay_length
-    bay_cy_max = shank_front - mw                      # min wall below the tool
+    bay_cy_max = shank_front - mw                         # min wall below the tool
     bay_cy_min = bay_cy_max - params.spares_bay_depth
+    # Second magnet relocated OFF the deep drive-train corner to just past the
+    # spares (a min wall clear), where it sits in front of the shallow shank.
+    mag2_cx = bay_cx_max + mw + boss_r + sc
 
     # Insert footprint = bounding rect of (shifted tool ∪ spares bay) + rim.
-    # The front (−CY) edge must also sit far enough below the deepest front tool
-    # feature (the cutter trough, at bb.min.Y) for a front-corner magnet boss +
-    # its insert notch to clear it with a real wall. Otherwise the notch eats
-    # into the cutter and pinches the front rim off into a long unsupported wall.
-    s = params.magnet_boss_radius / math.sqrt(2)
-    mag_front_clear = s + params.magnet_boss_radius + mw
+    # Both front magnets now sit in front of the SHANK (front = shank_front,
+    # shallow), so the boss-clearance term references that — NOT the deep cutter
+    # trough — and the front edge pulls in to the spares line instead of being
+    # held out to clear the drive train.
+    mag_front_clear = s + boss_r + mw
     ins_cx_min = min(bb.min.X, bay_cx_min) - rim
     ins_cx_max = max(bb.max.X, bay_cx_max) + rim
-    ins_cy_min = min(bb.min.Y - rim, bay_cy_min - rim, bb.min.Y - mag_front_clear)
+    ins_cy_min = min(bb.min.Y - rim, bay_cy_min - rim, shank_front - mag_front_clear)
     ins_cy_max = max(bb.max.Y, bay_cy_max) + rim
     insert_cx = ins_cx_max - ins_cx_min
     insert_cy = ins_cy_max - ins_cy_min
-
-    sc = params.slide_clearance
     int_cx_min, int_cx_max = ins_cx_min - sc, ins_cx_max + sc
     int_cy_min, int_cy_max = ins_cy_min - sc, ins_cy_max + sc
-    cav_cz = stack_h + 2 * params.foam_thickness
+    cav_cz = stack_h + 2 * params.foam_thickness + params.cavity_z_clearance
     int_cz_min, int_cz_max = -cav_cz / 2, cav_cz / 2
 
     w = case.wall_thickness
@@ -162,6 +174,8 @@ def _sandwich_geometry(
         "ext_cz_max": int_cz_max + w,
         # Hinge helper recomputes its own axis.
         "hinge_cy": int_cy_max + w / 2,
+        # Relocated (mid-edge) second magnet CX — off the deep drive-train corner.
+        "mag2_cx": mag2_cx,
     }
     geom = {
         "stack_h": stack_h,
@@ -188,14 +202,18 @@ def _sandwich_geometry(
 def _corner_magnet_positions(
     bounds: dict[str, float], params: SandwichCaseParams
 ) -> list[tuple[float, float]]:
-    """Boss centres at the two FRONT (−CY) corners, opposite the hinge — the
-    gibson tuner_case_v2 corner-magnet placement. Each boss is inset diagonally
-    from the inner corner by BOSS_R/√2 so it fillets the corner."""
+    """Boss centres on the FRONT (−CY) edge, opposite the hinge.
+
+    The knob-end magnet stays at the −CX front corner (inset diagonally by
+    BOSS_R/√2 so it fillets the corner). The second magnet is relocated OFF the
+    +CX (drive-train) corner — where it would have to sit deep to clear the
+    bulky drive train — to mid-edge (bounds["mag2_cx"]), in front of the shallow
+    shank, so the case front edge can pull in."""
     s = params.magnet_boss_radius / math.sqrt(2)
     cy = bounds["int_cy_min"] + s  # inset toward the interior (+CY)
     return [
-        (bounds["int_cx_min"] + s, cy),  # −CX front corner
-        (bounds["int_cx_max"] - s, cy),  # +CX front corner
+        (bounds["int_cx_min"] + s, cy),  # −CX (knob-end) front corner
+        (bounds["mag2_cx"], cy),         # relocated mid-edge, in front of the shank
     ]
 
 
@@ -257,11 +275,13 @@ def _corner_notches(
     thru = geom["stack_h"] + 2.0
     cy_in = geom["ins_cy_min"]
     for cx, cy in _corner_magnet_positions(bounds, params):
-        # rectangle from the insert front corner inward to clear the boss circle
-        if cx < (geom["ins_cx_min"] + geom["ins_cx_max"]) / 2:
-            x0, x1 = geom["ins_cx_min"] - 1.0, cx + boss_r + sc
-        else:
-            x0, x1 = cx - boss_r - sc, geom["ins_cx_max"] + 1.0
+        # Clear the boss circle, opening to the front edge. A magnet at (near) an
+        # end gets a corner bite that runs out to that end; a relocated mid-edge
+        # magnet gets a LOCAL notch so it doesn't strip the whole front rim.
+        near_left = (cx - boss_r - sc) <= geom["ins_cx_min"]
+        near_right = (cx + boss_r + sc) >= geom["ins_cx_max"]
+        x0 = geom["ins_cx_min"] - 1.0 if near_left else cx - boss_r - sc
+        x1 = geom["ins_cx_max"] + 1.0 if near_right else cx + boss_r + sc
         y0, y1 = cy_in - 1.0, cy + boss_r + sc
         notches += Box(
             x1 - x0, y1 - y0, thru, align=(Align.MIN, Align.MIN, Align.CENTER)
