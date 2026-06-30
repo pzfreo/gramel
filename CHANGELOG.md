@@ -5,6 +5,23 @@ This file is auto-updated by the release workflow on every tagged release.
 
 ---
 
+## v0.2.0 (2026-06-30)
+
+## What's Changed
+* Add sandwich (Option B) case: thin shell + slide-in insert by @pzfreo in https://github.com/pzfreo/gramel/pull/79
+* Revert drive screw to brass; both knurls 0.8 mm; ruff cleanup by @pzfreo in https://github.com/pzfreo/gramel/pull/80
+* shaft: 1.5 mm chamfer on the +X (grub-screw) end OD corner by @pzfreo in https://github.com/pzfreo/gramel/pull/81
+* Fix grub-screw length + size case to real asymmetric cutter travel by @pzfreo in https://github.com/pzfreo/gramel/pull/82
+* Push-rod length (err long, 46.6 mm) + CNC RFQ update by @pzfreo in https://github.com/pzfreo/gramel/pull/84
+* Thin the case ~4 mm: relocate the drive-train magnet off its corner by @pzfreo in https://github.com/pzfreo/gramel/pull/83
+
+
+**Full Changelog**: https://github.com/pzfreo/gramel/compare/v0.1.14...v0.2.0
+
+---
+
+---
+
 ## v0.1.14 (2026-06-27)
 
 ## What's Changed
