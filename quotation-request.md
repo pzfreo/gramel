@@ -2,7 +2,7 @@
 
 Customer: Paul Fremantle
 Email: paul@fremantle.org
-Date: 20 May 2026
+Date: 30 June 2026
 
 ## Overview
 
@@ -10,8 +10,10 @@ I am seeking quotations for CNC machining of a small precision hand tool used by
 
 Each set consists of:
 
-- Five machined brass parts
-- One mild steel push rod (cut to length only)
+- Five machined brass parts (GRM-01 to GRM-05)
+- Four copper blade retainers (GRM-06)
+- Two hardened tool-steel blades (GRM-07)
+- One mild-steel push rod (cut to length, non-precision)
 
 Please quote for the following quantities:
 
@@ -27,14 +29,16 @@ The tool is assembled from the supplied parts; an assembly drawing and individua
 
 | Drawing | Description | Material | Qty / set |
 |--------|--------|--------|--------|
-| GRM-01 | Shank | Brass (CZ121 / C36000) | 1 |
-| GRM-02 | Shaft | Brass (CZ121 / C36000) | 1 |
-| GRM-03 | Thumbwheel with integral drive screw | Brass (CZ121 / C36000) | 1 |
-| GRM-04 | Drive plate | Brass (CZ121 / C36000) | 1 |
-| GRM-05 | Depth-lock bolt with knurled knob | Brass (CZ121 / C36000) | 1 |
+| GRM-01 | Shank | Brass — H62 (CuZn40) | 1 |
+| GRM-02 | Shaft | Brass — H62 (CuZn40) | 1 |
+| GRM-03 | Thumbwheel with integral drive screw | Brass — H62 (CuZn40) | 1 |
+| GRM-04 | Drive plate | Brass — H62 (CuZn40) | 1 |
+| GRM-05 | Depth-lock bolt with knurled knob | Brass — H62 (CuZn40) | 1 |
 | GRM-06 | Bone-shaped blade retainer | Copper sheet (annealed) | 4 |
 | GRM-07 | Blade | O1 tool steel, hardened ~60 HRC | 2 |
-| — | Ø4.5 × 45 mm steel push rod | Mild steel, bright-drawn | 1 |
+| — | Ø4.5 × ~46.6 mm steel push rod (cut to length, no tolerance — see notes) | Mild steel, bright-drawn | 1 |
+
+**Brass grade:** originally specified as free-cutting brass (CZ121 / C36000); **H62 (CuZn40)** substituted — sourced by the shop and accepted.
 
 ---
 
@@ -42,7 +46,8 @@ The tool is assembled from the supplied parts; an assembly drawing and individua
 
 - Shaft and shank bore to provide a smooth sliding fit (nominal Ø8 H7/g6)
 - All threads to drawing
-- Knurled features on GRM-03 and GRM-05
+- **M3 × 0.5 drive-screw thread — CRITICAL (this is the tool's adjustment mechanism).** Cut the external thread on GRM-03 (drive screw) and the internal thread in the GRM-01 shank bore with **standard M3 × 0.5 tap and die** — NOT M3 fine (0.35). The two must run together smoothly along the full length; please gauge / trial-fit this pair specifically.
+- Straight knurl, 0.8 mm pitch, on GRM-03 and GRM-05
 - Parts fully deburred
 - Visible brass surfaces finished to a clean satin appearance
 - Trial assembly to confirm fit of mating components
@@ -101,4 +106,7 @@ Custom shape — small bone-shaped flat sheet that fits in the shaft's blade slo
 
 ### Push rod
 
-Ø4.5 mm bright-drawn mild steel, cut to 45 mm long. Not a precision part — column only.
+Ø4.5 mm bright-drawn mild steel, **cut to ~46.6 mm**. Plain column, not a
+precision part — **no length tolerance required**, but please **err long: do
+not cut below 45.6 mm** (too short and it can't reach to clamp; a little over
+just leaves the lock knob slightly proud, which is fine).
