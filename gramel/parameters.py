@@ -384,9 +384,9 @@ class DepthLockParams(BaseModel):
         json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="MEASURED"),
     )
     lock_preload_margin: float = Field(
-        default=3.0,
+        default=2.0,
         gt=0,
-        description="Clamp-travel headroom for the depth lock: how far the bolt can still advance after the push rod first contacts the shaft's −Z flat, before the knob bottoms on the shank's bottom face. This remaining travel is what gets converted into clamping preload, and it's how far the bolt sits proud at lock. Deliberately generous (≥1 mm wanted; 3 mm set) — a too-long rod that leaves the bolt slightly proud is preferred over a just-right rod that bottoms the knob with no clamp force. The push-rod length is derived from it — see PurflingCutterParams.push_rod_length. (Earlier the rod length was a hard-coded 45 mm MEASURED value, which left only ~0.4 mm of headroom — too short in practice.)",
+        description="Clamp-travel headroom for the depth lock: how far the bolt can still advance after the push rod first contacts the shaft's −Z flat, before the knob bottoms on the shank's bottom face. This remaining travel is what gets converted into clamping preload, and it's how far the bolt sits proud at lock. Set to 2.0 mm → derived rod 46.6 mm. The rod is cut to length with NO machining tolerance (≈±1 mm in practice), and too-SHORT is the dangerous direction — below ~44.6 mm the rod can't reach the flat to clamp at all, and ~45 mm barely clamps — whereas too-long merely leaves the bolt slightly proud. So we err long: a 2.0 mm nominal margin keeps even a −1 mm cut (45.6 mm) at the empirically-good 1.0 mm clamp, while a +1 mm cut (47.6 mm) only sits a little proud. MEASURED: a 44.3 mm as-cut rod needed a 1.3 mm shim → 45.6 mm = 1.0 mm clamp works. (An earlier 3.0 mm value put the nominal at 47.6 mm — too long.)",
         json_schema_extra=_spec("§4.3 (push rod — missing from spec)", status="DESIGN"),
     )
 
