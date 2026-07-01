@@ -144,13 +144,13 @@ class CaseParams(BaseModel):
     magnet_diameter: float = Field(
         default=6.0,
         gt=0,
-        description="Magnet OD. 6 × 3 mm N52 disc magnets.",
+        description="Magnet OD. 6 × 2.65 mm N52 disc magnets.",
         json_schema_extra=_meta(),
     )
     magnet_thickness: float = Field(
-        default=3.0,
+        default=2.65,
         gt=0,
-        description="Magnet thickness (along its magnetic axis).",
+        description="Magnet thickness (along its magnetic axis). Measured from the actual N52 discs in use.",
         json_schema_extra=_meta(),
     )
     magnet_pocket_clearance: float = Field(
