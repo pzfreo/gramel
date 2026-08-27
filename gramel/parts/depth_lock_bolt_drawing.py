@@ -17,7 +17,6 @@ from dataclasses import dataclass
 from datetime import date
 
 from build123d import Compound, Draft, Shape
-from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped]
 
 from gramel import threads
 from gramel.parameters import PurflingCutterParams
@@ -32,6 +31,7 @@ from gramel.parts._drawing import (
     title_block_lines,
     title_block_text,
 )
+from gramel.parts._legacy_drafting import dim_linear, leader
 from gramel.parts.depth_lock_bolt import build_depth_lock_bolt
 
 SCALE = 2.0  # 2:1 — bolt is 32 mm tall × Ø10

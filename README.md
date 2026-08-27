@@ -39,6 +39,12 @@ uv run python scripts/build_production.py
 # → dist/drawings/GRM-0*_*.svg / .pdf
 # → dist/gramel_drawings.pdf
 
+# Build the separate Draftwright v0.4.15 CNC quotation iteration.
+# The original drawing outputs above are preserved as the baseline.
+uv run --python 3.12 python scripts/build_draftwright.py
+# → dist/draftwright/gramel_draftwright_cnc_drawings.pdf
+# → gramel-*-draftwright-cnc.zip
+
 # Lint, type-check, test
 uv run ruff check gramel/
 uv run mypy gramel/

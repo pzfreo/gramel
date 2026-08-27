@@ -310,8 +310,18 @@ def export_drawing(
 
         cairosvg.svg2pdf(url=svg_path, write_to=pdf_path)
         print(f"Exported {pdf_path}")
-    except ImportError:
-        print(f"cairosvg not installed — skipping PDF export to {pdf_path}.")
+    except (ImportError, OSError):
+        # CairoSVG needs a system Cairo library. Draftwright already uses the
+        # pure-Python svglib/reportlab chain, so keep the legacy quotable set
+        # buildable on the same machines as the new Draftwright set.
+        from reportlab.graphics import renderPDF  # type: ignore[import-untyped]
+        from svglib.svglib import svg2rlg  # type: ignore[import-untyped]
+
+        drawing = svg2rlg(svg_path)
+        if drawing is None:
+            raise RuntimeError(f"Could not parse SVG for PDF export: {svg_path}") from None
+        renderPDF.drawToFile(drawing, pdf_path)
+        print(f"Exported {pdf_path} (reportlab fallback)")
 
 
 def export_dxf_drawing(
