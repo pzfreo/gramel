@@ -17,11 +17,6 @@ from datetime import date
 
 from build123d import Compound, Draft, Shape, Wire
 
-# `leader` is unused here (the assembly drawing has no leader callouts) but is
-# imported to satisfy the interference harness, which patches mod.leader on
-# every drawing module (tools/check_interference.py).
-from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped]  # noqa: F401
-
 from gramel.assembly import build_assembly
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
@@ -38,6 +33,11 @@ from gramel.parts._drawing import (
     title_block_lines,
     title_block_text,
 )
+
+# `leader` is unused here (the assembly drawing has no leader callouts) but is
+# imported to satisfy the interference harness, which patches mod.leader on
+# every drawing module (tools/check_interference.py).
+from gramel.parts._legacy_drafting import dim_linear, leader  # noqa: F401
 
 
 @dataclass
@@ -70,12 +70,12 @@ BOM: tuple[tuple[str, str, str, str], ...] = (
     ("3", "Thumbwheel + drive screw", "GRM-03", "1"),
     ("4", "Drive plate", "GRM-04", "1"),
     ("5", "Depth-lock bolt + knob", "GRM-05", "1"),
-    ("6", "Push rod, Ø4.5 × 45", "—", "1"),
+    ("6", "Push rod, Ø4.5 × ~46.6 (45.6 min)", "stock", "1"),
     ("7", "Captive screw, M2 × 6", "stock", "1"),
     ("8", "Mount screw, M2", "stock", "1"),
     ("9", "Grub screw, M4", "stock", "1"),
-    ("10", "Blade", "[TBM]", "2"),
-    ("11", "Blade retainer", "(custom)", "4"),
+    ("10", "Blade", "GRM-07", "2"),
+    ("11", "Blade retainer", "GRM-06", "4"),
     ("12", "Spacer", "[TBM]", "0–1"),
 )
 

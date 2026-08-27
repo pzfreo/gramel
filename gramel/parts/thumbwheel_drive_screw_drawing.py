@@ -19,7 +19,6 @@ from dataclasses import dataclass
 from datetime import date
 
 from build123d import Compound, Draft, Shape
-from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped]
 
 from gramel import threads
 from gramel.parameters import PurflingCutterParams
@@ -34,6 +33,7 @@ from gramel.parts._drawing import (
     title_block_lines,
     title_block_text,
 )
+from gramel.parts._legacy_drafting import dim_linear, leader
 from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
 
 SCALE = 2.0  # 2:1 drawing scale — part is small enough that 1:1 leaves leaders cramped

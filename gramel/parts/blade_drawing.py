@@ -17,7 +17,6 @@ from dataclasses import dataclass
 from datetime import date
 
 from build123d import Compound, Draft, Shape
-from build123d_drafting import dim_linear, leader  # type: ignore[import-untyped]
 
 from gramel.parameters import PurflingCutterParams
 from gramel.parts._drawing import (
@@ -31,6 +30,7 @@ from gramel.parts._drawing import (
     title_block_lines,
     title_block_text,
 )
+from gramel.parts._legacy_drafting import dim_linear, leader
 from gramel.parts.blade import build_blade
 
 SCALE = 5.0  # 5:1 — 23 × 3.6 mm blade

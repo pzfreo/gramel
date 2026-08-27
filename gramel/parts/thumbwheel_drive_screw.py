@@ -23,6 +23,8 @@ The threaded portion is modelled as a smooth cylinder at the thread's
 major diameter for now; real IsoThread geometry comes later.
 """
 
+from dataclasses import dataclass
+
 from build123d import (
     Axis,
     Cylinder,
@@ -37,8 +39,23 @@ from gramel.parameters import PurflingCutterParams
 from gramel.parts._threads import external_thread_section
 
 
-def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
-    """Build the integral thumbwheel + drive screw."""
+@dataclass
+class ThumbwheelDriveScrewFeatures:
+    """Named turned features retained for object-referenced drawings."""
+
+    boss: Part
+    disc: Part
+    unthreaded: Part
+    thread: Part
+    journal: Part
+    tap: Part
+    body: Part
+
+
+def build_thumbwheel_drive_screw_features(
+    params: PurflingCutterParams,
+) -> ThumbwheelDriveScrewFeatures:
+    """Build the part while retaining each pre-union turned feature."""
     tw = params.thumbwheel
     ds = params.drive_screw
 
@@ -133,7 +150,20 @@ def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
         except Exception:
             pass
 
-    return body
+    return ThumbwheelDriveScrewFeatures(
+        boss=boss,
+        disc=disc,
+        unthreaded=unthreaded,
+        thread=thread,
+        journal=journal,
+        tap=tap,
+        body=body,
+    )
+
+
+def build_thumbwheel_drive_screw(params: PurflingCutterParams) -> Part:
+    """Build the integral thumbwheel + drive screw."""
+    return build_thumbwheel_drive_screw_features(params).body
 
 
 def main() -> None:
