@@ -3,8 +3,8 @@
 from importlib.metadata import version as package_version
 from unittest import mock
 
-from gramel import draftwright_drawings as drawings
-from gramel.draftwright_drawings import (
+from gramil import draftwright_drawings as drawings
+from gramil.draftwright_drawings import (
     DRAWINGS,
     LINT_WAIVERS,
     LintWaiver,

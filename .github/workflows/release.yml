@@ -66,12 +66,12 @@ jobs:
 
       - name: Find release archive and rename gcode
         run: |
-          ARCHIVE=$(ls gramel-*.zip | head -1)
+          ARCHIVE=$(ls gramil-*.zip | head -1)
           echo "ARCHIVE=${ARCHIVE}" >> "$GITHUB_ENV"
           echo "Built bundle: ${ARCHIVE}"
           TAG="${GITHUB_REF_NAME:-dev}"
-          mv estampo_output/plate_sliced.gcode.3mf "gramel-case-${TAG}.gcode.3mf"
-          echo "GCODE=gramel-case-${TAG}.gcode.3mf" >> "$GITHUB_ENV"
+          mv estampo_output/plate_sliced.gcode.3mf "gramil-case-${TAG}.gcode.3mf"
+          echo "GCODE=gramil-case-${TAG}.gcode.3mf" >> "$GITHUB_ENV"
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -80,8 +80,8 @@ jobs:
           generate_release_notes: true
           files: |
             ${{ env.ARCHIVE }}
-            dist/gramel_drawings.pdf
-            dist/step/gramel_assembly.step
+            dist/gramil_drawings.pdf
+            dist/step/gramil_assembly.step
             dist/quotation-request.pdf
             ${{ env.GCODE }}
             CHANGELOG.md
@@ -90,11 +90,11 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
-          name: gramel-production-package
+          name: gramil-production-package
           path: |
             ${{ env.ARCHIVE }}
-            dist/gramel_drawings.pdf
-            dist/step/gramel_assembly.step
+            dist/gramil_drawings.pdf
+            dist/step/gramil_assembly.step
             dist/quotation-request.pdf
             ${{ env.GCODE }}
             CHANGELOG.md

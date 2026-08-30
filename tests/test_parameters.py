@@ -1,5 +1,5 @@
 """
-Tests for gramel.parameters.
+Tests for gramil.parameters.
 
 Covers:
   - Default parameter set validates cleanly (after measurement-driven
@@ -15,7 +15,7 @@ Covers:
 import pytest
 from pydantic import ValidationError
 
-from gramel.parameters import BladeParams, PurflingCutterParams
+from gramil.parameters import BladeParams, PurflingCutterParams
 
 # ---------------------------------------------------------------------------
 # Defaults and process configuration

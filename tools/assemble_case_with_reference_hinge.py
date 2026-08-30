@@ -47,13 +47,13 @@ import trimesh
 
 from build123d import Pos, Rot, export_stl
 
-from gramel.parameters import PurflingCutterParams
-from gramel.case import CaseParams, build_case
-from gramel.case.case import _case_bounds
+from gramil.parameters import PurflingCutterParams
+from gramil.case import CaseParams, build_case
+from gramil.case.case import _case_bounds
 
 
 PROJ = Path(__file__).parent.parent
-HINGE_STL_DIR = PROJ / "gramel" / "case" / "hinge_stls"
+HINGE_STL_DIR = PROJ / "gramil" / "case" / "hinge_stls"
 OUT_DIR = PROJ / "dist" / "case"
 
 # Reference-hinge frame constants (from STL inspection):

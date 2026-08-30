@@ -1,4 +1,4 @@
-# Gramel — project-specific notes for Claude
+# Gramil — project-specific notes for Claude
 
 Lessons learned during work on this repo. Read before doing anything similar.
 
@@ -130,7 +130,7 @@ view and the title/notes column.
 
 ### PDF is the deliverable
 
-`uv run python -m gramel.parts.<part>_drawing` exports SVG **and** PDF
+`uv run python -m gramil.parts.<part>_drawing` exports SVG **and** PDF
 (via `cairosvg.svg2pdf`). The PDF is what the shop sees. The SVG is kept
 as a vector intermediate for further editing if needed.
 

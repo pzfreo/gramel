@@ -1,4 +1,4 @@
-# Design Review — Gramel Violin Purfling Cutter
+# Design Review — Gramil Violin Purfling Cutter
 
 Reviewer persona: senior design & manufacturing engineer (~15 years).
 Subject: parametric model on `main`, v0.1.3.

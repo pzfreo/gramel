@@ -151,7 +151,7 @@ To evaluate the constraint-modeling methodology, **all** mating relationships in
 
 ### 6.2 Open methodology questions
 
-- **Where do mate classes live?** Working hypothesis: `gramel/mates.py`, consuming the parameter model and emitting (a) updated locations to feed `Joint`s in the assembly step and (b) helper functions called by part-build code.
+- **Where do mate classes live?** Working hypothesis: `gramil/mates.py`, consuming the parameter model and emitting (a) updated locations to feed `Joint`s in the assembly step and (b) helper functions called by part-build code.
 - **How much do mate classes own vs the part-build code?** Working hypothesis: a mate owns the *interface dimensions* only; part code consumes those and decides where to place them in part-local coordinates.
 - **How do we test mate consistency?** Working hypothesis: pytest fixtures that instantiate a mate, generate both halves, assert clearance/interference is what the mate promised.
 
@@ -217,13 +217,13 @@ After assembly:
 ## 10. Proposed repo layout
 
 ```
-gramel/
+gramil/
 ├── specification.md           — canonical CAD spec (unchanged)
 ├── measurement-checklist.md   — owner-side measurement plan (unchanged)
 ├── code-spec.md               — this document
 ├── diagram.png / diagram.svg  — naming and axes (unchanged)
 ├── pyproject.toml             — pydantic, build123d, bd_warehouse
-└── gramel/
+└── gramil/
     ├── __init__.py
     ├── parameters.py          — pydantic param model + validators
     ├── mates.py               — mate classes

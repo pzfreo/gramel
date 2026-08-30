@@ -19,14 +19,14 @@ from pathlib import Path
 
 from pypdf import PdfWriter
 
-from gramel.draftwright_drawings import (
+from gramil.draftwright_drawings import (
     LINT_WAIVERS,
     blocking_issues,
     cnc_params,
     export_drawings,
 )
-from gramel.parts._drawing import export_drawing, export_dxf_drawing
-from gramel.parts.assembly_drawing import build_assembly_drawing
+from gramil.parts._drawing import export_drawing, export_dxf_drawing
+from gramil.parts.assembly_drawing import build_assembly_drawing
 from scripts import build_production
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -68,7 +68,7 @@ def build_assembly_sheet() -> Path:
 
 def combine_pdfs(pdfs: list[Path]) -> Path:
     """Combine the assembly and seven part sheets into the shop PDF."""
-    out_path = DW_DIST / "gramel_draftwright_cnc_drawings.pdf"
+    out_path = DW_DIST / "gramil_draftwright_cnc_drawings.pdf"
     writer = PdfWriter()
     for pdf in pdfs:
         writer.append(str(pdf))
@@ -107,13 +107,13 @@ def write_lint_report(records: dict[str, dict[str, object]]) -> Path:
 def bundle_zip(combined: Path, lint_report: Path) -> Path:
     """Create the CNC shop handoff archive."""
     release = build_production.release_version()
-    archive = ROOT / f"gramel-{release}-draftwright-cnc.zip"
+    archive = ROOT / f"gramil-{release}-draftwright-cnc.zip"
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
         for step in sorted((DIST / "step").glob("*.step")):
             zf.write(step, step.relative_to(DIST))
         for dxf in sorted((DW_DIST / "dxf").glob("*.dxf")):
             zf.write(dxf, Path("dxf") / dxf.name)
-        # Must not collide with the baseline bundle's gramel_drawings.pdf:
+        # Must not collide with the baseline bundle's gramil_drawings.pdf:
         # unpacking both archives into one folder would silently overwrite
         # one drawing package with the other.
         zf.write(combined, combined.name)
