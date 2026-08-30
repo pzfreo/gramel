@@ -19,7 +19,12 @@ from pathlib import Path
 
 from pypdf import PdfWriter
 
-from gramel.draftwright_drawings import cnc_params, export_drawings
+from gramel.draftwright_drawings import (
+    LINT_WAIVERS,
+    blocking_issues,
+    cnc_params,
+    export_drawings,
+)
 from gramel.parts._drawing import export_drawing, export_dxf_drawing
 from gramel.parts.assembly_drawing import build_assembly_drawing
 from scripts import build_production
@@ -72,11 +77,26 @@ def combine_pdfs(pdfs: list[Path]) -> Path:
     return out_path
 
 
-def write_lint_report(records: dict[str, list[dict[str, str]]]) -> Path:
-    """Record compiler version and all non-blocking audit findings."""
+def write_lint_report(records: dict[str, dict[str, object]]) -> Path:
+    """Record compiler version, effective scales and all audit findings."""
+    blocking = {
+        number: found
+        for number, record in records.items()
+        if (found := blocking_issues(number, record["issues"]))
+    }
     report = {
         "draftwright_version": package_version("draftwright"),
-        "blocking_issues": 0,
+        "blocking_issues": sum(len(found) for found in blocking.values()),
+        "blocking_by_drawing": blocking,
+        "waivers": [
+            {
+                "drawing": waiver.drawing,
+                "code": waiver.code,
+                "contains": waiver.contains,
+                "reason": waiver.reason,
+            }
+            for waiver in LINT_WAIVERS
+        ],
         "drawings": records,
     }
     path = DW_DIST / "lint-report.json"
@@ -93,7 +113,10 @@ def bundle_zip(combined: Path, lint_report: Path) -> Path:
             zf.write(step, step.relative_to(DIST))
         for dxf in sorted((DW_DIST / "dxf").glob("*.dxf")):
             zf.write(dxf, Path("dxf") / dxf.name)
-        zf.write(combined, "gramel_drawings.pdf")
+        # Must not collide with the baseline bundle's gramel_drawings.pdf:
+        # unpacking both archives into one folder would silently overwrite
+        # one drawing package with the other.
+        zf.write(combined, combined.name)
         zf.write(lint_report, lint_report.name)
         quotation = DIST / "quotation-request.pdf"
         if quotation.exists():
