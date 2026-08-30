@@ -1,9 +1,13 @@
 """Contract tests for the second, Draftwright-authored CNC drawing set."""
 
 from importlib.metadata import version as package_version
+from unittest import mock
 
+from gramel import draftwright_drawings as drawings
 from gramel.draftwright_drawings import (
     DRAWINGS,
+    LINT_WAIVERS,
+    LintWaiver,
     blocking_issues,
     build_drawing,
     cnc_params,
@@ -15,12 +19,12 @@ from gramel.draftwright_drawings import (
 # smaller scale is a different drawing from the one the title block claims.
 EXPECTED_SCALES = {
     "GRM-01": 1.0,
-    "GRM-02": 2.0,
+    "GRM-02": 1.0,
     "GRM-03": 5.0,
-    "GRM-04": 5.0,
+    "GRM-04": 2.0,
     "GRM-05": 2.0,
     "GRM-06": 5.0,
-    "GRM-07": 5.0,
+    "GRM-07": 2.0,
 }
 
 # Nominals that carry more precision than Draftwright's one-decimal default.
@@ -34,7 +38,7 @@ EXACT_LABELS = {
 
 
 def test_draftwright_release_is_pinned() -> None:
-    assert package_version("draftwright") == "0.4.15"
+    assert package_version("draftwright") == "0.4.16"
 
 
 def test_draftwright_sheets_compile_without_blocking_lint() -> None:
@@ -60,7 +64,7 @@ def test_critical_callouts_reach_the_sheet() -> None:
         # Ø4.2 bore were both missing a diameter callout.
         "GRM-03": ("ø3 M3x0.5", "ø4"),
         # The depth-lock bore is blind; it once read "THRU".
-        "GRM-01": ("⌀5 H8 ↧ 66",),
+        "GRM-01": ("⌀5 H8 ↧ 66 ⌴ ⌀6.35 ↧ 5.5", "5× R1"),
     }
     for number, expected in required.items():
         spec = next(spec for spec in DRAWINGS if spec.number == number)
@@ -85,10 +89,19 @@ def test_exact_nominals_are_not_rounded() -> None:
         assert expected <= labels, f"{number} is missing {sorted(expected - labels)}"
 
 
-def test_lint_waivers_are_narrow() -> None:
-    """A waiver must not disarm the gate for anything but its own finding."""
+def test_no_sheet_currently_needs_a_waiver() -> None:
+    """Every sheet passes the gate on its own merits."""
+    assert LINT_WAIVERS == ()
+
+
+def test_a_waiver_matches_only_its_own_finding() -> None:
+    """A waiver must not disarm the gate for anything but the finding it names."""
     assert is_blocking_lint_code("feature_not_dimensioned")
-    assert is_waived("GRM-01", "feature_not_dimensioned", "cylindrical feature ø6.3 ...")
-    assert not is_waived("GRM-03", "feature_not_dimensioned", "cylindrical feature ø6.3 ...")
-    assert not is_waived("GRM-01", "feature_not_dimensioned", "cylindrical feature ø9 ...")
-    assert not is_waived("GRM-01", "feature_not_located", "cylindrical feature ø6.3 ...")
+    waiver = LintWaiver(
+        drawing="GRM-01", code="feature_not_dimensioned", contains="ø6.3", reason="test"
+    )
+    with mock.patch.object(drawings, "LINT_WAIVERS", (waiver,)):
+        assert is_waived("GRM-01", "feature_not_dimensioned", "cylindrical feature ø6.3 ...")
+        assert not is_waived("GRM-03", "feature_not_dimensioned", "cylindrical feature ø6.3 ...")
+        assert not is_waived("GRM-01", "feature_not_dimensioned", "cylindrical feature ø9 ...")
+        assert not is_waived("GRM-01", "feature_not_located", "cylindrical feature ø6.3 ...")

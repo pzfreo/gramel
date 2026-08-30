@@ -10,7 +10,7 @@ dependencies = [
     "build123d",
     "bd-warehouse",
     "build123d-drafting-helpers>=0.1.1",
-    "draftwright==0.4.15",
+    "draftwright==0.4.16",
     "cairosvg",
     # The SVG->PDF fallback in gramel.parts._drawing runs whenever CairoSVG
     # cannot find a system Cairo.  It is a hard dependency of the export path,

@@ -70,14 +70,14 @@ wheels = [
 
 [[package]]
 name = "b123d-recognisers"
-version = "0.3.1"
+version = "0.4.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "build123d" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/db/5f/987efc53bd8f468881b19bbbe10abd8a62fdd5a3643cc02fe83080b15cd3/b123d_recognisers-0.3.1.tar.gz", hash = "sha256:6b0dd527513654ec153655ea0e1440549451d567f7f840a3fffe4c3a69200047", size = 583119, upload-time = "2026-08-23T08:52:33.258Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/14/07/b8b0e4256dda31097220b350363605736b74579a2b01a253d7ff842a719b/b123d_recognisers-0.4.5.tar.gz", hash = "sha256:3412f2a2701825e441c320360484ed2a8243b5ff9a9cebd4142813c8da196e32", size = 1097659, upload-time = "2026-08-28T18:27:08.657Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6c/16/30706e7b76abb22d726191b31091489024ae8b7de1b482f328ee4466a906/b123d_recognisers-0.3.1-py3-none-any.whl", hash = "sha256:cfb806ec348612af7dc1c4fb51ce46b8bc654e863befd457b37a02889722bb7f", size = 221711, upload-time = "2026-08-23T08:52:31.551Z" },
+    { url = "https://files.pythonhosted.org/packages/40/13/c88a4959c86c18f855e9edd893e66ace23dc2b95342611f7dbed90a562e8/b123d_recognisers-0.4.5-py3-none-any.whl", hash = "sha256:3c170a5123cc09566100eed797eab783fe1a3c5de45f2c723094b566204ce16a", size = 351440, upload-time = "2026-08-28T18:27:07.374Z" },
 ]
 
 [[package]]
@@ -344,7 +344,7 @@ wheels = [
 
 [[package]]
 name = "draftwright"
-version = "0.4.15"
+version = "0.4.16"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "antlr4-python3-runtime" },
@@ -360,9 +360,9 @@ dependencies = [
     { name = "typer" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/97/63/16b08c474ebf5d3ba23ec9e813ebda54ee8fdd8d26d3a5d7f9bc3f11aa5a/draftwright-0.4.15.tar.gz", hash = "sha256:06dee32cab1bf343cd3cdf6d8073fe7ac7ac954da858a637e6977a7874e32d90", size = 4598350, upload-time = "2026-08-25T20:55:59.964Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/67/d4/db5b7349a5c7d3720737297d44a8b507371e8174ea303f2039ed7340b9cb/draftwright-0.4.16.tar.gz", hash = "sha256:04cb0dad3c0a2c75dec9716f453cfa96275b48d6848593ed895f2f46ae36d895", size = 4679648, upload-time = "2026-08-28T22:15:49.587Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2b/86/bff8dd6fb60aaa3127f700c61e148e61dbf8a8f99ec6e627dce752169db6/draftwright-0.4.15-py3-none-any.whl", hash = "sha256:a56c266cb20c9209057559c2ee71c6d7726e2f35ddc03ae15c89985873bc58f8", size = 972850, upload-time = "2026-08-25T20:55:58.323Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/ac/fa6b230a109e2253f8e46b76ed830f31d2da90035d5679744dff119f139f/draftwright-0.4.16-py3-none-any.whl", hash = "sha256:e04b4119fbd2c169feea7bffc32987222597127beade6c6325b1754b5d0b8880", size = 1013806, upload-time = "2026-08-28T22:15:48.013Z" },
 ]
 
 [[package]]
@@ -448,7 +448,7 @@ requires-dist = [
     { name = "build123d" },
     { name = "build123d-drafting-helpers", specifier = ">=0.1.1" },
     { name = "cairosvg" },
-    { name = "draftwright", specifier = "==0.4.15" },
+    { name = "draftwright", specifier = "==0.4.16" },
     { name = "markdown-pdf", specifier = ">=1.3" },
     { name = "pip-hinge", specifier = ">=0.1.0" },
     { name = "pydantic", specifier = ">=2.10" },

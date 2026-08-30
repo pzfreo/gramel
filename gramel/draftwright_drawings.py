@@ -94,20 +94,10 @@ class LintWaiver:
     reason: str
 
 
-LINT_WAIVERS: tuple[LintWaiver, ...] = (
-    LintWaiver(
-        drawing="GRM-01",
-        code="feature_not_dimensioned",
-        contains="ø6.3",
-        reason=(
-            "The depth-lock collar counterbore is Ø6.35.  Draftwright formats "
-            "callouts to one decimal place and refuses to split a counterbore's "
-            "diameter from its depth, so dimensioning it would print '⌀6.3' "
-            "beside a notes block specifying Ø6.35.  The profiled-bore note "
-            "carries the full specification instead."
-        ),
-    ),
-)
+#: Empty while every sheet passes the gate on its own.  Kept as the recorded
+#: route for a reviewed exception, so a future one lands in code rather than
+#: as a silently loosened blocking set.
+LINT_WAIVERS: tuple[LintWaiver, ...] = ()
 
 
 def is_blocking_lint_code(code: str) -> bool:
@@ -326,6 +316,10 @@ def build_shank_drawing(params: PurflingCutterParams) -> Drawing:
     slot_depth_z = params.relief_slot_length / 2
 
     _dimensions(sheet, bottom_bore, "bore.diameter", "bore.depth")
+    # Draftwright 0.4.16 preserves authored display precision, so the Ø6.35
+    # collar counterbore can finally be dimensioned rather than described.
+    sheet.dimension(bottom_bore, "counterbore.diameter").format(decimals=2)
+    sheet.dimension(bottom_bore, "counterbore.depth")
     _dimensions(sheet, crossbore, "bore.diameter", "location")
     _dimensions(sheet, drive_tap, "bore.diameter", "location")
     for fillet in _ordered(seeded, FilletFeature, key=lambda f: f.radius):
@@ -367,13 +361,11 @@ def build_shank_drawing(params: PurflingCutterParams) -> Drawing:
     return _finish(
         sheet,
         (
-            # Only what the graphical dimension set cannot carry: the
-            # counterbore and M6 section (Draftwright rounds a counterbore
-            # callout to one decimal and will not split its diameter from its
-            # depth), the slot width (its dim line collides with the bore
-            # locating dim in the only view that shows it), and genuine
-            # process requirements.
-            "DEPTH-LOCK BORE FROM BOTTOM: Ø6.35 C'BORE x 5.5 DEEP, THEN TAP M6x1 x 12 DEEP",
+            # Only what the graphical dimension set cannot carry: the M6
+            # tapped section of the profiled bore, the slot width (its dim
+            # line collides with the bore locating dim in the only view that
+            # shows it), and genuine process requirements.
+            "DEPTH-LOCK BORE: TAP M6x1 x 12 DEEP ABOVE THE Ø6.35 COUNTERBORE",
             "RELIEF SLOT 2 WIDE; FLOOR FLAT",
             "M3x0.5 TAP IS CRITICAL - GAUGE AND TRIAL FIT WITH GRM-03",
             "TRIAL FIT GRM-02 Ø8 g6 SHAFT IN THE Ø8 H7 CROSSBORE",
@@ -390,8 +382,7 @@ def build_shaft_drawing(params: PurflingCutterParams) -> Drawing:
         title="SHAFT",
         number="GRM-02",
         material=BRASS,
-        scale=2.0,
-        page="A3",
+        scale=1.0,
     )
     # Both taps are already in the recogniser baseline, so declaring them
     # again left the sheet carrying two overlapping copies of each (the M2
@@ -460,7 +451,7 @@ def build_thumbwheel_drawing(params: PurflingCutterParams) -> Drawing:
         number="GRM-03",
         material=BRASS,
         scale=5.0,
-        page="A2",
+        page="A3",
     )
 
     # Every turned step is already in the recogniser baseline.  Declaring an
@@ -482,6 +473,7 @@ def build_thumbwheel_drawing(params: PurflingCutterParams) -> Drawing:
     collar = _step(ds.unthreaded_diameter)
     drive_thread = _step(threads.major_diameter(ds.thread)).thread("M3x0.5")
     tap = _one(seeded, HoleFeature).thread("M2x0.4")
+    envelope = sheet.envelope()
     # The chamfers stay authored: dimensioning the *detected* turned chamfers
     # makes Draftwright count both silhouette edges, so the two 0.3 disc
     # chamfers read "4x C0.3" and the single tip chamfer "2x C0.5".
@@ -502,7 +494,6 @@ def build_thumbwheel_drawing(params: PurflingCutterParams) -> Drawing:
             turned=True,
         ),
     )
-    envelope = sheet.envelope()
 
     for step in (journal, boss, disc, collar, drive_thread):
         _dimensions(sheet, step, "step.length", "step.diameter")
@@ -516,7 +507,6 @@ def build_thumbwheel_drawing(params: PurflingCutterParams) -> Drawing:
         (
             "M3x0.5 EXTERNAL THREAD IS CRITICAL; CUT AND GAUGE",
             "M2x0.4 TAP 7 DEEP; DRILL 8 DEEP FOR CHIP RELIEF",
-            "TURNED STEPS: Ø4x3.2; Ø6x0.5; Ø10x2; Ø5x3; M3x0.5x20",
             "M3 THREAD Ra 1.6; STRAIGHT KNURL, 0.8 PITCH",
             "TRIAL FIT M3x0.5 THREAD WITH GRM-01 DRIVE TAP",
             "VISIBLE BRASS SURFACES: CLEAN SATIN FINISH",
@@ -533,8 +523,7 @@ def build_drive_plate_drawing(params: PurflingCutterParams) -> Drawing:
         title="DRIVE PLATE",
         number="GRM-04",
         material=BRASS,
-        scale=5.0,
-        page="A3",
+        scale=2.0,
     )
     seeded = _seed_detected(
         sheet,
@@ -697,8 +686,7 @@ def build_blade_drawing(params: PurflingCutterParams) -> Drawing:
         title="BLADE",
         number="GRM-07",
         material="O1 / 60 HRC",
-        scale=5.0,
-        page="A3",
+        scale=2.0,
     )
     dims = (
         (bp.thickness, "x", (-bp.thickness / 2, 0, 0), (bp.thickness / 2, 0, 0)),
