@@ -16,8 +16,8 @@ from gramel.draftwright_drawings import (
 EXPECTED_SCALES = {
     "GRM-01": 1.0,
     "GRM-02": 2.0,
-    "GRM-03": 4.0,
-    "GRM-04": 3.0,
+    "GRM-03": 5.0,
+    "GRM-04": 5.0,
     "GRM-05": 2.0,
     "GRM-06": 5.0,
     "GRM-07": 5.0,
@@ -29,7 +29,7 @@ EXPECTED_SCALES = {
 EXACT_LABELS = {
     "GRM-01": {"13.55"},
     "GRM-05": {"Ø6.25", "32"},
-    "GRM-06": {"0.85", "6.25", "1.875"},
+    "GRM-06": {"0.85", "6.25"},
 }
 
 

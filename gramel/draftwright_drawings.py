@@ -30,6 +30,7 @@ from draftwright.model import (
     DimensionParameterId,
     EnvelopeFeature,
     Feature,
+    FilletFeature,
     HoleFeature,
     PocketFeature,
     SlotFeature,
@@ -46,7 +47,7 @@ from gramel.parts.shaft import build_shaft
 from gramel.parts.shank import build_shank
 from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw_features
 
-BRASS = "H62 brass (CuZn40)"
+BRASS = "H62"
 DRAWN_BY = "P. Fremantle"
 GENERAL_TOLERANCE = "ISO 2768-mK"
 
@@ -198,7 +199,12 @@ def _seed_detected(
         try:
             handle = sheet.of(feature)
         except ValueError:
-            handle = sheet.add(feature)
+            # of() only vends fluent handles for holes / bosses / steps.  For
+            # every other family the feature is already on the sheet and can
+            # be dimensioned directly -- re-adding it registers a SECOND copy,
+            # which renders as a doubled instance count ("2x C0.5" for one
+            # chamfer, "10x R1" for five fillets).
+            handle = feature
         seeded.append((feature, handle))
     return seeded
 
@@ -287,7 +293,7 @@ def build_shank_drawing(params: PurflingCutterParams) -> Drawing:
     tap_z = sp.length - params.tapped_bore_position_from_top
     seeded = _seed_detected(
         sheet,
-        keep=lambda feature: isinstance(feature, (HoleFeature, PocketFeature)),
+        keep=lambda feature: isinstance(feature, (HoleFeature, PocketFeature, FilletFeature)),
     )
     # Detection infers "through" because the bore opens into the crossbore.
     # It is blind: it runs crossbore_z from the bottom face and never exits
@@ -313,14 +319,33 @@ def build_shank_drawing(params: PurflingCutterParams) -> Drawing:
         lambda feature: feature.frame.axis == "x" and abs(feature.diameter - 2.5) < 0.01,
     ).thread("M3x0.5")
     _one(seeded, PocketFeature)  # assert that the baseline recognised the relief slot
+    # The relief slot is dimensioned from the parameter tree, not from the
+    # detected pocket: recognition measures the post-fillet cavity (62.1 long,
+    # 0.9 deep) rather than the 66 x 1 cut the shop has to make.
+    slot_floor_x = sp.width / 2 - sp.relief_slot_depth
+    slot_depth_z = params.relief_slot_length / 2
 
     _dimensions(sheet, bottom_bore, "bore.diameter", "bore.depth")
     _dimensions(sheet, crossbore, "bore.diameter", "location")
     _dimensions(sheet, drive_tap, "bore.diameter", "location")
+    for fillet in _ordered(seeded, FilletFeature, key=lambda f: f.radius):
+        _dimensions(sheet, fillet, "fillet.radius")
     sheet.section_view("A", through=bottom_bore)
 
     exact_dimensions = (
         (sp.length, "z", (0, 0, 0), (0, 0, sp.length)),
+        (
+            params.relief_slot_length,
+            "z",
+            (slot_floor_x, 0, 0),
+            (slot_floor_x, 0, params.relief_slot_length),
+        ),
+        (
+            sp.relief_slot_depth,
+            "x",
+            (slot_floor_x, 0, slot_depth_z),
+            (sp.width / 2, 0, slot_depth_z),
+        ),
         (
             sp.crossbore_position_from_top,
             "z",
@@ -342,13 +367,17 @@ def build_shank_drawing(params: PurflingCutterParams) -> Drawing:
     return _finish(
         sheet,
         (
+            # Only what the graphical dimension set cannot carry: the
+            # counterbore and M6 section (Draftwright rounds a counterbore
+            # callout to one decimal and will not split its diameter from its
+            # depth), the slot width (its dim line collides with the bore
+            # locating dim in the only view that shows it), and genuine
+            # process requirements.
+            "DEPTH-LOCK BORE FROM BOTTOM: Ø6.35 C'BORE x 5.5 DEEP, THEN TAP M6x1 x 12 DEEP",
+            "RELIEF SLOT 2 WIDE; FLOOR FLAT",
+            "M3x0.5 TAP IS CRITICAL - GAUGE AND TRIAL FIT WITH GRM-03",
+            "TRIAL FIT GRM-02 Ø8 g6 SHAFT IN THE Ø8 H7 CROSSBORE",
             "VISIBLE BRASS SURFACES: CLEAN SATIN FINISH",
-            "TRIAL FIT Ø8 g6 SHAFT IN Ø8 H7 BORE",
-            "TAP M3x0.5 THRU; Ø2.5 TAP DRILL; CRITICAL - GAUGE AND TRIAL FIT WITH GRM-03",
-            "PROFILED BORE FROM BOTTOM: Ø6.35 x 5.5 DEEP; TAP M6x1 x 12 DEEP; Ø5 H8 x 48.5 DEEP",
-            "RELIEF SLOT: 2 x 66 x 1 DEEP; FLAT FLOOR",
-            "5x R1 EXTERNAL FILLETS",
-            "DEPTH-LOCK BORE AXIS AT X0 Y0",
         ),
     )
 
@@ -430,8 +459,8 @@ def build_thumbwheel_drawing(params: PurflingCutterParams) -> Drawing:
         title="THUMBWHEEL + DRIVE SCREW",
         number="GRM-03",
         material=BRASS,
-        scale=4.0,
-        page="A3",
+        scale=5.0,
+        page="A2",
     )
 
     # Every turned step is already in the recogniser baseline.  Declaring an
@@ -504,7 +533,7 @@ def build_drive_plate_drawing(params: PurflingCutterParams) -> Drawing:
         title="DRIVE PLATE",
         number="GRM-04",
         material=BRASS,
-        scale=3.0,
+        scale=5.0,
         page="A3",
     )
     seeded = _seed_detected(
@@ -625,7 +654,6 @@ def build_blade_retainer_drawing(params: PurflingCutterParams) -> Drawing:
         material="Annealed Cu",
         scale=5.0,
     )
-    end_block = (rp.length - rp.middle_length) / 2
     dims = (
         (rp.thickness, "x", (-rp.thickness / 2, 0, 0), (rp.thickness / 2, 0, 0)),
         (rp.length, "z", (0, 0, -rp.length / 2), (0, 0, rp.length / 2)),
@@ -642,7 +670,6 @@ def build_blade_retainer_drawing(params: PurflingCutterParams) -> Drawing:
             (0, 0, -rp.middle_length / 2),
             (0, 0, rp.middle_length / 2),
         ),
-        (end_block, "z", (0, 0, rp.middle_length / 2), (0, 0, rp.length / 2)),
     )
     for value, axis, p1, p2 in dims:
         _exact_linear(sheet, value=value, axis=axis, p1=p1, p2=p2)
