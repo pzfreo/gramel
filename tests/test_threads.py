@@ -2,7 +2,7 @@
 
 import pytest
 
-from gramel import threads
+from gramil import threads
 
 
 class TestMajorDiameter:

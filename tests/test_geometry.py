@@ -18,19 +18,19 @@ from collections.abc import Callable
 import pytest
 from build123d import Part, Pos
 
-from gramel.parameters import PurflingCutterParams
-from gramel.parts.blade import build_blade
-from gramel.parts.blade_retainer import build_blade_retainer
-from gramel.parts.captive_screw import build_captive_screw
-from gramel.parts.channel_spacer import build_channel_spacer
-from gramel.parts.depth_lock_bolt import build_depth_lock_bolt
-from gramel.parts.drive_plate import build_drive_plate
-from gramel.parts.grub_screw import build_grub_screw
-from gramel.parts.push_rod import build_push_rod
-from gramel.parts.shaft import build_shaft
-from gramel.parts.shank import build_shank
-from gramel.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
-from gramel.parts.washer import build_washer
+from gramil.parameters import PurflingCutterParams
+from gramil.parts.blade import build_blade
+from gramil.parts.blade_retainer import build_blade_retainer
+from gramil.parts.captive_screw import build_captive_screw
+from gramil.parts.channel_spacer import build_channel_spacer
+from gramil.parts.depth_lock_bolt import build_depth_lock_bolt
+from gramil.parts.drive_plate import build_drive_plate
+from gramil.parts.grub_screw import build_grub_screw
+from gramil.parts.push_rod import build_push_rod
+from gramil.parts.shaft import build_shaft
+from gramil.parts.shank import build_shank
+from gramil.parts.thumbwheel_drive_screw import build_thumbwheel_drive_screw
+from gramil.parts.washer import build_washer
 
 # ---------------------------------------------------------------------------
 # Fixtures — CNC mode (smooth cylinders) and a spacer present for testing

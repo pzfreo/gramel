@@ -5,7 +5,7 @@ Builds the case body without hinge, then fuses two pip-hinge piano hinges
 No trimesh round-trip required.
 
 This is the *default* shipped case
-(`gramel/case/printable/case_print_in_place.stl`). The Oral-B reference
+(`gramil/case/printable/case_print_in_place.stl`). The Oral-B reference
 variant lives at `case_print_in_place_oralb.stl`, built by
 `tools/assemble_case_with_reference_hinge.py`. This script outputs to
 `dist/case/case_pip_hinge_print.stl` for iteration; copy to the
@@ -42,9 +42,9 @@ from pathlib import Path
 
 from build123d import Compound, Part, Pos, Rot, export_step, export_stl
 
-from gramel.case import CaseParams, build_case
-from gramel.case.case import _case_bounds
-from gramel.parameters import PurflingCutterParams
+from gramil.case import CaseParams, build_case
+from gramil.case.case import _case_bounds
+from gramil.parameters import PurflingCutterParams
 
 sys.path.insert(0, str(Path(__file__).parent))
 from pip_hinge import HingeParams, Knuckle, make_hinge

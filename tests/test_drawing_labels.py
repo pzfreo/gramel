@@ -8,7 +8,7 @@ and 6.4. The labels were tied to parameters via f-strings using
 ``:.0f``, which silently rounded the new measured values back to the
 prior integer display values when the parameters changed in v0.1.4.
 
-The fix is the ``dim_label()`` helper in ``gramel/parts/_drawing.py``
+The fix is the ``dim_label()`` helper in ``gramil/parts/_drawing.py``
 (strips trailing zeros, no precision loss). This test enforces it:
 any ``{x:.Nf}`` pattern in a drawing file is forbidden, so the failure
 mode can't reappear silently.
@@ -19,7 +19,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-PARTS_DIR = Path(__file__).resolve().parent.parent / "gramel" / "parts"
+PARTS_DIR = Path(__file__).resolve().parent.parent / "gramil" / "parts"
 DRAWING_FILES = sorted(PARTS_DIR.glob("*_drawing.py"))
 
 # Match {expr:.Nf} only inside f-strings (which is how all dim labels
@@ -31,7 +31,7 @@ FIXED_PRECISION_PATTERN = re.compile(r"\{[^{}]+?:\.\d+f\}")
 def test_drawing_files_dont_use_fixed_precision_format() -> None:
     """No drawing file may format a parameter value with ``:.Nf``.
 
-    Use ``dim_label(value)`` from ``gramel.parts._drawing`` instead —
+    Use ``dim_label(value)`` from ``gramil.parts._drawing`` instead —
     it preserves precision and strips trailing zeros automatically.
     """
     assert DRAWING_FILES, "no drawing files found — wrong path?"
@@ -61,7 +61,7 @@ def test_drawing_files_dont_use_fixed_precision_format() -> None:
 def test_dim_label_preserves_precision() -> None:
     """``dim_label`` strips trailing zeros but never rounds away
     meaningful precision."""
-    from gramel.parts._drawing import dim_label
+    from gramil.parts._drawing import dim_label
 
     cases = [
         (35.0, "35"),

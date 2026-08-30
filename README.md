@@ -1,4 +1,4 @@
-# gramel
+# gramil
 
 Parametric CAD model of a double-blade violin purfling cutter, written in
 [build123d](https://github.com/gumyr/build123d) with all dimensions driven
@@ -21,15 +21,15 @@ Requires Python 3.12 and [uv](https://docs.astral.sh/uv/).
 uv sync
 
 # Build the full assembly and export STEP
-uv run python -m gramel.assembly
+uv run python -m gramil.assembly
 # → /tmp/assembly.step (volume ≈ 14 800 mm³)
 
 # Build a single part
-uv run python -m gramel.parts.shank
+uv run python -m gramil.parts.shank
 # → /tmp/shank.step
 
 # Render the shank's CNC drawing (A4 landscape PDF + SVG)
-uv run python -m gramel.parts.shank_drawing
+uv run python -m gramil.parts.shank_drawing
 # → /tmp/shank_drawing.pdf
 
 # Build the full production manufacturing package: STEP files for each
@@ -37,17 +37,17 @@ uv run python -m gramel.parts.shank_drawing
 uv run python scripts/build_production.py
 # → dist/step/GRM-0*_*.step
 # → dist/drawings/GRM-0*_*.svg / .pdf
-# → dist/gramel_drawings.pdf
+# → dist/gramil_drawings.pdf
 
 # Build the separate Draftwright v0.4.15 CNC quotation iteration.
 # The original drawing outputs above are preserved as the baseline.
 uv run --python 3.12 python scripts/build_draftwright.py
-# → dist/draftwright/gramel_draftwright_cnc_drawings.pdf
-# → gramel-*-draftwright-cnc.zip
+# → dist/draftwright/gramil_draftwright_cnc_drawings.pdf
+# → gramil-*-draftwright-cnc.zip
 
 # Lint, type-check, test
-uv run ruff check gramel/
-uv run mypy gramel/
+uv run ruff check gramil/
+uv run mypy gramil/
 uv run pytest
 ```
 
@@ -56,7 +56,7 @@ The full assembly with `process.prototype=True` (real threads) takes
 
 ## What gets built
 
-Modules under `gramel/parts/`, each with its own `main()` that exports a
+Modules under `gramil/parts/`, each with its own `main()` that exports a
 STEP file:
 
 | Module | Part | Role |
@@ -72,7 +72,7 @@ STEP file:
 | `push_rod.py` | Steel rod | Translates the M6 bolt's advance to the shaft underside |
 | `shank_drawing.py` | — | A4 landscape technical drawing of the shank (PDF + SVG) |
 
-All cross-part dimensions live in `gramel/parameters.py` as a single
+All cross-part dimensions live in `gramil/parameters.py` as a single
 `PurflingCutterParams` pydantic model. Cross-part derivations (crossbore
 diameter from shaft OD + sliding clearance, etc.) are exposed as
 `computed_field`s; wall-thickness rules are enforced with model
@@ -111,9 +111,9 @@ The `.github/workflows/release.yml` workflow then:
 
 1. runs `pytest` (won't release on a broken build),
 2. runs `scripts/build_production.py` to produce `dist/`,
-3. zips `dist/` into `gramel-v0.1.0.zip`,
+3. zips `dist/` into `gramil-v0.1.0.zip`,
 4. creates a GitHub release with auto-generated notes and attaches
-   `gramel_drawings.pdf`, the zip, and `quotation-request.md`.
+   `gramil_drawings.pdf`, the zip, and `quotation-request.md`.
 
 The workflow can also be triggered manually (Actions → Release → Run
 workflow) to verify the build without cutting a release; in that mode
@@ -122,7 +122,7 @@ the artifacts are uploaded to the workflow run instead of a release.
 ## Layout
 
 ```
-gramel/
+gramil/
   parameters.py        single source of truth for all dimensions
   assembly.py          composes parts into a single STEP
   parts/

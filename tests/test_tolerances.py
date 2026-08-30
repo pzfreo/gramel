@@ -2,7 +2,7 @@
 
 import pytest
 
-from gramel import tolerances
+from gramil import tolerances
 
 
 class TestITValues:

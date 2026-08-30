@@ -21,7 +21,7 @@ import importlib
 import build123d_drafting as bdd
 from build123d import Compound, GeomType
 
-from gramel.parameters import PurflingCutterParams
+from gramil.parameters import PurflingCutterParams
 
 DRAWING_MODULES = [
     "shaft_drawing", "shank_drawing", "blade_drawing", "blade_retainer_drawing",
@@ -127,7 +127,7 @@ def scan_drawing(module_name, params=None):
     a witness line) — often legitimate, advisory only.
     """
     params = params or PurflingCutterParams()
-    mod = importlib.import_module(f"gramel.parts.{module_name}")
+    mod = importlib.import_module(f"gramil.parts.{module_name}")
     build_fn = next(getattr(mod, n) for n in dir(mod)
                     if n.startswith("build_") and n.endswith("_drawing"))
 

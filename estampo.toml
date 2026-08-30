@@ -1,8 +1,8 @@
-# estampo.toml — reproducible print pipeline for the gramel case
+# estampo.toml — reproducible print pipeline for the gramil case
 # Run: estampo run
 # Docs: https://github.com/estampo/estampo
 
-name = "gramel-case"
+name = "gramil-case"
 output_dir = "estampo_output"
 
 [pipeline]
@@ -45,5 +45,5 @@ output  = "{sliced_3mf}"
 [[parts]]
 # STL is exported in print orientation (base on bed, lid flat-open beside it)
 # so orient=upright preserves that; flat would auto-rotate and break the layout.
-file   = "gramel/case/printable/case_print_in_place.stl"
+file   = "gramil/case/printable/case_print_in_place.stl"
 orient = "upright"
