@@ -428,6 +428,8 @@ dependencies = [
     { name = "pip-hinge" },
     { name = "pydantic" },
     { name = "pypdf" },
+    { name = "reportlab" },
+    { name = "svglib" },
 ]
 
 [package.dev-dependencies]
@@ -451,6 +453,8 @@ requires-dist = [
     { name = "pip-hinge", specifier = ">=0.1.0" },
     { name = "pydantic", specifier = ">=2.10" },
     { name = "pypdf", specifier = ">=5.0" },
+    { name = "reportlab", specifier = ">=4.0" },
+    { name = "svglib", specifier = ">=1.5" },
 ]
 
 [package.metadata.requires-dev]
