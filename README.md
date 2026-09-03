@@ -45,6 +45,13 @@ uv run --python 3.12 python scripts/build_draftwright.py
 # → dist/draftwright/gramil_draftwright_cnc_drawings.pdf
 # → gramil-*-draftwright-cnc.zip
 
+# Build the FDM sandwich case (print-in-place shell + slide-in insert).
+# The default packs 5 mm of soft PU foam above and below the insert;
+# --thin-foam is the 1 mm EVA variant — 17.0 mm closed instead of 25.5 mm,
+# same footprint.
+uv run --python 3.12 python -m gramil.case.sandwich --thin-foam --out-dir dist/case
+# → dist/case/gramil_sandwich_thin_foam_{shell_print,insert}.{step,stl}
+
 # Lint, type-check, test
 uv run ruff check gramil/
 uv run mypy gramil/
