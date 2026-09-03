@@ -355,5 +355,32 @@ class SandwichCaseParams(BaseModel):
         json_schema_extra=_meta(),
     )
 
+    # --- Variant presets ----------------------------------------------------
+
+    @classmethod
+    def thin_foam(cls, **overrides: Any) -> "SandwichCaseParams":
+        """Slim variant: 1 mm foam instead of 5 mm, and zero cavity slack.
+
+        The Z stack works out so the foam is preloaded ONLY where the tool
+        stands proud, and is a zero-slack fit everywhere else:
+
+          cavity      = stack_h (10.5) + 2 x foam (1.0) + clearance (0.0)
+                      = 12.5 mm
+          over insert = 1.0 + 10.5 + 1.0 = 12.5 mm  -> exact, insert located,
+                        no rattle
+          over tool   = 1.0 + 11.0 + 1.0 = 13.0 mm  -> 0.5 mm total squeeze
+                        (0.25 mm per side, ~25% of a 1 mm layer) so the tool
+                        is clamped
+
+        ``cavity_z_clearance`` MUST go to zero here: the default 1.0 mm build
+        allowance is tolerable inside a 10 mm foam stack but is half a foam
+        layer at 1 mm, which would leave the tool loose.
+
+        Closed exterior: 108.3 x 67.4 x 16.5 mm, against 25.5 mm tall for the
+        5 mm-foam default -- a 9 mm (35%) reduction in thickness. Footprint is
+        unchanged; it is the Z stack alone that shrinks.
+        """
+        return cls(foam_thickness=1.0, cavity_z_clearance=0.0, **overrides)
+
 
 __all__ = ["CaseParams", "SandwichCaseParams"]

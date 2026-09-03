@@ -34,10 +34,18 @@ Outputs (gramil_sandwich_*):
                             hinge (lid unfolded 180° open); the print file
   insert.{step,stl}       — the slide-in insert tray
   assembly.step           — flat-open + populated (tool + spares), for fit viz
+
+Variants:
+  default     — 5 mm foam above and below; 25.5 mm closed exterior height.
+  --thin-foam — ``SandwichCaseParams.thin_foam()``: 1 mm foam and zero cavity
+                slack; 16.5 mm closed height, same footprint. Files are named
+                gramil_sandwich_thin_foam_*.
 """
 
 import copy
 import math
+import sys
+from pathlib import Path
 
 from build123d import (
     Align,
@@ -554,22 +562,36 @@ def build_all(
 
 
 def main() -> None:
+    """CLI: ``--thin-foam`` selects the 1 mm-foam variant, ``--out-dir DIR``
+    the export directory (default /tmp)."""
+    argv = sys.argv[1:]
+    thin = "--thin-foam" in argv
+    out_dir = Path("/tmp")
+    if "--out-dir" in argv:
+        out_dir = Path(argv[argv.index("--out-dir") + 1])
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     cutter = PurflingCutterParams()
     cutter = cutter.model_copy(
         update={"process": cutter.process.model_copy(update={"prototype": False})}
     )
-    params = SandwichCaseParams()
+    params = SandwichCaseParams.thin_foam() if thin else SandwichCaseParams()
+    stem = "gramil_sandwich_thin_foam" if thin else "gramil_sandwich"
+
     shell_print, insert, assembly, geom = build_all(cutter, params)
+    closed_z = geom["cav_cz"] + 2 * params.shell.wall_thickness
     print(
-        f"Sandwich case: insert {geom['insert_cx']:.1f} × {geom['insert_cy']:.1f} mm, "
-        f"stack {geom['stack_h']:.1f} mm, cavity Z {geom['cav_cz']:.1f} mm"
+        f"Sandwich case ({'thin foam' if thin else 'default'}): "
+        f"insert {geom['insert_cx']:.1f} × {geom['insert_cy']:.1f} mm, "
+        f"stack {geom['stack_h']:.1f} mm, foam {params.foam_thickness:.1f} mm/side, "
+        f"cavity Z {geom['cav_cz']:.1f} mm, closed height {closed_z:.1f} mm"
     )
-    export_step(shell_print, "/tmp/gramil_sandwich_shell_print.step")
-    export_stl(shell_print, "/tmp/gramil_sandwich_shell_print.stl")
-    export_step(insert, "/tmp/gramil_sandwich_insert.step")
-    export_stl(insert, "/tmp/gramil_sandwich_insert.stl")
-    export_step(assembly, "/tmp/gramil_sandwich_assembly.step")
-    print("Exported /tmp/gramil_sandwich_{shell_print,insert}.{step,stl} + open populated assembly.step")
+    export_step(shell_print, str(out_dir / f"{stem}_shell_print.step"))
+    export_stl(shell_print, str(out_dir / f"{stem}_shell_print.stl"))
+    export_step(insert, str(out_dir / f"{stem}_insert.step"))
+    export_stl(insert, str(out_dir / f"{stem}_insert.stl"))
+    export_step(assembly, str(out_dir / f"{stem}_assembly.step"))
+    print(f"Exported {out_dir}/{stem}_{{shell_print,insert}}.{{step,stl}} + _assembly.step")
 
 
 if __name__ == "__main__":
