@@ -359,28 +359,47 @@ class SandwichCaseParams(BaseModel):
 
     @classmethod
     def thin_foam(cls, **overrides: Any) -> "SandwichCaseParams":
-        """Slim variant: 1 mm foam instead of 5 mm, and zero cavity slack.
+        """Slim variant: 1 mm EVA foam instead of 5 mm, as a zero-slack fit.
 
-        The Z stack works out so the foam is preloaded ONLY where the tool
-        stands proud, and is a zero-slack fit everywhere else:
+        The Z stack is nominally exact everywhere -- no cavity slack, and no
+        preload on the foam:
 
-          cavity      = stack_h (10.5) + 2 x foam (1.0) + clearance (0.0)
-                      = 12.5 mm
-          over insert = 1.0 + 10.5 + 1.0 = 12.5 mm  -> exact, insert located,
-                        no rattle
-          over tool   = 1.0 + 11.0 + 1.0 = 13.0 mm  -> 0.5 mm total squeeze
-                        (0.25 mm per side, ~25% of a 1 mm layer) so the tool
-                        is clamped
+          cavity      = stack_h (11.0) + 2 x foam (1.0) + clearance (0.0)
+                      = 13.0 mm
+          over insert = 1.0 + 11.0 + 1.0 = 13.0 mm  -> exact, insert located
+          over tool   = 1.0 + 11.0 + 1.0 = 13.0 mm  -> exact, foam kisses the
+                        tool
 
-        ``cavity_z_clearance`` MUST go to zero here: the default 1.0 mm build
-        allowance is tolerable inside a 10 mm foam stack but is half a foam
-        layer at 1 mm, which would leave the tool loose.
+        Both departures from the 5 mm defaults are forced by the foam:
 
-        Closed exterior: 108.3 x 67.4 x 16.5 mm, against 25.5 mm tall for the
-        5 mm-foam default -- a 9 mm (35%) reduction in thickness. Footprint is
-        unchanged; it is the Z stack alone that shrinks.
+        ``cavity_z_clearance`` -> 0. The default 1.0 mm build allowance is a
+        rounding error inside a 10 mm foam stack, but at 1 mm it is half a
+        foam layer and would leave the tool loose.
+
+        ``tool_proud`` -> 0. The default 0.5 mm makes the tool stand proud so
+        the foam clamps it, which works on soft open-cell PU. EVA is stiff
+        closed-cell: the tool presents ~860 mm2 of flat shank face to the
+        foam, so 0.25 mm/side (25% strain, ~40-80 kPa CFD) needs roughly
+        34-69 N to close -- against the ~16-20 N two 6 x 2.65 mm N52 pairs
+        can muster. The lid would not latch. With EVA the foam is a liner,
+        not a spring: the tool is held laterally by its through-pocket in the
+        insert and in Z by friction against the foam.
+
+        Pass ``tool_proud=0.5`` back in if you switch to soft PU foam and
+        want the clamping fit.
+
+        Closed exterior: 108.3 x 67.4 x 17.0 mm, against 25.5 mm tall for the
+        5 mm-foam default -- an 8.5 mm (33%) reduction in thickness. Footprint
+        is unchanged; it is the Z stack alone that shrinks.
         """
-        return cls(foam_thickness=1.0, cavity_z_clearance=0.0, **overrides)
+        return cls(
+            **{
+                "foam_thickness": 1.0,
+                "cavity_z_clearance": 0.0,
+                "tool_proud": 0.0,
+                **overrides,
+            }
+        )
 
 
 __all__ = ["CaseParams", "SandwichCaseParams"]
